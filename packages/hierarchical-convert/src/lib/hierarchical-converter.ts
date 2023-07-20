@@ -1,6 +1,7 @@
 /**
  * Interface for hierarchical converter
  */
-export interface HierarchicalConverter {
-  convert(obj: object): void;
+export abstract class HierarchicalConverter {
+  static instance: HierarchicalConverter;
+  abstract convert(obj: object): void;
 }

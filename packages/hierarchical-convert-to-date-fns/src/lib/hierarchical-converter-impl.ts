@@ -1,7 +1,8 @@
 import { HierarchicalConverter } from '@adaskothebeast/hierarchical-convert';
+
 import { hierarchicalConvertToDateFns } from './hierarchical-convert-to-date-fns';
 
-export class HierarchicalConverterImpl implements HierarchicalConverter {
+export class HierarchicalConverterImpl extends HierarchicalConverter {
   convert(obj: object): void {
     hierarchicalConvertToDateFns(obj);
   }

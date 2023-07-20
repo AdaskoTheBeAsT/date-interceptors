@@ -15,6 +15,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@adaskothebeast/angular-date-http-interceptor": [
+        "packages/angular-date-http-interceptor/src/index.ts"
+      ],
       "@adaskothebeast/hierarchical-convert": [
         "packages/hierarchical-convert/src/index.ts"
       ],
@@ -35,6 +38,9 @@
       ],
       "@adaskothebeast/hierarchical-convert-to-moment": [
         "packages/hierarchical-convert-to-moment/src/index.ts"
+      ],
+      "@adaskothebeast/react-redux-toolkit-hierarchical-date-hook": [
+        "packages/react-redux-toolkit-hierarchical-date-hook/src/index.ts"
       ]
     }
   },
