@@ -1,0 +1,42 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@adaskothebeast/hierarchical-convert": [
+        "packages/hierarchical-convert/src/index.ts"
+      ],
+      "@adaskothebeast/hierarchical-convert-to-date": [
+        "packages/hierarchical-convert-to-date/src/index.ts"
+      ],
+      "@adaskothebeast/hierarchical-convert-to-date-fns": [
+        "packages/hierarchical-convert-to-date-fns/src/index.ts"
+      ],
+      "@adaskothebeast/hierarchical-convert-to-dayjs": [
+        "packages/hierarchical-convert-to-dayjs/src/index.ts"
+      ],
+      "@adaskothebeast/hierarchical-convert-to-js-joda": [
+        "packages/hierarchical-convert-to-js-joda/src/index.ts"
+      ],
+      "@adaskothebeast/hierarchical-convert-to-luxon": [
+        "packages/hierarchical-convert-to-luxon/src/index.ts"
+      ],
+      "@adaskothebeast/hierarchical-convert-to-moment": [
+        "packages/hierarchical-convert-to-moment/src/index.ts"
+      ]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

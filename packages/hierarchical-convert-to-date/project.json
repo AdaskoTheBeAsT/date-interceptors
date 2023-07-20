@@ -1,0 +1,45 @@
+{
+  "name": "hierarchical-convert-to-date",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/hierarchical-convert-to-date/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/hierarchical-convert-to-date",
+        "tsConfig": "packages/hierarchical-convert-to-date/tsconfig.lib.json",
+        "packageJson": "packages/hierarchical-convert-to-date/package.json",
+        "main": "packages/hierarchical-convert-to-date/src/index.ts",
+        "assets": ["packages/hierarchical-convert-to-date/*.md"]
+      }
+    },
+    "publish": {
+      "command": "node tools/scripts/publish.mjs hierarchical-convert-to-date {args.ver} {args.tag}",
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/hierarchical-convert-to-date/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/hierarchical-convert-to-date/jest.config.ts",
+        "passWithNoTests": true
+      },
+      "configurations": {
+        "ci": {
+          "ci": true,
+          "codeCoverage": true
+        }
+      }
+    }
+  },
+  "tags": []
+}
