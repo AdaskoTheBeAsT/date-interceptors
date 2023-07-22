@@ -18,9 +18,6 @@
       "@adaskothebeast/angular-date-http-interceptor": [
         "packages/angular-date-http-interceptor/src/index.ts"
       ],
-      "@adaskothebeast/hierarchical-convert": [
-        "packages/hierarchical-convert/src/index.ts"
-      ],
       "@adaskothebeast/hierarchical-convert-to-date": [
         "packages/hierarchical-convert-to-date/src/index.ts"
       ],
