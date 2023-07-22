@@ -1,4 +1,7 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-to-date-fns",
-  "version": "0.0.1"
+  "version": "1.0.0",
+  "peerDependencies": {
+    "date-fns": "^2.30.0"
+  }
 }

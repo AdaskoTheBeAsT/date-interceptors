@@ -5,7 +5,7 @@ import {
   HttpRequest,
   HttpResponse,
 } from '@angular/common/http';
-import { Inject } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -37,6 +37,7 @@ import { HIERARCHICAL_DATE_ADJUST_FUNCTION } from './hierarchical-date-adjust-sy
  * export class AppModule { }
  * ```
  */
+@Injectable()
 export class HierarchicalDateHttpInterceptor implements HttpInterceptor {
   constructor(
     @Inject(HIERARCHICAL_DATE_ADJUST_FUNCTION)

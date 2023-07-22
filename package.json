@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/date-converters",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "license": "MIT",
   "scripts": {
     "build:date": "nx run hierarchical-convert-to-date:build",
@@ -10,14 +10,17 @@
     "build:luxon": "nx run hierarchical-convert-to-luxon:build",
     "build:moment": "nx run hierarchical-convert-to-moment:build",
     "build:angular": "nx run angular-date-http-interceptor:build",
-    "build:all": "yarn build:date && yarn build:date-fns && yarn build:dayjs && yarn build:js-joda && yarn build:luxon && yarn build:moment && yarn build:angular",
+    "build:redux-toolkit": "nx run react-redux-toolkit-hierarchical-date-hook:build",
+    "build:all": "yarn build:date && yarn build:date-fns && yarn build:dayjs && yarn build:js-joda && yarn build:luxon && yarn build:moment && yarn build:angular && yarn build:redux-toolkit",
     "test:date": "nx run hierarchical-convert-to-date:test",
     "test:date-fns": "nx run hierarchical-convert-to-date-fns:test",
     "test:dayjs": "nx run hierarchical-convert-to-dayjs:test",
     "test:js-joda": "nx run hierarchical-convert-to-js-joda:test",
     "test:luxon": "nx run hierarchical-convert-to-luxon:test",
     "test:moment": "nx run hierarchical-convert-to-moment:test",
-    "test:all": "yarn test:date && yarn test:date-fns && yarn test:dayjs && yarn test:js-joda && yarn test:luxon && yarn test:moment"
+    "test:angular": "nx run angular-date-http-interceptor:test",
+    "test:redux-toolkit": "nx run react-redux-toolkit-hierarchical-date-hook:test",
+    "test:all": "yarn test:date && yarn test:date-fns && yarn test:dayjs && yarn test:js-joda && yarn test:luxon && yarn test:moment && yarn test:angular && yarn test:redux-toolkit"
   },
   "private": true,
   "dependencies": {

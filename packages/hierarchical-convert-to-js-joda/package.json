@@ -1,4 +1,8 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-to-js-joda",
-  "version": "0.0.1"
+  "version": "1.0.0",
+  "peerDependencies": {
+    "@js-joda/core": "^5.5.3",
+    "@js-joda/timezone": "^2.18.0"
+  }
 }
