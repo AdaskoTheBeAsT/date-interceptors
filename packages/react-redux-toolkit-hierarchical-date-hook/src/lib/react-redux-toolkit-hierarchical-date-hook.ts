@@ -62,7 +62,7 @@ export function useAdjustUseQueryHookResultWithHierarchicalDateConverter<
   // Transform 'data' field if it exists
   if (result.data) {
     // Deep clone the data to avoid mutating the state directly
-    const clonedData = JSON.parse(JSON.stringify(result.data));
+    const clonedData = structuredClone(result.data);
 
     convertFunc(clonedData as object);
 

@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/date-converters",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "license": "MIT",
   "scripts": {
     "build:date": "nx run hierarchical-convert-to-date:build",
@@ -66,7 +66,6 @@
     "@schematics/angular": "~16.1.5",
     "@svgr/rollup": "^8.0.1",
     "@testing-library/react": "14.0.0",
-    "@testing-library/react-hooks": "^8.0.1",
     "@types/jest": "^29.5.3",
     "@types/luxon": "^3.3.1",
     "@types/node": "^18.17.0",

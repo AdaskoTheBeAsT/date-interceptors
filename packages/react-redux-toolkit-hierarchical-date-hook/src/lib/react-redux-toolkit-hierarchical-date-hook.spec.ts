@@ -1,5 +1,5 @@
 import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 
 import { useAdjustUseQueryHookResultWithHierarchicalDateConverter } from './react-redux-toolkit-hierarchical-date-hook';
 

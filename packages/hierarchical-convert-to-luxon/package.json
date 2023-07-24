@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-to-luxon",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "peerDependencies": {
     "luxon": "^3.3.0"
   }
