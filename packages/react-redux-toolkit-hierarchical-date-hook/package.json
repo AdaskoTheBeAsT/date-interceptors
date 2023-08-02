@@ -1,11 +1,12 @@
 {
   "name": "@adaskothebeast/react-redux-toolkit-hierarchical-date-hook",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "peerDependencies": {
-    "@reduxjs/toolkit": "^1.9.5"
+    "@reduxjs/toolkit": "^1.9.5",
+    "core-js": "3.32.0"
   },
   "devDependencies": {
-    "@adaskothebeast/hierarchical-convert-to-date": "1.0.0"
+    "@adaskothebeast/hierarchical-convert-to-date": "1.2.0"
   },
   "sideEffects": false
 }

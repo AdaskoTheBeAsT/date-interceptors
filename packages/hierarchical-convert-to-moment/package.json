@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-to-moment",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "peerDependencies": {
     "moment": "^2.29.4"
   }

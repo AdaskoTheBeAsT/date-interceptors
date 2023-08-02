@@ -42,7 +42,8 @@
       "options": {
         "lintFilePatterns": [
           "packages/angular-date-http-interceptor/**/*.ts",
-          "packages/angular-date-http-interceptor/**/*.html"
+          "packages/angular-date-http-interceptor/**/*.html",
+          "packages/angular-date-http-interceptor/package.json"
         ]
       }
     }

@@ -45,11 +45,11 @@ export class HierarchicalDateHttpInterceptor implements HttpInterceptor {
   ) {}
 
   intercept(
-    req: HttpRequest<any>,
+    req: HttpRequest<unknown>,
     next: HttpHandler
-  ): Observable<HttpEvent<any>> {
+  ): Observable<HttpEvent<unknown>> {
     return next.handle(req).pipe(
-      map((event: HttpEvent<any>) => {
+      map((event: HttpEvent<unknown>) => {
         if (event instanceof HttpResponse) {
           this.adjustDates(event.body);
         }

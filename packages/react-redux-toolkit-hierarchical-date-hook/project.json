@@ -10,7 +10,8 @@
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": [
-          "packages/react-redux-toolkit-hierarchical-date-hook/**/*.{ts,tsx,js,jsx}"
+          "packages/react-redux-toolkit-hierarchical-date-hook/**/*.{ts,tsx,js,jsx}",
+          "packages/react-redux-toolkit-hierarchical-date-hook/package.json"
         ]
       }
     },
@@ -22,7 +23,13 @@
         "tsConfig": "packages/react-redux-toolkit-hierarchical-date-hook/tsconfig.lib.json",
         "project": "packages/react-redux-toolkit-hierarchical-date-hook/package.json",
         "entryFile": "packages/react-redux-toolkit-hierarchical-date-hook/src/index.ts",
-        "external": ["react", "react-dom", "react/jsx-runtime"],
+        "external": [
+          "react",
+          "react-dom",
+          "react/jsx-runtime",
+          "@reduxjs/toolkit",
+          "core-js"
+        ],
         "rollupConfig": "@nx/react/plugins/bundle-rollup",
         "compiler": "babel",
         "assets": [

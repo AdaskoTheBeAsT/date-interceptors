@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-to-dayjs",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "peerDependencies": {
     "dayjs": "^1.11.9"
   }

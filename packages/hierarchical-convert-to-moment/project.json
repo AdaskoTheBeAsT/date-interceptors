@@ -23,7 +23,10 @@
       "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/hierarchical-convert-to-moment/**/*.ts"]
+        "lintFilePatterns": [
+          "packages/hierarchical-convert-to-moment/**/*.ts",
+          "packages/hierarchical-convert-to-moment/package.json"
+        ]
       }
     },
     "test": {

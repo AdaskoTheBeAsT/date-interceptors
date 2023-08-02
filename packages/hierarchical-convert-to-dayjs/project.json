@@ -23,7 +23,10 @@
       "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/hierarchical-convert-to-dayjs/**/*.ts"]
+        "lintFilePatterns": [
+          "packages/hierarchical-convert-to-dayjs/**/*.ts",
+          "packages/hierarchical-convert-to-dayjs/package.json"
+        ]
       }
     },
     "test": {

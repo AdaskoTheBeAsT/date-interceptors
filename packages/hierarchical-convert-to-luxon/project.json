@@ -23,7 +23,10 @@
       "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/hierarchical-convert-to-luxon/**/*.ts"]
+        "lintFilePatterns": [
+          "packages/hierarchical-convert-to-luxon/**/*.ts",
+          "packages/hierarchical-convert-to-luxon/package.json"
+        ]
       }
     },
     "test": {

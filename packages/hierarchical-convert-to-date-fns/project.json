@@ -24,7 +24,8 @@
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": [
-          "packages/hierarchical-convert-to-date-fns/**/*.ts"
+          "packages/hierarchical-convert-to-date-fns/**/*.ts",
+          "packages/hierarchical-convert-to-date-fns/package.json"
         ]
       }
     },
