@@ -1,25 +1,14 @@
 /* eslint-disable */
-const reportPath = '.reports/packages/angular-date-http-interceptor/';
+const reportPath = '.reports/libs/hierarchical-convert-to-js-joda/';
 
 export default {
-  displayName: 'angular-date-http-interceptor',
+  displayName: 'hierarchical-convert-to-js-joda',
   preset: '../../jest.preset.js',
-  setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
+  testEnvironment: 'node',
   transform: {
-    '^.+\\.(ts|mjs|js|html)$': [
-      'jest-preset-angular',
-      {
-        tsconfig: '<rootDir>/tsconfig.spec.json',
-        stringifyContentPathRegex: '\\.(html|svg)$',
-      },
-    ],
+    '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
-  transformIgnorePatterns: ['node_modules/(?!.*\\.mjs$)'],
-  snapshotSerializers: [
-    'jest-preset-angular/build/serializers/no-ng-attributes',
-    'jest-preset-angular/build/serializers/ng-snapshot',
-    'jest-preset-angular/build/serializers/html-comment',
-  ],
+  moduleFileExtensions: ['ts', 'js', 'html'],
   collectCoverage: true,
   coverageDirectory: `../../${reportPath}coverage`,
   coverageReporters: ['cobertura', 'html', 'lcov'],

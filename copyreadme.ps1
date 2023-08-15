@@ -1,5 +1,5 @@
 $sourceFile = '.\README.md'
-$destinationDirectory = '.\packages'
+$destinationDirectory = '.\libs'
 
 Get-ChildItem -Path $destinationDirectory -Recurse -Directory | ForEach-Object {
     $destinationFile = Join-Path $_.FullName 'README.md'

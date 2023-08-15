@@ -1,5 +1,5 @@
 /* eslint-disable */
-const reportPath = '.reports/packages/hierarchical-convert-to-date/';
+const reportPath = '.reports/libs/hierarchical-convert-to-date/';
 
 export default {
   displayName: 'hierarchical-convert-to-date',

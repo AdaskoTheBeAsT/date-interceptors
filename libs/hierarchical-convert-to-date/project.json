@@ -1,18 +1,18 @@
 {
   "name": "hierarchical-convert-to-date",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/hierarchical-convert-to-date/src",
+  "sourceRoot": "libs/hierarchical-convert-to-date/src",
   "projectType": "library",
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/packages/hierarchical-convert-to-date",
-        "tsConfig": "packages/hierarchical-convert-to-date/tsconfig.lib.json",
-        "packageJson": "packages/hierarchical-convert-to-date/package.json",
-        "main": "packages/hierarchical-convert-to-date/src/index.ts",
-        "assets": ["packages/hierarchical-convert-to-date/*.md"]
+        "outputPath": "dist/libs/hierarchical-convert-to-date",
+        "tsConfig": "libs/hierarchical-convert-to-date/tsconfig.lib.json",
+        "packageJson": "libs/hierarchical-convert-to-date/package.json",
+        "main": "libs/hierarchical-convert-to-date/src/index.ts",
+        "assets": ["libs/hierarchical-convert-to-date/*.md"]
       }
     },
     "publish": {
@@ -24,8 +24,8 @@
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": [
-          "packages/hierarchical-convert-to-date/**/*.ts",
-          "packages/hierarchical-convert-to-date/package.json"
+          "libs/hierarchical-convert-to-date/**/*.ts",
+          "libs/hierarchical-convert-to-date/package.json"
         ]
       }
     },
@@ -33,7 +33,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "packages/hierarchical-convert-to-date/jest.config.ts",
+        "jestConfig": "libs/hierarchical-convert-to-date/jest.config.ts",
         "passWithNoTests": true
       },
       "configurations": {

@@ -1,8 +1,8 @@
 /* eslint-disable */
-const reportPath = '.reports/packages/hierarchical-convert-to-date-fns/';
+const reportPath = '.reports/libs/hierarchical-convert-to-dayjs/';
 
 export default {
-  displayName: 'hierarchical-convert-to-date-fns',
+  displayName: 'hierarchical-convert-to-dayjs',
   preset: '../../jest.preset.js',
   testEnvironment: 'node',
   transform: {

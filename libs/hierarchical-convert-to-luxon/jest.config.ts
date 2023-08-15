@@ -1,5 +1,5 @@
 /* eslint-disable */
-const reportPath = '.reports/packages/hierarchical-convert-to-luxon/';
+const reportPath = '.reports/libs/hierarchical-convert-to-luxon/';
 
 export default {
   displayName: 'hierarchical-convert-to-luxon',

@@ -1,14 +1,25 @@
 /* eslint-disable */
-const reportPath = '.reports/packages/hierarchical-convert-to-dayjs/';
+const reportPath = '.reports/libs/angular-date-http-interceptor/';
 
 export default {
-  displayName: 'hierarchical-convert-to-dayjs',
+  displayName: 'angular-date-http-interceptor',
   preset: '../../jest.preset.js',
-  testEnvironment: 'node',
+  setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   transform: {
-    '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
+    '^.+\\.(ts|mjs|js|html)$': [
+      'jest-preset-angular',
+      {
+        tsconfig: '<rootDir>/tsconfig.spec.json',
+        stringifyContentPathRegex: '\\.(html|svg)$',
+      },
+    ],
   },
-  moduleFileExtensions: ['ts', 'js', 'html'],
+  transformIgnorePatterns: ['node_modules/(?!.*\\.mjs$)'],
+  snapshotSerializers: [
+    'jest-preset-angular/build/serializers/no-ng-attributes',
+    'jest-preset-angular/build/serializers/ng-snapshot',
+    'jest-preset-angular/build/serializers/html-comment',
+  ],
   collectCoverage: true,
   coverageDirectory: `../../${reportPath}coverage`,
   coverageReporters: ['cobertura', 'html', 'lcov'],

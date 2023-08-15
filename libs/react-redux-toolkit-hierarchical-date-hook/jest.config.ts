@@ -1,14 +1,15 @@
 /* eslint-disable */
-const reportPath = '.reports/packages/hierarchical-convert-to-js-joda/';
+const reportPath = '.reports/libs/react-redux-toolkit-hierarchical-date-hook/';
 
 export default {
-  displayName: 'hierarchical-convert-to-js-joda',
+  displayName: 'react-redux-toolkit-hierarchical-date-hook',
   preset: '../../jest.preset.js',
-  testEnvironment: 'node',
   transform: {
-    '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
+    '^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': '@nx/react/plugins/jest',
+    '^.+\\.[tj]sx?$': ['babel-jest', { presets: ['@nx/react/babel'] }],
   },
-  moduleFileExtensions: ['ts', 'js', 'html'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
+  testEnvironment: './FixJSDOMEnvironment.ts',
   collectCoverage: true,
   coverageDirectory: `../../${reportPath}coverage`,
   coverageReporters: ['cobertura', 'html', 'lcov'],

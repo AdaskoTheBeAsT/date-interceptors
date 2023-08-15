@@ -1,16 +1,14 @@
 /* eslint-disable */
-const reportPath =
-  '.reports/packages/react-redux-toolkit-hierarchical-date-hook/';
+const reportPath = '.reports/libs/hierarchical-convert-to-date-fns/';
 
 export default {
-  displayName: 'react-redux-toolkit-hierarchical-date-hook',
+  displayName: 'hierarchical-convert-to-date-fns',
   preset: '../../jest.preset.js',
+  testEnvironment: 'node',
   transform: {
-    '^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': '@nx/react/plugins/jest',
-    '^.+\\.[tj]sx?$': ['babel-jest', { presets: ['@nx/react/babel'] }],
+    '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  testEnvironment: './FixJSDOMEnvironment.ts',
+  moduleFileExtensions: ['ts', 'js', 'html'],
   collectCoverage: true,
   coverageDirectory: `../../${reportPath}coverage`,
   coverageReporters: ['cobertura', 'html', 'lcov'],
