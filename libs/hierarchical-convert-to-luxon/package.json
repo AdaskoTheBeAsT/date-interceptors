@@ -2,6 +2,7 @@
   "name": "@adaskothebeast/hierarchical-convert-to-luxon",
   "version": "1.2.0",
   "peerDependencies": {
-    "luxon": "^3.3.0"
+    "luxon": "^3.4.3",
+    "tslib": "^2.6.2"
   }
 }

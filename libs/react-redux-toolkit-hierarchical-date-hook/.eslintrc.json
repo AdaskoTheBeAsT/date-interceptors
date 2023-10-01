@@ -1,9 +1,21 @@
 {
-  "extends": ["plugin:@nx/react", "../../.eslintrc.json"],
-  "ignorePatterns": ["!**/*"],
+  "extends": ["../../.eslintrc.json"],
+  "ignorePatterns": ["!**/*", "**/FixJSDOMEnvironment.ts"],
   "overrides": [
     {
+      "files": ["FixJSDOMEnvironment.ts"],
+      "rules": {
+        "import/no-extraneous-dependencies": "off"
+      }
+    },
+    {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
+      "extends": ["plugin:@nx/react"],
+      "parserOptions": {
+        "project": [
+          "libs/react-redux-toolkit-hierarchical-date-hook/tsconfig.*?.json"
+        ]
+      },
       "rules": {}
     },
     {
@@ -18,7 +30,12 @@
       "files": ["*.json"],
       "parser": "jsonc-eslint-parser",
       "rules": {
-        "@nx/dependency-checks": "error"
+        "@nx/dependency-checks": [
+          "error",
+          {
+            "ignoredFiles": ["{projectRoot}/rollup.config.{js,ts,mjs,mts}"]
+          }
+        ]
       }
     }
   ]
