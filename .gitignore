@@ -132,3 +132,5 @@ dist
 # project specific
 .reports
 .angular
+
+.nx/cache
