@@ -76,8 +76,5 @@ export function useAdjustUseQueryHookResultWithHierarchicalDateConverter<
   }
 
   // If there's no 'data', return the result as is
-  return result as UseQueryHookResult<
-    QueryDefinition<QueryArg, BaseQuery, string, ResultType, ReducerPath>,
-    R
-  >;
+  return result;
 }

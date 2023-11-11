@@ -2,13 +2,11 @@ import { Duration, parseJSON } from 'date-fns';
 
 type RecordWithDate = Record<string, string | Date | Duration | object>;
 
-const setterDayjs = <T extends RecordWithDate, K extends keyof T>(
-  obj: T,
-  prop: K,
-  val: T[K]
-): void => {
-  obj[prop] = val;
-};
+// Regular expression that matches ISO 8601 date strings
+const dateRegex: RegExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/;
+
+const durationRegex: RegExp =
+  /^P(?:(?<years>(0|[1-9]\d*))Y)?(?:(?<months>(0|[1-9]\d*))M)?(?:(?<weeks>(0|[1-9]\d*))W)?(?:(?<days>(0|[1-9]\d*))D)?(?:T(?:(?<hours>(0|[1-9]\d*))H)?(?:(?<minutes>(0|[1-9]\d*))M)?(?:(?<seconds>(0|[1-9]\d*))S)?)?$/;
 
 /**
  * Function to recursively traverse the object and convert date strings to Date and Duration objects in place.
@@ -16,64 +14,41 @@ const setterDayjs = <T extends RecordWithDate, K extends keyof T>(
  * @returns Void.
  */
 export function hierarchicalConvertToDateFns(obj: unknown): void {
-  // Regular expression that matches ISO 8601 date strings
-  const dateRegex: RegExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/;
+  if (typeof obj !== 'object') {
+    return;
+  }
 
-  const iso8602DurationExtractor: RegExp =
-    /^P(?:(?<years>(0|[1-9]\d*))Y)?(?:(?<months>(0|[1-9]\d*))M)?(?:(?<weeks>(0|[1-9]\d*))W)?(?:(?<days>(0|[1-9]\d*))D)?(?:T(?:(?<hours>(0|[1-9]\d*))H)?(?:(?<minutes>(0|[1-9]\d*))M)?(?:(?<seconds>(0|[1-9]\d*))S)?)?$/;
+  const o = obj as RecordWithDate;
 
-  if (typeof obj === 'object') {
-    const o = obj as RecordWithDate;
-
-    for (const key in o) {
-      if (!Object.prototype.hasOwnProperty.call(o, key)) {
-        continue;
-      }
-
-      const k = key as keyof typeof o;
-      const v = o[k];
-      if (typeof v === 'string') {
-        if (dateRegex.test(v)) {
-          // Convert string to Dayjs object if it matches the date regex
-          setterDayjs(o, k, parseJSON(v));
-        } else {
-          adjustToDuration(iso8602DurationExtractor, o, k, v);
-        }
-      } else if (typeof v === 'object') {
-        // Recurse into the object if it's not a string (could be an array or object)
-        hierarchicalConvertToDateFns(v);
-      }
-    }
-  } else if (Array.isArray(obj)) {
-    // Recurse into the array if it's an array
-    obj.forEach(hierarchicalConvertToDateFns);
-  } else if (typeof obj === 'string') {
-    if (dateRegex.test(obj)) {
-      obj = parseJSON(obj);
-      return;
+  for (const key in o) {
+    if (!Object.prototype.hasOwnProperty.call(o, key)) {
+      continue;
     }
 
-    const match = obj.match(iso8602DurationExtractor);
-    if (match) {
-      obj = convertToDuration(match);
+    const v = o[key];
+    if (typeof v === 'string') {
+      adjust(o, key, v);
+    } else if (typeof v === 'object') {
+      // Recurse into the object if it's not a string (could be an array or object)
+      hierarchicalConvertToDateFns(v);
     }
   }
 }
 
-function adjustToDuration(
-  iso8602DurationExtractor: RegExp,
-  o: RecordWithDate,
-  k: keyof typeof o,
-  v: string
-): void {
-  const match = v.match(iso8602DurationExtractor);
+function adjust(o: RecordWithDate, k: keyof typeof o, v: string): void {
+  if (dateRegex.test(v)) {
+    // Convert string to Dayjs object if it matches the date regex
+    o[k] = parseJSON(v);
+    return;
+  }
+
+  const match = durationRegex.exec(v);
   if (match) {
-    const duration = convertToDuration(match);
-    setterDayjs(o, k, duration);
+    o[k] = convertToDuration(match);
   }
 }
 
-function convertToDuration(match: RegExpMatchArray): Duration {
+function convertToDuration(match: RegExpExecArray): Duration {
   // Convert string to Duration object if it matches the duration regex
   const { years, months, weeks, days, hours, minutes, seconds } =
     match.groups as {
