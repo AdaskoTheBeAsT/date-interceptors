@@ -21,13 +21,7 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": [
-          "libs/hierarchical-convert-to-js-joda/**/*.ts",
-          "libs/hierarchical-convert-to-js-joda/package.json"
-        ]
-      }
+      "outputs": ["{options.outputFile}"]
     },
     "test": {
       "executor": "@nx/jest:jest",

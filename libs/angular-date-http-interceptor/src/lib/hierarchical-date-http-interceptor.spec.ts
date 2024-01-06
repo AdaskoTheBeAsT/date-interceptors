@@ -45,6 +45,7 @@ describe('HierarchicalDateHttpInterceptor', () => {
         key: 'value',
         date: new Date(Date.UTC(2023, 6, 22, 16, 8, 0, 0)),
       });
+
       done();
     });
 

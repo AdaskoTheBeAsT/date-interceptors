@@ -4,6 +4,13 @@
   "plugins": ["@nx"],
   "overrides": [
     {
+      "files": ["*.json"],
+      "parser": "jsonc-eslint-parser",
+      "rules": {
+        "@nx/dependency-checks": "error"
+      }
+    },
+    {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
       "rules": {
         "@nx/enforce-module-boundaries": [
@@ -32,11 +39,19 @@
       "rules": {}
     },
     {
+      "plugins": ["jest", "jest-formatting", "jest-async", "jest-dom"],
       "files": ["*.spec.ts", "*.spec.tsx", "*.spec.js", "*.spec.jsx"],
       "env": {
         "jest": true
       },
-      "rules": {}
+      "extends": [
+        "plugin:jest/style",
+        "plugin:jest-formatting/strict",
+        "plugin:jest-dom/recommended"
+      ],
+      "rules": {
+        "jest-async/expect-return": "error"
+      }
     }
   ]
 }

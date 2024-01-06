@@ -1,7 +1,7 @@
 type RecordWithDate = Record<string, Date | string | object>;
 
 // Regular expression that matches ISO 8601 date strings
-const dateRegex: RegExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/;
+const dateRegex: RegExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|([+-]\d{2}:\d{2}))?$/;
 
 /**
  * Function to recursively traverse the object and convert date strings to Date objects in place.

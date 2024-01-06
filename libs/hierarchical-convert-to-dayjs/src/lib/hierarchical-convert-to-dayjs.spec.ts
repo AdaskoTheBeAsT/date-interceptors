@@ -11,8 +11,10 @@ describe('hierarchicalConvertToDayjs', () => {
     ${{ someNewObj: { text: 'adam', date: '2023-07-17T23:06:00.000Z' } }}           | ${{ someNewObj: { text: 'adam', date: dayjs.utc('2023-07-17T23:06:00.000Z') } }}
     ${[{ date: '2023-07-17T23:06:00.000Z' }, { date: '2023-07-17T23:06:00.000Z' }]} | ${[{ date: dayjs.utc('2023-07-17T23:06:00.000Z') }, { date: dayjs.utc('2023-07-17T23:06:00.000Z') }]}
     ${['2023-07-17T23:06:00.000Z', '2023-07-17T23:06:00.000Z']}                     | ${[dayjs.utc('2023-07-17T23:06:00.000Z'), dayjs.utc('2023-07-17T23:06:00.000Z')]}
+    ${{ date: '2023-07-17T23:06:00.000+01:00' }}                                    | ${{ date: dayjs('2023-07-17T23:06:00.000+01:00') }}
   `('converts date $input expecting $expected', ({ input, expected }) => {
     hierarchicalConvertToDayjs(input);
+
     expect(input).toEqual(expected);
   });
 
@@ -26,6 +28,7 @@ describe('hierarchicalConvertToDayjs', () => {
     ${['P1Y2M4DT2H3M2S', 'P1Y2M4DT2H3M2S']}                             | ${[dayjs.duration({ years: 1, months: 2, weeks: 0, days: 4, hours: 2, minutes: 3, seconds: 2 }), dayjs.duration({ years: 1, months: 2, weeks: 0, days: 4, hours: 2, minutes: 3, seconds: 2 })]}
   `('converts duration $input expecting $expected', ({ input, expected }) => {
     hierarchicalConvertToDayjs(input);
+
     expect(input).toEqual(expected);
   });
 });

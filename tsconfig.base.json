@@ -18,6 +18,9 @@
       "@adaskothebeast/angular-date-http-interceptor": [
         "libs/angular-date-http-interceptor/src/index.ts"
       ],
+      "@adaskothebeast/axios-interceptor": [
+        "libs/axios-interceptor/src/index.ts"
+      ],
       "@adaskothebeast/hierarchical-convert-to-date": [
         "libs/hierarchical-convert-to-date/src/index.ts"
       ],

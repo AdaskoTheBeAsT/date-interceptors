@@ -337,33 +337,18 @@ This will initiate the fetch when your component mounts and dispatch either a su
 
 Please adjust the code according to your requirements and project structure.
 
-### Axios
+### Axios with AxiosInstanceManager
 
-To use the `hierarchicalConvertToDate` function when making requests with Axios, you can make use of Axios' response interceptors. These are functions that Axios will call after receiving a response, but before returning the response to your code.
+The AxiosInstanceManager class simplifies the process of using Axios with the `hierarchicalConvertToDate` function. By utilizing this class, you can easily create and use a centralized Axios instance with a response interceptor that automatically processes response data.
 
-Here is how you might create such an interceptor:
+Here's how to use AxiosInstanceManager:
 
 ```ts
-import axios from 'axios';
-
-// Adjust this import as needed - this will import adjustment function for pure js Date object
+import { AxiosInstanceManager } from '@adaskothebeast/axios-interceptor';
 import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
 
-// Create an instance of axios
-const instance = axios.create();
-
-// Add a response interceptor
-instance.interceptors.response.use((response) => {
-  // Any status code that lies within the range of 2xx cause this function to trigger
-  // Parse the dates in the response data
-  hierarchicalConvertToDate(response.data);
-  // Then return the response object
-  return response;
-}, (error) => {
-  // Any status codes that falls outside the range of 2xx cause this function to trigger
-  // You can handle the error here
-  return Promise.reject(error);
-});
+// Create an Axios instance using AxiosInstanceManager
+const instance = AxiosInstanceManager.createInstance(hierarchicalConvertToDate);
 
 async function fetchApiData() {
   try {
@@ -377,8 +362,9 @@ async function fetchApiData() {
 fetchApiData();
 ```
 
-In the code above, `instance.interceptors.response.use` is used to add a response interceptor to the Axios instance. This interceptor calls `hierarchicalConvertToDate` on `response.data` to convert any date strings into Date objects. The modified response is then returned.
+In the code above:
 
-The function `fetchApiData` uses the Axios instance to make a GET request, then logs the response data, which will have had date strings parsed into Date objects by the interceptor. If there's an error with the request, it's caught and logged.
+- The createInstance method of AxiosInstanceManager is used to create and configure an Axios instance. This instance is configured with a response interceptor that applies hierarchicalConvertToDate to response.data. This conversion function processes any date strings in the response data into JavaScript Date objects (or in case of other libs proper class for given date lib).
+- The fetchApiData function demonstrates using the configured Axios instance to make a GET request. The response data, with date strings already converted into Date (or in case of other libs proper class for given date lib) objects, is logged to the console. Errors from the request are caught and logged.
 
-Remember to adjust the code according to your project structure and requirements.
+This approach encapsulates the Axios configuration, making your code cleaner and more maintainable. Remember to adjust imports and function calls as per your project's file structure and requirements.

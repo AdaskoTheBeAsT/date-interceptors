@@ -1,0 +1,18 @@
+{
+  "name": "@adaskothebeast/axios-interceptor",
+  "version": "3.0.0",
+  "license": "MIT",
+  "author": "Adam Pluciński <adaskothebeast@gmail.com> (https://github.com/adaskothebeast)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AdaskoTheBeAsT/date-interceptors.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AdaskoTheBeAsT/date-interceptors/issues"
+  },
+  "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors",
+  "peerDependencies": {
+    "axios": "1.6.5",
+    "tslib": "^2.6.2"
+  }
+}

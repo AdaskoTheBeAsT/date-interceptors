@@ -31,14 +31,7 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": [
-          "libs/angular-date-http-interceptor/**/*.ts",
-          "libs/angular-date-http-interceptor/**/*.html",
-          "libs/angular-date-http-interceptor/package.json"
-        ]
-      }
+      "outputs": ["{options.outputFile}"]
     }
   }
 }
