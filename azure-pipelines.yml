@@ -79,11 +79,13 @@ steps:
         yarn lint:all
       failOnStderr: false
 
-  - task: SonarQubeAnalyze@5
-
-  - task: SonarQubePublish@5
+  - task: SonarCloudAnalyze@1
     inputs:
-      pollingTimeoutSec: "300"
+      jdkversion: 'JAVA_HOME_17_X64'
+
+  - task: SonarCloudPublish@1
+    inputs:
+      pollingTimeoutSec: '300'
 
   - task: PublishTestResults@2
     displayName: "Publish test results"
