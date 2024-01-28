@@ -1,1 +1,10 @@
 node_modules
+.eslintrc.json
+jest.config.ts
+ng-package.json
+package.json
+project.json
+tsconfig.json
+tsconfig.lib.json
+tsconfig.lib.prod.json
+tsconfig.spec.json
