@@ -1,7 +1,7 @@
 {
   "root": true,
   "ignorePatterns": ["**/*"],
-  "plugins": ["@nx"],
+  "plugins": ["@nx", "import", "jsx-a11y", "react", "react-hooks"],
   "overrides": [
     {
       "files": ["*.json"],
@@ -12,6 +12,14 @@
     },
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
+      "extends": [
+        "plugin:react/recommended",
+        "plugin:jsx-a11y/recommended",
+        //"plugin:import/errors",
+        //"plugin:import/warnings",
+        "plugin:react-hooks/recommended"
+        //"plugin:import/typescript"
+      ],
       "rules": {
         "@nx/enforce-module-boundaries": [
           "error",
@@ -26,6 +34,12 @@
             ]
           }
         ]
+      },
+      "settings": {
+        "import/resolver": {
+          "typescript": true,
+          "node": true
+        }
       }
     },
     {

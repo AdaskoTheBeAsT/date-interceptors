@@ -91,7 +91,7 @@ steps:
     displayName: 'Publish test results'
     inputs:
       testResultsFormat: 'JUnit'
-      testResultsFiles: '.reports/libs/angular-date-http-interceptor/frontend-test.report.junit.xml,.reports/libs/axios-interceptor/frontend-test.report.junit.xml,.reports/libs/hierarchical-convert-to-date/frontend-test.report.junit.xml,.reports/libs/hierarchical-convert-to-date-fns/frontend-test.report.junit.xml,.reports/libs/hierarchical-convert-to-dayjs/frontend-test.report.junit.xml,.reports/libs/hierarchical-convert-to-js-joda/frontend-test.report.junit.xml,.reports/libs/hierarchical-convert-to-luxon/frontend-test.report.junit.xml,.reports/libs/hierarchical-convert-to-moment/frontend-test.report.junit.xml,.reports/libs/react-redux-toolkit-hierarchical-date-hook/frontend-test.report.junit.xml'
+      testResultsFiles: '.reports/libs/angular-date-http-interceptor/frontend-test.junit.xml,.reports/libs/axios-interceptor/frontend-test.junit.xml,.reports/libs/hierarchical-convert-to-date/frontend-test.junit.xml,.reports/libs/hierarchical-convert-to-date-fns/frontend-test.junit.xml,.reports/libs/hierarchical-convert-to-dayjs/frontend-test.junit.xml,.reports/libs/hierarchical-convert-to-js-joda/frontend-test.junit.xml,.reports/libs/hierarchical-convert-to-luxon/frontend-test.junit.xml,.reports/libs/hierarchical-convert-to-moment/frontend-test.junit.xml,.reports/libs/react-redux-toolkit-hierarchical-date-hook/frontend-test.junit.xml'
 
   - task: reportgenerator@5
     inputs:
