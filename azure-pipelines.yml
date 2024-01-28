@@ -101,3 +101,75 @@ steps:
   - task: PublishCodeCoverageResults@2
     inputs:
       summaryFileLocation: '.reports/libs/**/coverage/cobertura-coverage.xml'
+
+  - task: Npm@1
+    displayName: 'Publish angular-date-http-interceptor'
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+    inputs:
+      command: 'publish'
+      workingDir: 'dist/libs/angular-date-http-interceptor'
+      publishEndpoint: 'NPMPublish'
+
+  - task: Npm@1
+    displayName: 'Publish axios-interceptor'
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+    inputs:
+      command: 'publish'
+      workingDir: 'dist/libs/axios-interceptor'
+      publishEndpoint: 'NPMPublish'
+
+  - task: Npm@1
+    displayName: 'Publish hierarchical-convert-to-date'
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+    inputs:
+      command: 'publish'
+      workingDir: 'dist/libs/hierarchical-convert-to-date'
+      publishEndpoint: 'NPMPublish'
+
+  - task: Npm@1
+    displayName: 'Publish hierarchical-convert-to-date-fns'
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+    inputs:
+      command: 'publish'
+      workingDir: 'dist/libs/hierarchical-convert-to-date-fns'
+      publishEndpoint: 'NPMPublish'
+
+  - task: Npm@1
+    displayName: 'Publish hierarchical-convert-to-dayjs'
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+    inputs:
+      command: 'publish'
+      workingDir: 'dist/libs/hierarchical-convert-to-dayjs'
+      publishEndpoint: 'NPMPublish'
+
+  - task: Npm@1
+    displayName: 'Publish hierarchical-convert-to-js-joda'
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+    inputs:
+      command: 'publish'
+      workingDir: 'dist/libs/hierarchical-convert-to-js-joda'
+      publishEndpoint: 'NPMPublish'
+
+  - task: Npm@1
+    displayName: 'Publish hierarchical-convert-to-luxon'
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+    inputs:
+      command: 'publish'
+      workingDir: 'dist/libs/hierarchical-convert-to-luxon'
+      publishEndpoint: 'NPMPublish'
+
+  - task: Npm@1
+    displayName: 'Publish hierarchical-convert-to-moment'
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+    inputs:
+      command: 'publish'
+      workingDir: 'dist/libs/hierarchical-convert-to-moment'
+      publishEndpoint: 'NPMPublish'
+
+  - task: Npm@1
+    displayName: 'Publish react-redux-toolkit-hierarchical-date-hook'
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+    inputs:
+      command: 'publish'
+      workingDir: 'dist/libs/react-redux-toolkit-hierarchical-date-hook'
+      publishEndpoint: 'NPMPublish'
