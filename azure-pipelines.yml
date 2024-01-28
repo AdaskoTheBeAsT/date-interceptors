@@ -1,5 +1,5 @@
 trigger:
-  - master
+  - main
   - refs/tags/v*
 
 pool:
@@ -35,7 +35,7 @@ steps:
       scannerMode: 'CLI'
       projectKey: 'AdaskoTheBeAsT_date-interceptors'
       cliProjectKey: 'AdaskoTheBeAsT_date-interceptors'
-      cliSources: "libs/**/src/"
+      cliSources: 'libs/**/src/'
       extraProperties: |
         sonar.tests=libs/**/src/
         sonar.test.inclusions=**/*.spec.ts,**/*.spec.tsx,**/*.spec.js,**/*.spec.jsx,**/*.test.ts,**/*.test.tsx,**/*.test.js,**/*.test.jsx
@@ -48,16 +48,16 @@ steps:
       # sonar.css.stylelint.reportPaths=.reports/libs/**/stylelint.json
 
   - task: Bash@3
-    displayName: "yarn build:all"
+    displayName: 'yarn build:all'
     inputs:
-      targetType: "inline"
+      targetType: 'inline'
       script: |
         yarn build:all
 
   - task: Bash@3
-    displayName: "yarn test:all"
+    displayName: 'yarn test:all'
     inputs:
-      targetType: "inline"
+      targetType: 'inline'
       script: |
         yarn test:all
 
@@ -71,10 +71,10 @@ steps:
   #     failOnStderr: false
 
   - task: Bash@3
-    displayName: "yarn lint:all"
+    displayName: 'yarn lint:all'
     continueOnError: true
     inputs:
-      targetType: "inline"
+      targetType: 'inline'
       script: |
         yarn lint:all
       failOnStderr: false
@@ -88,17 +88,16 @@ steps:
       pollingTimeoutSec: '300'
 
   - task: PublishTestResults@2
-    displayName: "Publish test results"
+    displayName: 'Publish test results'
     inputs:
-      testResultsFormat: "JUnit"
-      testResultsFiles: ".reports/libs/**/*.report.junit.xml"
+      testResultsFormat: 'JUnit'
+      testResultsFiles: '.reports/libs/**/*.report.junit.xml'
 
   - task: reportgenerator@5
     inputs:
-      reports: ".reports/libs/**/coverage/cobertura-coverage.xml"
-      targetdir: ".reports/libs/**/coverage/coverage"
+      reports: '.reports/libs/**/coverage/cobertura-coverage.xml'
+      targetdir: '.reports/libs/**/coverage/coverage'
 
   - task: PublishCodeCoverageResults@2
     inputs:
-      summaryFileLocation: ".reports/libs/**/coverage/cobertura-coverage.xml"
-
+      summaryFileLocation: '.reports/libs/**/coverage/cobertura-coverage.xml'
