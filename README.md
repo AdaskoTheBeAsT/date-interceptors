@@ -4,6 +4,28 @@
 
 Dates in JSON are usually serialized as strings. This library helps to convert them to Date objects. It also helps to convert duration strings to Duration objects.
 
+## Badges
+
+[![CodeFactor](https://www.codefactor.io/repository/github/adaskothebeast/date-interceptors/badge)](https://www.codefactor.io/repository/github/adaskothebeast/date-interceptors)
+[![Build Status](https://img.shields.io/azure-devops/build/AdaskoTheBeAsT/date-interceptors/23)](https://img.shields.io/azure-devops/build/AdaskoTheBeAsT/date-interceptors/23)
+![Azure DevOps tests](https://img.shields.io/azure-devops/tests/AdaskoTheBeAsT/date-interceptors/23)
+![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/AdaskoTheBeAsT/date-interceptors/23?style=plastic)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=AdaskoTheBeAsT_date-interceptors&metric=alert_status)](https://sonarcloud.io/dashboard?id=AdaskoTheBeAsT_date-interceptors)
+![Sonar Tests](https://img.shields.io/sonar/tests/AdaskoTheBeAsT_date-interceptors?server=https%3A%2F%2Fsonarcloud.io)
+![Sonar Test Count](https://img.shields.io/sonar/total_tests/AdaskoTheBeAsT_date-interceptors?server=https%3A%2F%2Fsonarcloud.io)
+![Sonar Test Execution Time](https://img.shields.io/sonar/test_execution_time/AdaskoTheBeAsT_date-interceptors?server=https%3A%2F%2Fsonarcloud.io)
+![Sonar Coverage](https://img.shields.io/sonar/coverage/AdaskoTheBeAsT_date-interceptors?server=https%3A%2F%2Fsonarcloud.io&style=plastic)
+![NPM Downloads @adaskothebeast/angular-date-http-interceptor](https://img.shields.io/npm/dt/%40adaskothebeast%2Fangular-date-http-interceptor?label=download%20%40adaskothebeast%2Fangular-date-http-interceptor)
+![NPM Downloads @adaskothebeast/axios-interceptor](https://img.shields.io/npm/dt/%40adaskothebeast%2Faxios-interceptor?label=download%20%40adaskothebeast%2Faxios-interceptor)
+![NPM Downloads @adaskothebeast/hierarchical-convert-to-date](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-date?label=download%20%40adaskothebeast%2Fhierarchical-convert-to-date)
+![NPM Downloads @adaskothebeast/hierarchical-convert-to-date-fns](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-date-fns?label=download%20%40adaskothebeast%2Fhierarchical-convert-to-date-fns)
+![NPM Downloads @adaskothebeast/hierarchical-convert-to-dayjs](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-dayjs?label=download%20%40adaskothebeast%2Fhierarchical-convert-to-dayjs)
+![NPM Downloads @adaskothebeast/hierarchical-convert-to-js-joda](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-js-joda?label=download%20%40adaskothebeast%2Fhierarchical-convert-to-js-joda)
+![NPM Downloads @adaskothebeast/hierarchical-convert-to-luxon](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-luxon?label=download%20%40adaskothebeast%2Fhierarchical-convert-to-luxon)
+![NPM Downloads @adaskothebeast/hierarchical-convert-to-moment](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-moment?label=download%20%40adaskothebeast%2Fhierarchical-convert-to-moment)
+![NPM Downloads @adaskothebeast/react-redux-toolkit-hierarchical-date-hook](https://img.shields.io/npm/dt/%40adaskothebeast%2Freact-redux-toolkit-hierarchical-date-hook?label=download%20%40adaskothebeast%2Freact-redux-toolkit-hierarchical-date-hook)
+
+
 ## Which libraries are supported?
 
 Helpers are prepared for following libraries:
