@@ -50,7 +50,7 @@
     "lint:ci:moment": "nx run hierarchical-convert-to-moment:lint --outputFile=.reports/libs/hierarchical-convert-to-moment/eslint.json --format=json",
     "lint:ci:angular": "nx run angular-date-http-interceptor:lint --outputFile=.reports/libs/angular-date-http-interceptor/eslint.json --format=json",
     "lint:ci:axios": "nx run axios-interceptor:lint --outputFile=.reports/libs/axios-interceptor/eslint.json --format=json",
-    "lint:ci:redux-toolkit": "nx run react-redux-toolkit-hierarchical-date-hook:lint --outputFile=.reports/libs/ct-redux-toolkit-hierarchical-date-hook/eslint.json --format=json",
+    "lint:ci:redux-toolkit": "nx run react-redux-toolkit-hierarchical-date-hook:lint --outputFile=.reports/libs/react-redux-toolkit-hierarchical-date-hook/eslint.json --format=json",
     "lint:ci:all": "yarn lint:ci:date && yarn lint:ci:date-fns && yarn lint:ci:dayjs && yarn lint:ci:js-joda && yarn lint:ci:luxon && yarn lint:ci:moment && yarn lint:ci:angular && yarn lint:ci:axios && yarn lint:ci:redux-toolkit",
     "browserlist:update": "npx update-browserslist-db@latest"
   },
