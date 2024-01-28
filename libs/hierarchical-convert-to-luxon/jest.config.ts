@@ -52,6 +52,8 @@ export default {
       {
         outputDirectory: reportPath,
         outputName: 'frontend-test.sonar.xml',
+        reportedFilePath: 'relative',
+        relativeRootDir: './',
       },
     ],
     [
