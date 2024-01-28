@@ -12,7 +12,7 @@
   },
   "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors",
   "peerDependencies": {
-    "axios": "1.6.5",
+    "axios": "1.6.7",
     "tslib": "^2.6.2"
   }
 }

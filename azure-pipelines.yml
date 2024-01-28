@@ -33,7 +33,7 @@ steps:
       SonarCloud: 'SonarCloud'
       organization: 'adaskothebeast-github'
       scannerMode: 'CLI'
-      projectKey: 'AdaskoTheBeAsT_date-interceptors'
+      configMode: 'manual'
       cliProjectKey: 'AdaskoTheBeAsT_date-interceptors'
       cliSources: 'libs/**/src/'
       extraProperties: |
