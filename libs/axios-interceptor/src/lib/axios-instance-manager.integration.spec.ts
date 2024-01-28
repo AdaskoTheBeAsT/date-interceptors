@@ -59,6 +59,8 @@ describe('AxiosInstanceManager integration', () => {
     const response = await instance.get('/test');
 
     expect(response.data.date).toBeInstanceOf(DateTime);
-    expect(response.data.date.toISO()).toEqual(responseData.date);
+    expect(new Date(response.data.date.toISO())).toEqual(
+      new Date(responseData.date),
+    );
   });
 });
