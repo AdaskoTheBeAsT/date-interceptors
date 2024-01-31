@@ -91,7 +91,7 @@ steps:
     displayName: 'Publish test results'
     inputs:
       testResultsFormat: 'JUnit'
-      testResultsFiles: '.reports/libs/**/frontend-test.junit.xml'
+      testResultsFiles: '.reports/libs/**/test-report.junit.xml'
 
   - task: reportgenerator@5
     inputs:
