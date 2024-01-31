@@ -1,5 +1,6 @@
 /* eslint-disable */
 const reportPath = '.reports/libs/react-redux-toolkit-hierarchical-date-hook/';
+const reportName = 'test-report';
 
 export default {
   displayName: 'react-redux-toolkit-hierarchical-date-hook',
@@ -22,8 +23,8 @@ export default {
         reportTitle: 'Frontend test',
         additionalResultsProcessors: [],
         coverageLink: 'coverage/index.html',
-        resultJson: 'frontend.stare.json',
-        resultHtml: 'frontend.stare.html',
+        resultJson: `${reportName}.stare.json`,
+        resultHtml: `${reportName}.stare.html`,
         report: true,
         reportSummary: true,
       },
@@ -32,7 +33,7 @@ export default {
       'jest-html-reporters',
       {
         publicPath: reportPath,
-        filename: 'frontend-test-report.html',
+        filename: `${reportName}.html`,
         pageTitle: 'Frontend test',
         expand: true,
       },
@@ -41,9 +42,9 @@ export default {
       'jest-xunit',
       {
         outputPath: reportPath,
-        filename: 'frontend-test-report.xunit.xml',
+        filename: `${reportName}.xunit.xml`,
         traitsRegex: [
-          { regex: /\(Test Type:([^,)]+)(,|\)).*/g, name: 'Category' },
+          { regex: /\(Test Type:([^,)]+)[,)].*/g, name: 'Category' },
           { regex: /.*Test Traits: ([^)]+)\).*/g, name: 'Type' },
         ],
       },
@@ -52,7 +53,7 @@ export default {
       'jest-sonar',
       {
         outputDirectory: reportPath,
-        outputName: 'frontend-test.sonar.xml',
+        outputName: `${reportName}.sonar.xml`,
         reportedFilePath: 'relative',
         relativeRootDir: './',
       },
@@ -60,14 +61,14 @@ export default {
     [
       'jest-trx-results-processor',
       {
-        outputFile: `${reportPath}frontend-test.trx`,
+        outputFile: `${reportPath}${reportName}.trx`,
       },
     ],
     [
       'jest-junit',
       {
         outputDirectory: reportPath,
-        outputName: 'frontend-test.junit.xml',
+        outputName: `${reportName}.junit.xml`,
       },
     ],
   ],
