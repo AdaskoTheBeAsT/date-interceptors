@@ -40,7 +40,9 @@ describe('useGenericFunction', () => {
       requestId: '',
       abort: jest.fn(),
       unsubscribe: jest.fn(),
-      promise: new Promise((resolve, reject) => {}),
+      promise: new Promise((resolve, reject) => {
+        // noop
+      }),
     });
 
     const initialResult = {
@@ -75,8 +77,8 @@ describe('useGenericFunction', () => {
     const { result } = renderHook(() =>
       useAdjustUseQueryHookResultWithHierarchicalDateConverter(
         useQueryFunctionMock(),
-        hierarchicalConvertToDate
-      )
+        hierarchicalConvertToDate,
+      ),
     );
 
     // Assert

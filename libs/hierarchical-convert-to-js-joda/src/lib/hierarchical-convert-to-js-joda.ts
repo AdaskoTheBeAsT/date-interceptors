@@ -4,7 +4,8 @@ require('@js-joda/timezone');
 type RecordWithDate = Record<string, string | ZonedDateTime | object>;
 
 // Regular expression that matches ISO 8601 date strings
-const dateRegex: RegExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|([+-]\d{2}:\d{2}))?$/;
+const dateRegex =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|([+-]\d{2}:\d{2}))?$/;
 
 /**
  * Function to recursively traverse the object and convert date strings to ZonedDateTime objects in place.

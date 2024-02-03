@@ -3,10 +3,10 @@ import { Duration, parseJSON } from 'date-fns';
 type RecordWithDate = Record<string, string | Date | Duration | object>;
 
 // Regular expression that matches ISO 8601 date strings
-const dateRegex: RegExp =
+const dateRegex =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|([+-]\d{2}:\d{2}))?$/;
 
-const durationRegex: RegExp =
+const durationRegex =
   /^P(?:(?<years>(0|[1-9]\d*))Y)?(?:(?<months>(0|[1-9]\d*))M)?(?:(?<weeks>(0|[1-9]\d*))W)?(?:(?<days>(0|[1-9]\d*))D)?(?:T(?:(?<hours>(0|[1-9]\d*))H)?(?:(?<minutes>(0|[1-9]\d*))M)?(?:(?<seconds>(0|[1-9]\d*))S)?)?$/; // NOSONAR
 
 /**
