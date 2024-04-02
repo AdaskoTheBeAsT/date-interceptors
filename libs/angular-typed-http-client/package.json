@@ -1,0 +1,12 @@
+{
+  "name": "@adaskothebeast/angular-typed-http-client",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/common": "^17.2.0",
+    "@angular/core": "^17.2.0"
+  },
+  "dependencies": {
+    "tslib": "^2.6.2"
+  },
+  "sideEffects": false
+}

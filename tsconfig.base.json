@@ -15,8 +15,14 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@adaskothebeast/angular-class-transformer-http-interceptor": [
+        "libs/angular-class-transformer-http-interceptor/src/index.ts"
+      ],
       "@adaskothebeast/angular-date-http-interceptor": [
         "libs/angular-date-http-interceptor/src/index.ts"
+      ],
+      "@adaskothebeast/angular-typed-http-client": [
+        "libs/angular-typed-http-client/src/index.ts"
       ],
       "@adaskothebeast/axios-interceptor": [
         "libs/axios-interceptor/src/index.ts"

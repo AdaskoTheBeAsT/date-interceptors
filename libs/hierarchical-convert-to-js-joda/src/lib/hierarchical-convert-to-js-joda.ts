@@ -36,7 +36,7 @@ export function hierarchicalConvertToJsJoda(obj: unknown): void {
 
 function adjust(o: RecordWithDate, k: keyof typeof o, v: string): void {
   if (dateRegex.test(v)) {
-    // Convert string to Dayjs object if it matches the date regex
+    // Convert string to ZonedDateTime object if it matches the date regex
     o[k] = ZonedDateTime.parse(v);
   }
 }
