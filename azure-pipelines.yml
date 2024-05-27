@@ -111,6 +111,14 @@ steps:
       publishEndpoint: 'NPMPublish'
 
   - task: Npm@1
+    displayName: 'Publish angular-typed-http-client'
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+    inputs:
+      command: 'publish'
+      workingDir: 'dist/libs/angular-typed-http-client'
+      publishEndpoint: 'NPMPublish'
+
+  - task: Npm@1
     displayName: 'Publish axios-interceptor'
     condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
     inputs:

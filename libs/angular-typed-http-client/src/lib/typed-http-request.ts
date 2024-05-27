@@ -1,9 +1,4 @@
-import {
-  HttpContext,
-  HttpHeaders,
-  HttpParams,
-  HttpRequest,
-} from '@angular/common/http';
+import { HttpContext, HttpHeaders, HttpParams, HttpRequest } from '@angular/common/http';
 
 export class TypedHttpRequest<T, K> extends HttpRequest<unknown> {
   responseTypeClass?: new (...args: unknown[]) => K;

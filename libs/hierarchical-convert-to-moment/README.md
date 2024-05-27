@@ -2,7 +2,44 @@
 
 ## What problem does this set of libraries solve?
 
-Dates in JSON are usually serialized as strings. This library helps to convert them to Date objects. It also helps to convert duration strings to Duration objects.
+Working with dates and durations in JSON can be cumbersome and error-prone due to the lack of a standard format for date-time serialization. JSON, by its nature, does not have a specific data type for dates or durations. As a result, dates are usually serialized as strings, which then require additional parsing to be used as date objects in your application. This can lead to various issues, such as incorrect time zone conversions, invalid date formats, and the cumbersome handling of duration calculations.
+
+This library addresses these challenges by providing a robust solution for converting date and duration strings from JSON payloads into native Date objects and Duration objects, respectively. By doing so, it enables developers to work with date and duration data more naturally and efficiently in their applications, without having to deal with the intricacies of manual string parsing and conversion. This conversion is not just limited to top-level fields; this library is designed to walk through deep object compositions and arrays, ensuring that every date and duration string, no matter where it is nested within your data structure, is converted accurately.
+
+### Key Features
+
+- **Deep Object and Array Traversal**: This library is capable of navigating through complex data structures, converting every date and duration string found in objects and arrays. This feature is particularly useful for applications dealing with deeply nested JSON data, where manual conversion would be tedious and error-prone.
+- **Automatic Conversion**: Automatically converts date strings from JSON into JavaScript Date objects, making it easier to work with dates without manual parsing.
+- **Duration Handling**: Converts duration strings into Duration objects, allowing for straightforward duration calculations and manipulations.
+- **Time Zone Awareness**: Ensures that date conversions take into account time zone differences, preventing common errors related to time zone handling.
+- **Flexible Format Support**: Supports multiple date and duration string formats, providing flexibility to work with various JSON structures and conventions.
+- **Easy Integration**: Designed to be easily integrated into any JavaScript or TypeScript project, enhancing date and duration handling with minimal setup.
+
+## Value for Developers
+
+This library significantly simplifies the handling of dates and durations in JavaScript applications, especially those that consume JSON data from APIs or external sources. By abstracting away the complexity of parsing and converting date and duration strings, it allows developers to focus on the core logic of their applications, leading to cleaner, more maintainable code. Additionally, the library's support for various formats and time zones ensures that it can be used in a wide range of applications, from simple projects to complex, data-intensive applications.
+
+## Badges
+
+[![CodeFactor](https://www.codefactor.io/repository/github/adaskothebeast/date-interceptors/badge)](https://www.codefactor.io/repository/github/adaskothebeast/date-interceptors)
+[![Build Status](https://img.shields.io/azure-devops/build/AdaskoTheBeAsT/date-interceptors/23)](https://img.shields.io/azure-devops/build/AdaskoTheBeAsT/date-interceptors/23)
+![Azure DevOps tests](https://img.shields.io/azure-devops/tests/AdaskoTheBeAsT/date-interceptors/23)
+![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/AdaskoTheBeAsT/date-interceptors/23?style=plastic)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=AdaskoTheBeAsT_date-interceptors&metric=alert_status)](https://sonarcloud.io/dashboard?id=AdaskoTheBeAsT_date-interceptors)
+![Sonar Tests](https://img.shields.io/sonar/tests/AdaskoTheBeAsT_date-interceptors?server=https%3A%2F%2Fsonarcloud.io)
+![Sonar Test Count](https://img.shields.io/sonar/total_tests/AdaskoTheBeAsT_date-interceptors?server=https%3A%2F%2Fsonarcloud.io)
+![Sonar Test Execution Time](https://img.shields.io/sonar/test_execution_time/AdaskoTheBeAsT_date-interceptors?server=https%3A%2F%2Fsonarcloud.io)
+![Sonar Coverage](https://img.shields.io/sonar/coverage/AdaskoTheBeAsT_date-interceptors?server=https%3A%2F%2Fsonarcloud.io&style=plastic)
+![NPM Downloads @adaskothebeast/angular-date-http-interceptor](https://img.shields.io/npm/dt/%40adaskothebeast%2Fangular-date-http-interceptor?label=NPM%20downloads%20%40adaskothebeast%2Fangular-date-http-interceptor)
+![NPM Downloads @adaskothebeast/axios-interceptor](https://img.shields.io/npm/dt/%40adaskothebeast%2Faxios-interceptor?label=NPM%20downloads%20%40adaskothebeast%2Faxios-interceptor)
+![NPM Downloads @adaskothebeast/hierarchical-convert-to-date](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-date?label=NPM%20downloads%20%40adaskothebeast%2Fhierarchical-convert-to-date)
+![NPM Downloads @adaskothebeast/hierarchical-convert-to-date-fns](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-date-fns?label=NPM%20downloads%20%40adaskothebeast%2Fhierarchical-convert-to-date-fns)
+![NPM Downloads @adaskothebeast/hierarchical-convert-to-dayjs](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-dayjs?label=NPM%20downloads%20%40adaskothebeast%2Fhierarchical-convert-to-dayjs)
+![NPM Downloads @adaskothebeast/hierarchical-convert-to-js-joda](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-js-joda?label=NPM%20downloads%20%40adaskothebeast%2Fhierarchical-convert-to-js-joda)
+![NPM Downloads @adaskothebeast/hierarchical-convert-to-luxon](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-luxon?label=NPM%20downloads%20%40adaskothebeast%2Fhierarchical-convert-to-luxon)
+![NPM Downloads @adaskothebeast/hierarchical-convert-to-moment](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-moment?label=NPM%20downloads%20%40adaskothebeast%2Fhierarchical-convert-to-moment)
+![NPM Downloads @adaskothebeast/react-redux-toolkit-hierarchical-date-hook](https://img.shields.io/npm/dt/%40adaskothebeast%2Freact-redux-toolkit-hierarchical-date-hook?label=NPM%20downloads%20%40adaskothebeast%2Freact-redux-toolkit-hierarchical-date-hook)
+
 
 ## Which libraries are supported?
 

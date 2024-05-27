@@ -10,7 +10,12 @@
     },
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
-      "extends": ["plugin:@nx/react"],
+      "extends": [
+        "plugin:@nx/react",
+        "plugin:react/recommended",
+        "plugin:jsx-a11y/recommended",
+        "plugin:react-hooks/recommended"
+      ],
       "parserOptions": {
         "project": [
           "libs/react-redux-toolkit-hierarchical-date-hook/tsconfig.*?.json"
