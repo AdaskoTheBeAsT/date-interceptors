@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/axios-interceptor",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "license": "MIT",
   "author": "Adam Pluciński <adaskothebeast@gmail.com> (https://github.com/adaskothebeast)",
   "repository": {
@@ -12,7 +12,7 @@
   },
   "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors",
   "peerDependencies": {
-    "axios": "1.6.7",
+    "axios": "1.7.2",
     "tslib": "^2.6.2"
   }
 }
