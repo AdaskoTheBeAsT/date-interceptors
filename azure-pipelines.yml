@@ -98,9 +98,16 @@ steps:
       reports: '.reports/libs/**/coverage/cobertura-coverage.xml'
       targetdir: '.reports/libs/**/coverage/coverage'
 
-  - task: PublishCodeCoverageResults@2
+  - task: reportgenerator@5
     inputs:
+      reports: '.reports/libs/**/coverage/coverage.cobertura.xml'
+      targetdir: '.reports/coverage'
+
+  - task: PublishCodeCoverageResults@1
+    inputs:
+      codeCoverageTool: 'Cobertura'
       summaryFileLocation: '.reports/libs/**/coverage/cobertura-coverage.xml'
+      reportDirectory: '.reports/coverage'
 
   - task: Npm@1
     displayName: 'Publish angular-date-http-interceptor'
