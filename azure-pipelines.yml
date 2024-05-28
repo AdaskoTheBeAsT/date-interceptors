@@ -94,20 +94,22 @@ steps:
       testResultsFiles: '.reports/libs/**/test-report.junit.xml'
 
   - task: reportgenerator@5
+    displayName: 'Convert multiple coverage reports to Cobertura format'
     inputs:
       reports: '.reports/libs/**/coverage/cobertura-coverage.xml'
-      targetdir: '.reports/libs/**/coverage/coverage'
+      targetdir: '.reports/combined'
+      reporttypes: 'Cobertura'
 
   - task: reportgenerator@5
     inputs:
-      reports: '.reports/libs/**/coverage/coverage.cobertura.xml'
-      targetdir: '.reports/coverage'
+      reports: '.reports/combined/Cobertura.xml'
+      targetdir: '.reports/combined/coverage'
 
   - task: PublishCodeCoverageResults@1
     inputs:
       codeCoverageTool: 'Cobertura'
-      summaryFileLocation: '.reports/libs/**/coverage/cobertura-coverage.xml'
-      reportDirectory: '.reports/coverage'
+      summaryFileLocation: '.reports/combined/Cobertura.xml'
+      reportDirectory: '.reports/combined/coverage'
 
   - task: Npm@1
     displayName: 'Publish angular-date-http-interceptor'
