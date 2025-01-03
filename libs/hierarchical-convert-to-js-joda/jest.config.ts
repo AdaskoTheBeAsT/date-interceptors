@@ -1,4 +1,3 @@
-/* eslint-disable */
 const reportPath = '.reports/libs/hierarchical-convert-to-js-joda/';
 const reportName = 'test-report';
 

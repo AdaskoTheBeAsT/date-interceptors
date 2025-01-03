@@ -1,4 +1,3 @@
-/* eslint-disable */
 const reportPath = '.reports/libs/hierarchical-convert-to-date/';
 const reportName = 'test-report';
 

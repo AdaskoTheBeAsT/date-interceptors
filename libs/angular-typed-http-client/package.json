@@ -1,12 +1,12 @@
 {
   "name": "@adaskothebeast/angular-typed-http-client",
-  "version": "4.0.1",
+  "version": "5.0.0",
   "peerDependencies": {
-    "@angular/common": "^18.0.0",
-    "@angular/core": "^18.0.0"
+    "@angular/common": "^19.0.5",
+    "@angular/core": "^19.0.5",
+    "class-transformer": "^0.5.1",
+    "rxjs": "~7.8.1"
   },
-  "dependencies": {
-    "tslib": "^2.6.2"
-  },
+  "dependencies": {},
   "sideEffects": false
 }

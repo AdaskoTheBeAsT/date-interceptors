@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-to-luxon",
-  "version": "4.0.1",
+  "version": "5.0.0",
   "license": "MIT",
   "author": "Adam Pluciński <adaskothebeast@gmail.com> (https://github.com/adaskothebeast)",
   "repository": {
@@ -12,7 +12,7 @@
   },
   "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors",
   "peerDependencies": {
-    "luxon": "^3.4.4",
-    "tslib": "^2.6.2"
+    "luxon": "^3.5.0",
+    "tslib": "^2.8.1"
   }
 }

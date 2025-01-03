@@ -1,4 +1,3 @@
-/* eslint-disable */
 const reportPath = '.reports/libs/angular-date-http-interceptor/';
 const reportName = 'test-report';
 

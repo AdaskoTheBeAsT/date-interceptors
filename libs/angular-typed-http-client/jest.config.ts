@@ -1,4 +1,3 @@
-/* eslint-disable */
 const reportPath = '.reports/libs/angular-typed-http-client/';
 const reportName = 'test-report';
 

@@ -1,4 +1,3 @@
-/* eslint-disable */
 const reportPath = '.reports/libs/hierarchical-convert-to-luxon/';
 const reportName = 'test-report';
 

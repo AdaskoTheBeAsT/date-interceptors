@@ -1,6 +1,6 @@
 {
-  "name": "@adaskothebeast/hierarchical-convert-to-date",
   "$schema": "node_modules/nx/schemas/project-schema.json",
+  "name": "@adaskothebeast/hierarchical-convert-to-date",
   "targets": {
     "local-registry": {
       "executor": "@nx/js:verdaccio",

@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/react-redux-toolkit-hierarchical-date-hook",
-  "version": "4.0.1",
+  "version": "5.0.0",
   "license": "MIT",
   "author": "Adam Pluciński <adaskothebeast@gmail.com> (https://github.com/adaskothebeast)",
   "repository": {
@@ -12,7 +12,6 @@
   },
   "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors",
   "peerDependencies": {
-    "@reduxjs/toolkit": "^2.2.5",
     "jest-environment-jsdom": "*"
   },
   "sideEffects": false

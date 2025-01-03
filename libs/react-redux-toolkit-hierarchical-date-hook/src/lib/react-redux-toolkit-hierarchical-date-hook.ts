@@ -1,9 +1,19 @@
-import { UseQueryHookResult } from '@reduxjs/toolkit/dist/query/react/buildHooks';
-import {
-  BaseQueryFn,
-  QueryDefinition,
-  TypedUseQueryStateResult,
-} from '@reduxjs/toolkit/query/react';
+interface CustomQueryResult<ResultType> {
+  // State properties
+  data?: ResultType;
+  error?: Error;
+  isLoading: boolean;
+  isFetching: boolean;
+  isSuccess: boolean;
+  isError: boolean;
+
+  // Subscription methods
+  refetch: () => void;
+  // Add other methods if needed
+
+  // Additional properties if necessary
+  // [key: string]: any; // Optional, if you want to allow additional properties
+}
 
 /**
  * This custom hook transforms the string date fields based on matching regex to Date objects
@@ -21,16 +31,25 @@ import {
  *  import { hierarchicalConvertToJsJoda } from '@adaskothebeast/hierarchical-convert-to-js-joda';
  *  import { hierarchicalConvertToLuxon } from '@adaskothebeast/hierarchical-convert-to-luxon';
  *  import { hierarchicalConvertToMoment } from '@adaskothebeast/hierarchical-convert-to-moment';
+ *   import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
  *
- * const MyComponent: React.FC = () => {
- *   // Call your generated hook here
- *   const useQueryResult = useQueryFunction(arg, options);
+ *   const MyComponent: React.FC = () => {
+ *     const useQueryResult = useGetUserQuery(userId);
+ *     const adjustedResult = useAdjustUseQueryHookResultWithHierarchicalDateConverter(
+ *       useQueryResult,
+ *       hierarchicalConvertToDate
+ *     );
  *
- *   // Pass the result to the custom hook
- *   const adjustedResult = useAdjustUseQueryHookResultWithHierarchicalDateConverter(useQueryResult, hierarchicalConvertToDate);
+ *     if (adjustedResult.isLoading) {
+ *       return <div>Loading...</div>;
+ *     }
  *
- *   // Rest of your component...
- * }
+ *     if (adjustedResult.error) {
+ *       return <div>Error: {adjustedResult.error}</div>;
+ *     }
+ *
+ *     return <div>User's name is {adjustedResult.data?.name}</div>;
+ *   };
  * ```
  *
  * @param useQueryResult The result of a Redux Toolkit query hook
@@ -39,42 +58,17 @@ import {
  */
 export function useAdjustUseQueryHookResultWithHierarchicalDateConverter<
   ResultType,
-  QueryArg,
-  BaseQuery extends BaseQueryFn = BaseQueryFn,
-  ReducerPath extends string = string,
-  R extends TypedUseQueryStateResult<
-    ResultType,
-    QueryArg,
-    BaseQuery
-  > = TypedUseQueryStateResult<ResultType, QueryArg, BaseQuery>
 >(
-  useQueryResult: UseQueryHookResult<
-    QueryDefinition<QueryArg, BaseQuery, string, ResultType, ReducerPath>,
-    R
-  >,
-  convertFunc: (obj: object) => void
-): UseQueryHookResult<
-  QueryDefinition<QueryArg, BaseQuery, string, ResultType, ReducerPath>,
-  R
-> {
-  const result = useQueryResult;
-
-  // Transform 'data' field if it exists
-  if (result.data) {
-    // Deep clone the data to avoid mutating the state directly
-    const clonedData = structuredClone(result.data);
-
+  useQueryResult: CustomQueryResult<ResultType>,
+  convertFunc: (obj: object) => void,
+): CustomQueryResult<ResultType> {
+  if (useQueryResult.data) {
+    const clonedData = structuredClone(useQueryResult.data);
     convertFunc(clonedData as object);
-
     return {
-      ...result,
+      ...useQueryResult,
       data: clonedData,
-    } as unknown as UseQueryHookResult<
-      QueryDefinition<QueryArg, BaseQuery, string, ResultType, ReducerPath>,
-      R
-    >; // Type assertion via 'unknown'
+    };
   }
-
-  // If there's no 'data', return the result as is
-  return result;
+  return useQueryResult;
 }

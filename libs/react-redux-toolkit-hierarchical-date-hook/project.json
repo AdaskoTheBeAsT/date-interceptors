@@ -7,7 +7,13 @@
   "targets": {
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"]
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "libs/react-redux-toolkit-hierarchical-date-hook/**/*.{ts,tsx,js,jsx}",
+          "libs/react-redux-toolkit-hierarchical-date-hook/package.json"
+        ]
+      }
     },
     "build": {
       "executor": "@nx/rollup:rollup",

@@ -3,8 +3,8 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/angular-date-http-interceptor/src",
   "prefix": "adaskothebeast",
-  "tags": [],
   "projectType": "library",
+  "tags": [],
   "targets": {
     "build": {
       "executor": "@nx/angular:package",
@@ -31,7 +31,13 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"]
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "libs/angular-date-http-interceptor/**/*.{ts,tsx,js,jsx}",
+          "libs/angular-date-http-interceptor/package.json"
+        ]
+      }
     }
   }
 }

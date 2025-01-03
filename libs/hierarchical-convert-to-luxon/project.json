@@ -3,6 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/hierarchical-convert-to-luxon/src",
   "projectType": "library",
+  "tags": [],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
@@ -21,7 +22,13 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"]
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "libs/hierarchical-convert-to-luxon/**/*.{ts,tsx,js,jsx}",
+          "libs/hierarchical-convert-to-luxon/package.json"
+        ]
+      }
     },
     "test": {
       "executor": "@nx/jest:jest",
@@ -30,6 +37,5 @@
         "jestConfig": "libs/hierarchical-convert-to-luxon/jest.config.ts"
       }
     }
-  },
-  "tags": []
+  }
 }

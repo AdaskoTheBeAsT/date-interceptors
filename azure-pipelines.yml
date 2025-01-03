@@ -28,7 +28,7 @@ steps:
       script: |
         yarn --frozen-lockfile
 
-  - task: SonarCloudPrepare@1
+  - task: SonarCloudPrepare@2
     inputs:
       SonarCloud: 'SonarCloud'
       organization: 'adaskothebeast-github'
@@ -79,11 +79,11 @@ steps:
         yarn lint:ci:all
       failOnStderr: false
 
-  - task: SonarCloudAnalyze@1
+  - task: SonarCloudAnalyze@2
     inputs:
       jdkversion: 'JAVA_HOME_17_X64'
 
-  - task: SonarCloudPublish@1
+  - task: SonarCloudPublish@2
     inputs:
       pollingTimeoutSec: '300'
 

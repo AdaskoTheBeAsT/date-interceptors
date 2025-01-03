@@ -1,4 +1,3 @@
-/* eslint-disable */
 const reportPath = '.reports/libs/react-redux-toolkit-hierarchical-date-hook/';
 const reportName = 'test-report';
 

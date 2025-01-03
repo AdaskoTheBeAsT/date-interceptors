@@ -1,4 +1,3 @@
-/* eslint-disable */
 const reportPath = '.reports/libs/axios-interceptor/';
 const reportName = 'test-report';
 

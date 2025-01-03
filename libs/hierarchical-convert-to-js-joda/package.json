@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-to-js-joda",
-  "version": "4.0.1",
+  "version": "5.0.0",
   "license": "MIT",
   "author": "Adam Pluciński <adaskothebeast@gmail.com> (https://github.com/adaskothebeast)",
   "repository": {
@@ -12,8 +12,8 @@
   },
   "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors",
   "peerDependencies": {
-    "@js-joda/core": "^5.6.2",
-    "@js-joda/timezone": "^2.21.0",
-    "tslib": "^2.6.2"
+    "@js-joda/core": "^5.6.3",
+    "@js-joda/timezone": "^2.21.1",
+    "tslib": "^2.8.1"
   }
 }
