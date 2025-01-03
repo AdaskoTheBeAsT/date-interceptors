@@ -21,12 +21,12 @@ steps:
       script: |
         corepack enable
 
-  - task: Bash@3
-    displayName: 'Install yarn global'
-    inputs:
-      targetType: 'inline'
-      script: |
-        npm i -g yarn
+  # - task: Bash@3
+  #   displayName: 'Install yarn global'
+  #   inputs:
+  #     targetType: 'inline'
+  #     script: |
+  #       npm i -g yarn
 
   - task: Bash@3
     displayName: 'Install dependencies'
