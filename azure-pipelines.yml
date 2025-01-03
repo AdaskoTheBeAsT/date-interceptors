@@ -12,7 +12,14 @@ steps:
   - task: NodeTool@0
     displayName: 'Install Node.js'
     inputs:
-      versionSpec: '20.x'
+      versionSpec: '22.x'
+
+  - task: Bash@3
+    displayName: 'Set corepack enable'
+    inputs:
+      targetType: 'inline'
+      script: |
+        corepack enable
 
   - task: Bash@3
     displayName: 'Install yarn global'
@@ -28,7 +35,7 @@ steps:
       script: |
         yarn --frozen-lockfile
 
-  - task: SonarCloudPrepare@2
+  - task: SonarCloudPrepare@3
     inputs:
       SonarCloud: 'SonarCloud'
       organization: 'adaskothebeast-github'
@@ -79,11 +86,11 @@ steps:
         yarn lint:ci:all
       failOnStderr: false
 
-  - task: SonarCloudAnalyze@2
+  - task: SonarCloudAnalyze@3
     inputs:
       jdkversion: 'JAVA_HOME_17_X64'
 
-  - task: SonarCloudPublish@2
+  - task: SonarCloudPublish@3
     inputs:
       pollingTimeoutSec: '300'
 
