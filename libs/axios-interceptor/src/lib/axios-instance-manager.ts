@@ -26,7 +26,7 @@ export class AxiosInstanceManager {
 
         return response;
       },
-      (error) => {
+      (error: Error) => {
         return Promise.reject(error);
       },
     );
@@ -58,7 +58,7 @@ export class AxiosInstanceManager {
 
         return response;
       },
-      (error) => {
+      (error: Error) => {
         return Promise.reject(error);
       },
     );
