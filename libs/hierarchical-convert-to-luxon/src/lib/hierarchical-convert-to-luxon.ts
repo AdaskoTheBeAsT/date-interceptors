@@ -22,7 +22,7 @@ export function hierarchicalConvertToLuxon(obj: unknown): void {
   const o = obj as RecordWithDateAndDuration;
 
   for (const key in o) {
-    if (!Object.prototype.hasOwnProperty.call(o, key)) {
+    if (!Object.hasOwn(o, key)) {
       continue;
     }
 

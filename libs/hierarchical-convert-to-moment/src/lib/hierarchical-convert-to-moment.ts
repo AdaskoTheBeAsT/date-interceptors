@@ -23,7 +23,7 @@ export function hierarchicalConvertToMoment(obj: unknown): void {
   const o = obj as RecordWithMomentAndDuration;
 
   for (const key in o) {
-    if (!Object.prototype.hasOwnProperty.call(o, key)) {
+    if (!Object.hasOwn(o, key)) {
       continue;
     }
 
