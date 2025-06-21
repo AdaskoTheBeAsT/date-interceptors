@@ -1,5 +1,5 @@
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, filter, map } from 'rxjs';
 
 import { TypedHttpRequest } from './typed-http-request';
@@ -8,7 +8,7 @@ import { TypedHttpRequest } from './typed-http-request';
   providedIn: 'root',
 })
 export class TypedHttpClient {
-  constructor(private httpClient: HttpClient) {}
+  private readonly httpClient: HttpClient = inject(HttpClient);
 
   getResponse<T, K>(
     url: string,
@@ -19,9 +19,7 @@ export class TypedHttpClient {
     });
     return this.httpClient
       .request<K>(httpRequest)
-      .pipe(filter((event) => event instanceof HttpResponse)) as Observable<
-      HttpResponse<K>
-    >;
+      .pipe(filter((event) => event instanceof HttpResponse));
   }
 
   get<T, K>(
@@ -34,7 +32,7 @@ export class TypedHttpClient {
 
     return this.httpClient.request<K>(httpRequest).pipe(
       filter((event) => event instanceof HttpResponse),
-      map((event) => (event as HttpResponse<K>).body as K),
+      map((event) => event.body as K),
     );
   }
 
@@ -48,9 +46,7 @@ export class TypedHttpClient {
     });
     return this.httpClient
       .request<K>(httpRequest)
-      .pipe(filter((event) => event instanceof HttpResponse)) as Observable<
-      HttpResponse<K>
-    >;
+      .pipe(filter((event) => event instanceof HttpResponse));
   }
 
   post<T, K>(
@@ -63,7 +59,7 @@ export class TypedHttpClient {
     });
     return this.httpClient.request<K>(httpRequest).pipe(
       filter((event) => event instanceof HttpResponse),
-      map((event) => (event as HttpResponse<K>).body as K),
+      map((event) => event.body as K),
     );
   }
 
@@ -77,9 +73,7 @@ export class TypedHttpClient {
     });
     return this.httpClient
       .request<K>(httpRequest)
-      .pipe(filter((event) => event instanceof HttpResponse)) as Observable<
-      HttpResponse<K>
-    >;
+      .pipe(filter((event) => event instanceof HttpResponse));
   }
 
   put<T, K>(
@@ -92,7 +86,33 @@ export class TypedHttpClient {
     });
     return this.httpClient.request<K>(httpRequest).pipe(
       filter((event) => event instanceof HttpResponse),
-      map((event) => (event as HttpResponse<K>).body as K),
+      map((event) => event.body as K),
+    );
+  }
+
+  deleteResponse<T, K>(
+    url: string,
+    responseTypeClass: new (...args: unknown[]) => K,
+  ): Observable<HttpResponse<K>> {
+    const httpRequest = new TypedHttpRequest<T, K>('DELETE', url, {
+      responseTypeClass: responseTypeClass,
+    });
+    return this.httpClient
+      .request<K>(httpRequest)
+      .pipe(filter((event) => event instanceof HttpResponse));
+  }
+
+  delete<T, K>(
+    url: string,
+    responseTypeClass: new (...args: unknown[]) => K,
+  ): Observable<K> {
+    const httpRequest = new TypedHttpRequest<T, K>('DELETE', url, {
+      responseTypeClass: responseTypeClass,
+    });
+
+    return this.httpClient.request<K>(httpRequest).pipe(
+      filter((event) => event instanceof HttpResponse),
+      map((event) => event.body as K),
     );
   }
 
@@ -106,9 +126,7 @@ export class TypedHttpClient {
     });
     return this.httpClient
       .request<K>(httpRequest)
-      .pipe(filter((event) => event instanceof HttpResponse)) as Observable<
-      HttpResponse<K>
-    >;
+      .pipe(filter((event) => event instanceof HttpResponse));
   }
 
   patch<T, K>(
@@ -121,7 +139,7 @@ export class TypedHttpClient {
     });
     return this.httpClient.request<K>(httpRequest).pipe(
       filter((event) => event instanceof HttpResponse),
-      map((event) => (event as HttpResponse<K>).body as K),
+      map((event) => event.body as K),
     );
   }
 }

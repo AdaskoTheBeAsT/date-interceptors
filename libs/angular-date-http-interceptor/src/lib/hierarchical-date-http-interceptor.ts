@@ -5,7 +5,7 @@ import {
   HttpRequest,
   HttpResponse,
 } from '@angular/common/http';
-import { Inject, Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -39,10 +39,10 @@ import { HIERARCHICAL_DATE_ADJUST_FUNCTION } from './hierarchical-date-adjust-sy
  */
 @Injectable()
 export class HierarchicalDateHttpInterceptor implements HttpInterceptor {
-  constructor(
-    @Inject(HIERARCHICAL_DATE_ADJUST_FUNCTION)
-    private readonly adjustDates: (obj: unknown) => void,
-  ) {}
+  private readonly adjustDates: (obj: unknown) => void;
+  constructor() {
+    this.adjustDates = inject(HIERARCHICAL_DATE_ADJUST_FUNCTION);
+  }
 
   intercept(
     req: HttpRequest<unknown>,

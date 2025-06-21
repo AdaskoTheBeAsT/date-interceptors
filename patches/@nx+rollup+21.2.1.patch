@@ -1,0 +1,13 @@
+diff --git a/node_modules/@nx/rollup/src/plugins/with-nx/with-nx.js b/node_modules/@nx/rollup/src/plugins/with-nx/with-nx.js
+index b548625..4a9eb39 100644
+--- a/node_modules/@nx/rollup/src/plugins/with-nx/with-nx.js
++++ b/node_modules/@nx/rollup/src/plugins/with-nx/with-nx.js
+@@ -143,7 +143,7 @@ dependencies) {
+             // Needed to generate type definitions, even if we're using babel or swc.
+             require('rollup-plugin-typescript2')({
+                 check: !options.skipTypeCheck,
+-                tsconfig: tsConfigPath,
++                tsconfig: options.buildLibsFromSource || global.NX_GRAPH_CREATION ? options.tsConfig : tsConfigPath,
+                 tsconfigOverride: {
+                     compilerOptions: createTsCompilerOptions(projectRoot, tsConfig, options, dependencies),
+                 },
