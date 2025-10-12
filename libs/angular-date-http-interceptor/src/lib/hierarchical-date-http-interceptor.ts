@@ -50,10 +50,21 @@ export class HierarchicalDateHttpInterceptor implements HttpInterceptor {
   ): Observable<HttpEvent<unknown>> {
     return next.handle(req).pipe(
       map((event: HttpEvent<unknown>) => {
-        if (event instanceof HttpResponse) {
-          this.adjustDates(event.body);
+        if (!(event instanceof HttpResponse)) {
+          return event;
         }
-        return event;
+
+        const ct = event.headers.get('Content-Type') ?? '';
+        if (!ct.includes('application/json') || event.body == null) {
+          return event;
+        }
+
+        // shallow clone, then convert in-place on the clone
+        const cloned = Array.isArray(event.body)
+          ? [...event.body]
+          : { ...event.body };
+        this.adjustDates(cloned);
+        return event.clone({ body: cloned });
       }),
     );
   }

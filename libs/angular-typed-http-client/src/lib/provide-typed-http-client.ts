@@ -1,17 +1,15 @@
-import { CommonModule } from '@angular/common';
 import {
   HTTP_INTERCEPTORS,
   provideHttpClient,
   withInterceptorsFromDi,
 } from '@angular/common/http';
-import { NgModule } from '@angular/core';
+import { EnvironmentProviders, Provider } from '@angular/core';
 
 import { ClassTransformerHttpInterceptor } from './class-transformer-http.interceptor';
 import { ClassTransformerSerializeInterceptor } from './class-transformer-serialize.interceptor';
 
-@NgModule({
-  imports: [CommonModule],
-  providers: [
+export function provideTypedHttpClient(): (Provider | EnvironmentProviders)[] {
+  return [
     provideHttpClient(withInterceptorsFromDi()),
     {
       provide: HTTP_INTERCEPTORS,
@@ -23,6 +21,5 @@ import { ClassTransformerSerializeInterceptor } from './class-transformer-serial
       useClass: ClassTransformerHttpInterceptor,
       multi: true,
     },
-  ],
-})
-export class TypedHttpClientModule {}
+  ];
+}

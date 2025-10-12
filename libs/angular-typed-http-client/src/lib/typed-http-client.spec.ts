@@ -1,14 +1,19 @@
 import 'reflect-metadata';
 
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import {
-  HttpClientTestingModule,
+  HTTP_INTERCEPTORS,
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
+import {
   HttpTestingController,
+  provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Transform } from 'class-transformer';
 
-import { ClassTransformerHttpInterceptor } from './class-transformer-http-interceptor';
+import { ClassTransformerHttpInterceptor } from './class-transformer-http.interceptor';
+import { ClassTransformerSerializeInterceptor } from './class-transformer-serialize.interceptor';
 import { TypedHttpClient } from './typed-http-client';
 
 describe('TypedHttpClient', () => {
@@ -17,8 +22,15 @@ describe('TypedHttpClient', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [],
       providers: [
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+        {
+          provide: HTTP_INTERCEPTORS,
+          useClass: ClassTransformerSerializeInterceptor,
+          multi: true,
+        },
         {
           provide: HTTP_INTERCEPTORS,
           useClass: ClassTransformerHttpInterceptor,

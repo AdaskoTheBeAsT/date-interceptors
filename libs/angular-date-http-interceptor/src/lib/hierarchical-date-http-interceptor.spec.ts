@@ -1,8 +1,8 @@
 import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
-import { HTTP_INTERCEPTORS, HttpClient } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import {
-  HttpClientTestingModule,
   HttpTestingController,
+  provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
@@ -15,8 +15,9 @@ describe('HierarchicalDateHttpInterceptor', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
       providers: [
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
         {
           provide: HTTP_INTERCEPTORS,
           useClass: HierarchicalDateHttpInterceptor,
@@ -51,6 +52,10 @@ describe('HierarchicalDateHttpInterceptor', () => {
 
     const req = httpTestingController.expectOne('/data');
 
-    req.flush(testData);
+    req.flush(testData, {
+      status: 200,
+      statusText: 'OK',
+      headers: { 'Content-Type': 'application/json' },
+    });
   });
 });

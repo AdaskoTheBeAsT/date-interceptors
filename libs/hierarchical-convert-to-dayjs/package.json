@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-to-dayjs",
-  "version": "6.0.0",
+  "version": "7.0.0",
   "license": "MIT",
   "author": "Adam Pluciński <adaskothebeast@gmail.com> (https://github.com/adaskothebeast)",
   "repository": {
@@ -12,7 +12,7 @@
   },
   "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors",
   "peerDependencies": {
-    "dayjs": "^1.11.13",
+    "dayjs": "^1.11.18",
     "tslib": "^2.8.1"
   }
 }
