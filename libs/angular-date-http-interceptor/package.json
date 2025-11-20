@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/angular-date-http-interceptor",
-  "version": "7.0.0",
+  "version": "8.0.0",
   "license": "MIT",
   "author": "Adam Pluciński <adaskothebeast@gmail.com> (https://github.com/adaskothebeast)",
   "repository": {
@@ -12,8 +12,8 @@
   },
   "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors",
   "peerDependencies": {
-    "@angular/common": "^20.3.7",
-    "@angular/core": "^20.3.7",
+    "@angular/common": "^21.0.0",
+    "@angular/core": "^21.0.0",
     "rxjs": "^7.8.2"
   },
   "sideEffects": false

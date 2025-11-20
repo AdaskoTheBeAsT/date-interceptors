@@ -31,4 +31,62 @@ describe('hierarchicalConvertToDayjs', () => {
 
     expect(input).toEqual(expected);
   });
+
+  describe('Security - Prototype Pollution Protection', () => {
+    it('should not process __proto__ property', () => {
+      const input = {
+        date: '2023-07-17T23:06:00.000Z',
+        __proto__: { polluted: true },
+      };
+
+      hierarchicalConvertToDayjs(input);
+
+      expect(dayjs.isDayjs(input.date)).toBe(true);
+      expect(Object.prototype).not.toHaveProperty('polluted');
+    });
+
+    it('should not process dangerous properties', () => {
+      const input = {
+        date: '2023-07-17T23:06:00.000Z',
+        constructor: { polluted: true },
+        prototype: { polluted: true },
+      };
+
+      hierarchicalConvertToDayjs(input);
+
+      expect(dayjs.isDayjs(input.date)).toBe(true);
+    });
+  });
+
+  describe('Circular Reference Protection', () => {
+    it('should handle circular references without infinite loop', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const input: any = {
+        date: '2023-07-17T23:06:00.000Z',
+        nested: {},
+      };
+      input.nested.circular = input;
+
+      expect(() => hierarchicalConvertToDayjs(input)).not.toThrow();
+      expect(dayjs.isDayjs(input.date)).toBe(true);
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should handle invalid date strings gracefully', () => {
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      const input = {
+        validDate: '2023-07-17T23:06:00.000Z',
+        invalidDate: '2023-99-99T99:99:99.000Z',
+      };
+
+      hierarchicalConvertToDayjs(input);
+
+      expect(dayjs.isDayjs(input.validDate)).toBe(true);
+      expect(input.invalidDate).toBe('2023-99-99T99:99:99.000Z');
+
+      consoleWarnSpy.mockRestore();
+    });
+  });
 });

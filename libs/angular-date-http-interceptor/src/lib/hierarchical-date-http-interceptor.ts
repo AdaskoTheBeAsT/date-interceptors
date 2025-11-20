@@ -54,15 +54,19 @@ export class HierarchicalDateHttpInterceptor implements HttpInterceptor {
           return event;
         }
 
-        const ct = event.headers.get('Content-Type') ?? '';
-        if (!ct.includes('application/json') || event.body == null) {
+        // Extract and normalize Content-Type, removing charset and other parameters
+        const ct = (event.headers.get('Content-Type') ?? '')
+          .toLowerCase()
+          .split(';')[0]
+          .trim();
+        
+        // Strict check for application/json content type only
+        if (ct !== 'application/json' || event.body == null) {
           return event;
         }
 
-        // shallow clone, then convert in-place on the clone
-        const cloned = Array.isArray(event.body)
-          ? [...event.body]
-          : { ...event.body };
+        // deep clone to prevent mutation of original response object and nested objects
+        const cloned = structuredClone(event.body);
         this.adjustDates(cloned);
         return event.clone({ body: cloned });
       }),

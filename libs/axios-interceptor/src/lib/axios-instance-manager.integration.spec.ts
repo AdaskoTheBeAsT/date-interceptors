@@ -25,7 +25,6 @@ describe('AxiosInstanceManager integration', () => {
     mock.onGet().reply(200, responseData);
 
     const convertToDateFunc = jest.fn();
-    AxiosInstanceManager.resetInstance();
     const instance = AxiosInstanceManager.createInstance(convertToDateFunc);
 
     // Perform a GET request to trigger the interceptor
@@ -39,7 +38,6 @@ describe('AxiosInstanceManager integration', () => {
     mock.onGet().networkError();
 
     const convertToDateFunc = jest.fn();
-    AxiosInstanceManager.resetInstance();
     const instance = AxiosInstanceManager.createInstance(convertToDateFunc);
 
     await expect(instance.get('/test')).rejects.toThrow('Network Error');
@@ -51,7 +49,6 @@ describe('AxiosInstanceManager integration', () => {
     // Mock any GET request to return the test data
     mock.onGet().reply(200, responseData);
 
-    AxiosInstanceManager.resetInstance();
     const instance = AxiosInstanceManager.createInstance(
       hierarchicalConvertToLuxon,
     );

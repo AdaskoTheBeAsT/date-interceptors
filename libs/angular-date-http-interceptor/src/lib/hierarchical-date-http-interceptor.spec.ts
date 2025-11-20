@@ -91,6 +91,46 @@ describe('HierarchicalDateHttpInterceptor', () => {
     });
   });
 
+  it('should not mutate nested objects in the original response payload', (done) => {
+    const original = {
+      user: {
+        name: 'John',
+        createdAt: '2023-07-22T16:08:00.000Z',
+      },
+      metadata: {
+        updatedAt: '2023-07-23T10:00:00.000Z',
+      },
+    };
+
+    httpClient.get('/nested').subscribe((data) => {
+      // Verify converted data has Date objects
+      expect(data).toEqual({
+        user: {
+          name: 'John',
+          createdAt: new Date(Date.UTC(2023, 6, 22, 16, 8, 0, 0)),
+        },
+        metadata: {
+          updatedAt: new Date(Date.UTC(2023, 6, 23, 10, 0, 0, 0)),
+        },
+      });
+
+      // Verify original nested objects remain unchanged (strings, not Date objects)
+      expect(original.user.createdAt).toBe('2023-07-22T16:08:00.000Z');
+      expect(original.metadata.updatedAt).toBe('2023-07-23T10:00:00.000Z');
+      expect(typeof original.user.createdAt).toBe('string');
+      expect(typeof original.metadata.updatedAt).toBe('string');
+
+      done();
+    });
+
+    const req = httpTestingController.expectOne('/nested');
+    req.flush(original, {
+      status: 200,
+      statusText: 'OK',
+      headers: { 'Content-Type': 'application/json' },
+    });
+  });
+
   it('should skip conversion for non-JSON content types', (done) => {
     httpClient
       // cast to json to satisfy typing while requesting text
@@ -229,6 +269,67 @@ describe('HierarchicalDateHttpInterceptor', () => {
       status: 200,
       statusText: 'OK',
       // no headers provided on purpose
+    });
+  });
+
+  it('should reject JSON API content types (application/vnd.api+json)', (done) => {
+    const testData = { date: '2023-07-22T16:08:00.000Z', other: 'value' };
+
+    httpClient
+      .get('/json-api', { responseType: 'json' })
+      .subscribe((data) => {
+        // Data should NOT be converted (date remains string)
+        expect(data).toEqual(testData);
+        expect((data as { date: unknown }).date).toBe('2023-07-22T16:08:00.000Z');
+        expect((data as { date: unknown }).date instanceof Date).toBe(false);
+        done();
+      });
+
+    const req = httpTestingController.expectOne('/json-api');
+    req.flush(testData, {
+      status: 200,
+      statusText: 'OK',
+      headers: { 'Content-Type': 'application/vnd.api+json' },
+    });
+  });
+
+  it('should accept uppercase Content-Type (APPLICATION/JSON)', (done) => {
+    const testData = { date: '2023-07-22T16:08:00.000Z' };
+
+    httpClient.get('/uppercase').subscribe((data) => {
+      // Should convert despite uppercase
+      expect(data).toEqual({
+        date: new Date(Date.UTC(2023, 6, 22, 16, 8, 0, 0)),
+      });
+      done();
+    });
+
+    const req = httpTestingController.expectOne('/uppercase');
+    req.flush(testData, {
+      status: 200,
+      statusText: 'OK',
+      headers: { 'Content-Type': 'APPLICATION/JSON' },
+    });
+  });
+
+  it('should reject text/html even if it contains "application/json" in the string', (done) => {
+    const testData = { date: '2023-07-22T16:08:00.000Z' };
+
+    httpClient
+      .get('/text-html', { responseType: 'json' })
+      .subscribe((data) => {
+        // Data should NOT be converted (date remains string)
+        expect(data).toEqual(testData);
+        expect((data as { date: unknown }).date).toBe('2023-07-22T16:08:00.000Z');
+        expect((data as { date: unknown }).date instanceof Date).toBe(false);
+        done();
+      });
+
+    const req = httpTestingController.expectOne('/text-html');
+    req.flush(testData, {
+      status: 200,
+      statusText: 'OK',
+      headers: { 'Content-Type': 'text/html-application/json' },
     });
   });
 });
