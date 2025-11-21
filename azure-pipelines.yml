@@ -33,7 +33,9 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        yarn --frozen-lockfile
+        yarn install
+
+  #--frozen-lockfile
 
   - task: SonarCloudPrepare@3
     inputs:
