@@ -2,6 +2,8 @@
   "name": "@adaskothebeast/angular-typed-http-client",
   "version": "8.0.0",
   "peerDependencies": {
+    "@angular/common": "20.3.13",
+    "@angular/core": "20.3.13",
     "class-transformer": "^0.5.1",
     "rxjs": "~7.8.2"
   },

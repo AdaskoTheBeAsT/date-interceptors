@@ -12,6 +12,8 @@
   },
   "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors",
   "peerDependencies": {
+    "@angular/common": "20.3.13",
+    "@angular/core": "20.3.13",
     "rxjs": "^7.8.2"
   },
   "sideEffects": false
