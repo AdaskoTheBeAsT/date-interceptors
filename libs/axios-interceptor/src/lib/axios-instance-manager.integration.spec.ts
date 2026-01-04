@@ -1,6 +1,6 @@
 import { hierarchicalConvertToLuxon } from '@adaskothebeast/hierarchical-convert-to-luxon';
 import axios from 'axios';
-import * as MockAdapter from 'axios-mock-adapter';
+import MockAdapter from 'axios-mock-adapter';
 import { DateTime } from 'luxon';
 
 import { AxiosInstanceManager } from './axios-instance-manager';

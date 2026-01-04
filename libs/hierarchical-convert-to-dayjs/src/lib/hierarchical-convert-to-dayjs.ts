@@ -1,6 +1,6 @@
-import * as dayjs from 'dayjs';
-import * as duration from 'dayjs/plugin/duration';
-import * as utc from 'dayjs/plugin/utc';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+import utc from 'dayjs/plugin/utc';
 
 dayjs.extend(utc);
 dayjs.extend(duration);
@@ -9,7 +9,7 @@ dayjs.extend(duration);
  * Represents a value that can be a date/duration string, Dayjs, Duration,
  * or a nested structure containing such values.
  */
-type DateValue = dayjs.Dayjs | duration.Duration | string | number | boolean | null;
+type DateValue = dayjs.Dayjs | ReturnType<typeof dayjs.duration> | string | number | boolean | null;
 type DateObject = { [key: string]: DateValue | DateObject | DateArray };
 type DateArray = Array<DateValue | DateObject | DateArray>;
 type RecordWithDate = DateObject;

@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import moment from 'moment';
 
 /**
  * Represents a value that can be a date/duration string, Moment, Duration,
