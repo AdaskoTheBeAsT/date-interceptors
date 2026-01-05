@@ -4,10 +4,20 @@
 > Automatically converts ISO 8601 date strings in JSON responses into native Date objects — deeply, safely, and blazingly fast.
 
 [![CodeFactor](https://www.codefactor.io/repository/github/adaskothebeast/date-interceptors/badge)](https://www.codefactor.io/repository/github/adaskothebeast/date-interceptors)
-[![Build Status](https://img.shields.io/azure-devops/build/AdaskoTheBeAsT/date-interceptors/23)](https://img.shields.io/azure-devops/build/AdaskoTheBeAsT/date-interceptors/23)
-![Azure DevOps tests](https://img.shields.io/azure-devops/tests/AdaskoTheBeAsT/date-interceptors/23)
-![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/AdaskoTheBeAsT/date-interceptors/23?style=plastic)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/AdaskoTheBeAsT/date-interceptors/ci.yml)](https://github.com/AdaskoTheBeAsT/date-interceptors/actions/workflows/ci.yml)
+![Sonar Tests](https://img.shields.io/sonar/tests/AdaskoTheBeAsT_date-interceptors?server=https%3A%2F%2Fsonarcloud.io)
+![Sonar Coverage](https://img.shields.io/sonar/coverage/AdaskoTheBeAsT_date-interceptors?server=https%3A%2F%2Fsonarcloud.io)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=AdaskoTheBeAsT_date-interceptors&metric=alert_status)](https://sonarcloud.io/dashboard?id=AdaskoTheBeAsT_date-interceptors)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=AdaskoTheBeAsT_date-interceptors&metric=bugs)](https://sonarcloud.io/summary/new_code?id=AdaskoTheBeAsT_date-interceptors)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=AdaskoTheBeAsT_date-interceptors&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=AdaskoTheBeAsT_date-interceptors)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=AdaskoTheBeAsT_date-interceptors&metric=coverage)](https://sonarcloud.io/summary/new_code?id=AdaskoTheBeAsT_date-interceptors)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=AdaskoTheBeAsT_date-interceptors&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=AdaskoTheBeAsT_date-interceptors)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=AdaskoTheBeAsT_date-interceptors&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=AdaskoTheBeAsT_date-interceptors)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=AdaskoTheBeAsT_date-interceptors&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=AdaskoTheBeAsT_date-interceptors)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=AdaskoTheBeAsT_date-interceptors&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=AdaskoTheBeAsT_date-interceptors)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=AdaskoTheBeAsT_date-interceptors&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=AdaskoTheBeAsT_date-interceptors)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=AdaskoTheBeAsT_date-interceptors&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=AdaskoTheBeAsT_date-interceptors)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=AdaskoTheBeAsT_date-interceptors&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=AdaskoTheBeAsT_date-interceptors)
 
 ---
 
@@ -75,15 +85,15 @@ const postDates = user.posts.map(p => p.publishedAt);  // Arrays? Handled!
 
 ## 📊 Quick Stats
 
-| Metric | Value |
-|--------|-------|
-| **Security Review** | ✅ OWASP Top 10 compliant |
-| **Performance** | 10-100x faster than naive regex |
-| **Test Coverage** | 130+ tests, all passing |
-| **Type Safety** | Full TypeScript support |
-| **Bundle Size** | Minimal (tree-shakeable) |
-| **Dependencies** | Zero (except date library of choice) |
-| **Backward Compatible** | 100% (v8.0.0+) |
+| Metric                  | Value                                |
+| ----------------------- | ------------------------------------ |
+| **Security Review**     | ✅ OWASP Top 10 compliant             |
+| **Performance**         | 10-100x faster than naive regex      |
+| **Test Coverage**       | 130+ tests, all passing              |
+| **Type Safety**         | Full TypeScript support              |
+| **Bundle Size**         | Minimal (tree-shakeable)             |
+| **Dependencies**        | Zero (except date library of choice) |
+| **Backward Compatible** | 100% (v8.0.0+)                       |
 
 ---
 
@@ -315,14 +325,14 @@ function fetchApiData(url: string) {
 
 This library has undergone comprehensive security review and hardening:
 
-| Security Feature | Status | Impact |
-|-----------------|--------|---------|
-| Prototype Pollution Protection | ✅ | Blocks `__proto__`, `constructor`, `prototype` |
-| Circular Reference Detection | ✅ | No infinite loops or stack overflows |
-| Depth Limiting | ✅ | Max 100 levels (DoS protection) |
-| Error Handling | ✅ | Graceful degradation on invalid dates |
-| Content-Type Validation | ✅ | Strict `application/json` only |
-| Immutable Operations | ✅ | Deep cloning prevents mutations |
+| Security Feature               | Status | Impact                                         |
+| ------------------------------ | ------ | ---------------------------------------------- |
+| Prototype Pollution Protection | ✅      | Blocks `__proto__`, `constructor`, `prototype` |
+| Circular Reference Detection   | ✅      | No infinite loops or stack overflows           |
+| Depth Limiting                 | ✅      | Max 100 levels (DoS protection)                |
+| Error Handling                 | ✅      | Graceful degradation on invalid dates          |
+| Content-Type Validation        | ✅      | Strict `application/json` only                 |
+| Immutable Operations           | ✅      | Deep cloning prevents mutations                |
 
 ### 🔴 Critical Fix: Prototype Pollution
 
@@ -387,11 +397,11 @@ if (v[4] === '-' && v[7] === '-' && v[10] === 'T') {
 ### Benchmarks
 
 | Payload Size | Strings | Dates | Before | After | Improvement |
-|-------------|---------|-------|--------|-------|-------------|
-| Small | 10 | 2 | 0.5ms | 0.1ms | 5x |
-| Medium | 100 | 10 | 5ms | 0.5ms | 10x |
-| Large | 1000 | 50 | 150ms | 2ms | **75x** |
-| Huge | 10000 | 100 | 3000ms | 30ms | **100x** |
+| ------------ | ------- | ----- | ------ | ----- | ----------- |
+| Small        | 10      | 2     | 0.5ms  | 0.1ms | 5x          |
+| Medium       | 100     | 10    | 5ms    | 0.5ms | 10x         |
+| Large        | 1000    | 50    | 150ms  | 2ms   | **75x**     |
+| Huge         | 10000   | 100   | 3000ms | 30ms  | **100x**    |
 
 ### Why So Fast?
 
@@ -404,23 +414,23 @@ if (v[4] === '-' && v[7] === '-' && v[10] === 'T') {
 
 ## 📚 Supported Date Libraries
 
-| Library | Date Type | Duration Type | Package |
-|---------|-----------|---------------|---------|
-| **Native Date** | `Date` | N/A | `hierarchical-convert-to-date` |
-| **date-fns** | `Date` | `Duration` | `hierarchical-convert-to-date-fns` |
-| **Day.js** | `Dayjs` | `Duration` | `hierarchical-convert-to-dayjs` |
-| **Moment.js** | `Moment` | `Duration` | `hierarchical-convert-to-moment` |
-| **Luxon** | `DateTime` | `Duration` | `hierarchical-convert-to-luxon` |
-| **js-joda** | `ZonedDateTime` | N/A | `hierarchical-convert-to-js-joda` |
+| Library         | Date Type       | Duration Type | Package                            |
+| --------------- | --------------- | ------------- | ---------------------------------- |
+| **Native Date** | `Date`          | N/A           | `hierarchical-convert-to-date`     |
+| **date-fns**    | `Date`          | `Duration`    | `hierarchical-convert-to-date-fns` |
+| **Day.js**      | `Dayjs`         | `Duration`    | `hierarchical-convert-to-dayjs`    |
+| **Moment.js**   | `Moment`        | `Duration`    | `hierarchical-convert-to-moment`   |
+| **Luxon**       | `DateTime`      | `Duration`    | `hierarchical-convert-to-luxon`    |
+| **js-joda**     | `ZonedDateTime` | N/A           | `hierarchical-convert-to-js-joda`  |
 
 ## 🎨 Framework Integrations
 
-| Framework | Package | Type | Features |
-|-----------|---------|------|----------|
-| **Angular** | `angular-date-http-interceptor` | Interceptor | Auto date conversion for all HTTP calls |
-| **Angular** | `angular-typed-http-client` | Typed Client | Class-based DTOs + bidirectional transform |
-| **Axios** | `axios-interceptor` | Instance Manager | Axios-specific interceptor |
-| **React** | `react-redux-toolkit-hierarchical-date-hook` | RTK Query Hook | Redux Toolkit Query integration |
+| Framework   | Package                                      | Type             | Features                                   |
+| ----------- | -------------------------------------------- | ---------------- | ------------------------------------------ |
+| **Angular** | `angular-date-http-interceptor`              | Interceptor      | Auto date conversion for all HTTP calls    |
+| **Angular** | `angular-typed-http-client`                  | Typed Client     | Class-based DTOs + bidirectional transform |
+| **Axios**   | `axios-interceptor`                          | Instance Manager | Axios-specific interceptor                 |
+| **React**   | `react-redux-toolkit-hierarchical-date-hook` | RTK Query Hook   | Redux Toolkit Query integration            |
 
 ---
 
@@ -782,15 +792,15 @@ const options: RequestOptions = {
 
 **Why use Typed HTTP Client over simple interceptor?**
 
-| Feature | Interceptor | Typed HTTP Client |
-|---------|-------------|-------------------|
-| Date conversion | ✅ Automatic | ✅ Automatic + custom |
-| Type safety | ⚠️ Runtime only | ✅ Compile-time + Runtime |
-| Request serialization | ❌ No | ✅ Yes |
-| Nested objects | ✅ Yes | ✅ Yes + validation |
-| Custom transforms | ❌ No | ✅ Full decorator support |
-| Class methods | ❌ No | ✅ Yes (computed props, etc.) |
-| Validation | ❌ No | ✅ class-validator integration |
+| Feature               | Interceptor    | Typed HTTP Client             |
+| --------------------- | -------------- | ----------------------------- |
+| Date conversion       | ✅ Automatic    | ✅ Automatic + custom          |
+| Type safety           | ⚠️ Runtime only | ✅ Compile-time + Runtime      |
+| Request serialization | ❌ No           | ✅ Yes                         |
+| Nested objects        | ✅ Yes          | ✅ Yes + validation            |
+| Custom transforms     | ❌ No           | ✅ Full decorator support      |
+| Class methods         | ❌ No           | ✅ Yes (computed props, etc.)  |
+| Validation            | ❌ No           | ✅ class-validator integration |
 
 **Use Typed HTTP Client when:**
 - ✅ You want compile-time type safety
@@ -1114,16 +1124,16 @@ this.typedHttp.post('/api/notifications', emailNotif, EmailNotification)
 
 #### Benefits for .NET Developers
 
-| Feature | Without Typed Client | With Typed Client |
-|---------|---------------------|-------------------|
-| **Polymorphic Types** | ❌ Manual type checking | ✅ Automatic with discriminator |
-| **Type Safety** | ⚠️ `as` casts everywhere | ✅ True instanceof checks |
-| **Date Conversion** | ❌ Manual parsing | ✅ Automatic with @Transform |
-| **Typewriter Integration** | ⚠️ Manual class creation | ✅ Auto-generated from C# |
-| **Validation** | ❌ Runtime only | ✅ Compile-time + Runtime |
-| **Serialization** | ❌ Manual JSON.stringify | ✅ Automatic with decorators |
-| **Nested Types** | ⚠️ Complex manual handling | ✅ @Type decorator handles it |
-| **Discriminator** | ❌ Manual switch/case | ✅ class-transformer handles it |
+| Feature                    | Without Typed Client      | With Typed Client              |
+| -------------------------- | ------------------------- | ------------------------------ |
+| **Polymorphic Types**      | ❌ Manual type checking    | ✅ Automatic with discriminator |
+| **Type Safety**            | ⚠️ `as` casts everywhere   | ✅ True instanceof checks       |
+| **Date Conversion**        | ❌ Manual parsing          | ✅ Automatic with @Transform    |
+| **Typewriter Integration** | ⚠️ Manual class creation   | ✅ Auto-generated from C#       |
+| **Validation**             | ❌ Runtime only            | ✅ Compile-time + Runtime       |
+| **Serialization**          | ❌ Manual JSON.stringify   | ✅ Automatic with decorators    |
+| **Nested Types**           | ⚠️ Complex manual handling | ✅ @Type decorator handles it   |
+| **Discriminator**          | ❌ Manual switch/case      | ✅ class-transformer handles it |
 
 #### System.Text.Json Configuration
 

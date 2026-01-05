@@ -1,3 +1,7 @@
 {
-  "nxConsole.generateAiAgentRules": true
+  "nxConsole.generateAiAgentRules": true,
+  "sonarlint.connectedMode.project": {
+    "connectionId": "adaskothebeast-github",
+    "projectKey": "AdaskoTheBeAsT_date-interceptors"
+  }
 }
