@@ -70,7 +70,7 @@ const postDates = user.posts.map(p => p.publishedAt);  // Arrays? Handled!
 - ⏱️ **Duration Support** — ISO 8601 durations (`P1Y2M3DT4H5M6S`) converted too
 - 🌍 **Timezone Aware** — Preserves timezone information correctly
 - 📦 **Multiple Date Libraries** — Supports Date, date-fns, Day.js, Moment.js, Luxon, js-joda
-- 🎨 **Framework Ready** — Angular interceptors, React hooks, Axios plugins
+- 🎨 **Framework Ready** — Angular v21 interceptors, React v19 hooks, Axios plugins
 
 ### Security & Performance (NEW!)
 - 🔒 **Prototype Pollution Protection** — Safe against malicious `__proto__` payloads
@@ -94,6 +94,20 @@ const postDates = user.posts.map(p => p.publishedAt);  // Arrays? Handled!
 | **Bundle Size**         | Minimal (tree-shakeable)             |
 | **Dependencies**        | Zero (except date library of choice) |
 | **Backward Compatible** | 100% (v8.0.0+)                       |
+
+---
+
+## 🔢 Current Framework/Runtime Versions
+
+| Package              | Version   |
+| -------------------- | --------- |
+| `@angular/core`      | `21.1.4`  |
+| `@angular/common`    | `21.1.4`  |
+| `react`              | `19.2.4`  |
+| `react-dom`          | `19.2.4`  |
+| `rxjs`               | `~7.8.2`  |
+| `@reduxjs/toolkit`   | `^2.11.2` |
+| `axios`              | `1.13.5`  |
 
 ---
 
