@@ -142,5 +142,6 @@
     "version": {
       "preVersionCommand": "yarn dlx nx run-many -t build"
     }
-  }
+  },
+  "analytics": false
 }
