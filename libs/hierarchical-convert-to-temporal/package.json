@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-to-temporal",
-  "version": "10.0.0",
+  "version": "10.0.1",
   "peerDependencies": {
     "@adaskothebeast/typewriter-runtime": "10.0.0",
     "@js-temporal/polyfill": "^0.5.1",
