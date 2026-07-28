@@ -54,7 +54,15 @@ jobs:
           - hierarchical-convert-to-js-joda
           - hierarchical-convert-to-luxon
           - hierarchical-convert-to-moment
+          - hierarchical-convert-to-temporal
+          - hierarchical-convert-to-decimal
+          - hierarchical-convert-to-uuid
           - react-redux-toolkit-hierarchical-date-hook
+          - typewriter-schema
+          - typewriter-runtime
+          - typewriter-http-axios
+          - typewriter-http-fetch
+          - typewriter-http-angular
 
     steps:
       - name: Download dist artifacts

@@ -8,6 +8,7 @@ import {
   HttpParams,
   provideHttpClient,
   withInterceptorsFromDi,
+  withXhr
 } from '@angular/common/http';
 import {
   HttpTestingController,
@@ -47,7 +48,7 @@ describe('ClassTransformerSerializeInterceptor (Jest)', () => {
     TestBed.configureTestingModule({
       providers: [
         // Provide HttpClient that honors DI interceptors
-        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClient(withXhr(), withInterceptorsFromDi()),
         // Provide the testing backend + controller
         provideHttpClientTesting(),
         // Register the interceptor under test

@@ -70,7 +70,7 @@ const postDates = user.posts.map(p => p.publishedAt);  // Arrays? Handled!
 - ⏱️ **Duration Support** — ISO 8601 durations (`P1Y2M3DT4H5M6S`) converted too
 - 🌍 **Timezone Aware** — Preserves timezone information correctly
 - 📦 **Multiple Date Libraries** — Supports Date, date-fns, Day.js, Moment.js, Luxon, js-joda
-- 🎨 **Framework Ready** — Angular v21 interceptors, React v19 hooks, Axios plugins
+- 🎨 **Framework Ready** — Angular v22 interceptors, React v19 helpers, Axios plugins
 
 ### Security & Performance (NEW!)
 - 🔒 **Prototype Pollution Protection** — Safe against malicious `__proto__` payloads
@@ -101,13 +101,13 @@ const postDates = user.posts.map(p => p.publishedAt);  // Arrays? Handled!
 
 | Package              | Version   |
 | -------------------- | --------- |
-| `@angular/core`      | `21.1.4`  |
-| `@angular/common`    | `21.1.4`  |
-| `react`              | `19.2.4`  |
-| `react-dom`          | `19.2.4`  |
+| `@angular/core`      | `22.0.7`  |
+| `@angular/common`    | `22.0.7`  |
+| `react`              | `19.2.7`  |
+| `react-dom`          | `19.2.7`  |
 | `rxjs`               | `~7.8.2`  |
-| `@reduxjs/toolkit`   | `^2.11.2` |
-| `axios`              | `1.13.5`  |
+| `@reduxjs/toolkit`   | `^2.12.0` |
+| `axios`              | `1.18.1`  |
 
 ---
 
@@ -166,170 +166,307 @@ console.log(apiResponse.user.posts[0].publishedAt instanceof Date);  // ✅ true
 
 ---
 
-## 📦 Framework Integration
+## Typewriter runtime schemas
 
-### Angular
+Typewriter-generated runtime schemas hydrate ordinary JSON into Decimal, UUID,
+and Temporal values without guessing from string contents. The same schema can
+serialize rich values back to their wire representation.
 
-```typescript
-import { NgModule } from '@angular/core';
-import { AngularDateHttpInterceptorModule, HIERARCHICAL_DATE_ADJUST_FUNCTION } 
-  from '@adaskothebeast/angular-date-http-interceptor';
-import { hierarchicalConvertToDate } 
-  from '@adaskothebeast/hierarchical-convert-to-date';
-
-@NgModule({
-  imports: [
-    AngularDateHttpInterceptorModule,
-  ],
-  providers: [
-    { provide: HIERARCHICAL_DATE_ADJUST_FUNCTION, useValue: hierarchicalConvertToDate }
-  ]
-})
-export class AppModule { }
+```bash
+npm install @adaskothebeast/typewriter-schema \
+  @adaskothebeast/typewriter-runtime
 ```
 
-Now **all HTTP responses** are automatically processed! 🎉
+```typescript
+import { serializeJson, transformJson } from '@adaskothebeast/typewriter-runtime';
 
-> 💡 **Want more advanced features?** Check out the [🎁 BONUS: Angular Typed HTTP Client](#-bonus-angular-typed-http-client) section at the end for class-based DTOs, bidirectional transformation, and polymorphic type support!
+const invoice = transformJson(responseJson, InvoiceSchema, apiTypeRegistry);
+const requestJson = serializeJson(invoice, InvoiceSchema, apiTypeRegistry);
+```
 
-### Axios
+Choose an adapter for the HTTP transport:
+
+| Transport | Package |
+| --- | --- |
+| Angular `HttpClient` and `httpResource` | `@adaskothebeast/typewriter-http-angular` |
+| Axios | `@adaskothebeast/typewriter-http-axios` |
+| Native Fetch | `@adaskothebeast/typewriter-http-fetch` |
+
+React and Vue applications use the Fetch or Axios adapter selected by the
+application. They do not require framework-specific Typewriter packages.
+
+Angular configuration does not select a backend, so the same interceptor works
+with the default Fetch backend and `withXhr()`:
 
 ```typescript
-import { AxiosInstanceManager } from '@adaskothebeast/axios-interceptor';
-import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
+import { provideHttpClient } from '@angular/common/http';
+import {
+  withTypewriterHttpInterceptor,
+  withTypewriterResponseSchema,
+} from '@adaskothebeast/typewriter-http-angular';
 
-// 1. Define your DTO class with decorators
-class UserDto {
-  id!: number;
-  name!: string;
-  
-  @Transform(({ value }) => new Date(value), { toClassOnly: true })
-  createdAt!: Date;
-  
-  @Transform(({ value }) => new Date(value), { toClassOnly: true })
-  updatedAt!: Date;
-}
-
-// 2. Provide the typed HTTP client in your app config
-export const appConfig: ApplicationConfig = {
+export const appConfig = {
   providers: [
-    provideTypedHttpClient(),  // Automatically sets up interceptors
-    // ... other providers
-  ]
+    provideHttpClient(withTypewriterHttpInterceptor()),
+  ],
 };
 
-// 3. Use in your component
-@Component({
-  selector: 'app-users',
-  template: `
-    <div *ngIf="user">
-      <h1>{{ user.name }}</h1>
-      <p>Created: {{ user.createdAt | date }}</p>
-    </div>
-  `
-})
-export class UsersComponent {
-  private typedHttp = inject(TypedHttpClient);
-  
-  user$ = this.typedHttp.get('/api/users/1', UserDto);
-  // Returns Observable<UserDto> with automatic transformation!
-}
+this.http.get('/api/invoices/1', {
+  context: withTypewriterResponseSchema(InvoiceSchema, {
+    registry: apiTypeRegistry,
+  }),
+});
 ```
+
+See each package README for request serialization, strict mode, and custom
+transformer configuration.
 
 ---
 
-### Axios
+## Framework and API integration
+
+### HTTP transports
+
+#### Native Fetch
+
+Native Fetch has no interceptor pipeline. Use the exported wrapper so conversion
+happens at the API boundary:
+
+```typescript
+import { fetchJson } from '@adaskothebeast/hierarchical-convert-to-date';
+
+const user = await fetchJson<User>('/api/users/1');
+```
+
+`fetchJson` forwards `RequestInit`, rejects unsuccessful responses with
+`FetchJsonError`, handles `204 No Content`, and converts nested dates before
+returning data.
+
+#### Angular `HttpClient`
+
+The functional interceptor is the recommended standalone configuration:
+
+```typescript
+import { provideHttpClient } from '@angular/common/http';
+import {
+  HIERARCHICAL_DATE_ADJUST_FUNCTION,
+  withHierarchicalDateHttpInterceptor,
+} from '@adaskothebeast/angular-date-http-interceptor';
+import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
+
+export const appConfig = {
+  providers: [
+    {
+      provide: HIERARCHICAL_DATE_ADJUST_FUNCTION,
+      useValue: hierarchicalConvertToDate,
+    },
+    provideHttpClient(withHierarchicalDateHttpInterceptor()),
+  ],
+};
+```
+
+The interceptor runs at the `HttpClient` level, so it applies to normal calls
+and `httpResource`:
+
+```typescript
+const user$ = http.get<User>('/api/users/1');
+const userResource = httpResource<User>(() => '/api/users/1');
+```
+
+| Angular configuration | Backend | Date interceptor | Upload progress |
+| --- | --- | ---: | ---: |
+| `provideHttpClient()` | Fetch | Yes | No |
+| `provideHttpClient(withXhr())` | XHR | Yes | Yes |
+| `httpResource()` | Configured `HttpClient` | Yes | Not intended for uploads |
+
+Use an independently configured route or lazy-module client for uploads:
+
+```typescript
+{
+  path: 'upload',
+  providers: [
+    provideHttpClient(
+      withXhr(),
+      withHierarchicalDateHttpInterceptor(),
+    ),
+  ],
+  loadComponent: () => import('./upload.component')
+    .then(module => module.UploadComponent),
+}
+```
+
+The class-based `AngularDateHttpInterceptorModule` remains available for
+existing NgModule applications.
+
+#### Axios
 
 ```typescript
 import { AxiosInstanceManager } from '@adaskothebeast/axios-interceptor';
 import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
 
-// Create and export your Axios instance
-export const api = AxiosInstanceManager.createInstance(hierarchicalConvertToDate);
+export const api = AxiosInstanceManager.createInstance(
+  hierarchicalConvertToDate,
+);
 
-// Use it anywhere
-const response = await api.get('/users');
-// response.data dates are already converted!
+const response = await api.get<User>('/api/users/1');
 ```
 
-### React Query
+### Server-state libraries
+
+#### TanStack Query v5
+
+Convert inside `queryFn`, before data enters the query cache:
 
 ```typescript
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
+import { fetchJson } from '@adaskothebeast/hierarchical-convert-to-date';
+
+const query = useQuery({
+  queryKey: ['users'],
+  queryFn: () => fetchJson<User[]>('/api/users'),
+});
+```
+
+#### RTK Query
+
+Use `transformResponse` for one endpoint:
+
+```typescript
+import {
+  createHierarchicalDateTransformResponse,
+} from '@adaskothebeast/react-redux-toolkit-hierarchical-date-hook';
 import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
 
-async function fetcher(url: string) {
-  const response = await fetch(url);
-  const data = await response.json();
-  hierarchicalConvertToDate(data);
-  return data;
-}
-
-function MyComponent() {
-  const { data } = useQuery('users', () => fetcher('/api/users'));
-  // data.createdAt is already a Date object!
-}
+getUser: build.query<User, number>({
+  query: id => `/users/${id}`,
+  transformResponse: createHierarchicalDateTransformResponse<User>(
+    hierarchicalConvertToDate,
+  ),
+}),
 ```
 
-### RTK Query (Redux Toolkit)
+Or wrap the base query once so queries and mutations are converted before
+caching:
 
 ```typescript
-import { useAdjustUseQueryHookResultWithHierarchicalDateConverter } 
-  from '@adaskothebeast/react-redux-toolkit-hierarchical-date-hook';
+import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import {
+  withHierarchicalDateConversion,
+} from '@adaskothebeast/react-redux-toolkit-hierarchical-date-hook';
 
-const MyComponent: React.FC = () => {
-  const queryResult = useGetUserQuery(userId);
-  const adjusted = useAdjustUseQueryHookResultWithHierarchicalDateConverter(queryResult);
-  // adjusted.data dates are converted!
-};
+const rawBaseQuery = fetchBaseQuery({ baseUrl: '/api' });
+const baseQuery = withHierarchicalDateConversion(
+  rawBaseQuery,
+  hierarchicalConvertToDate,
+);
 ```
 
-### SWR
+The existing hook-level adapter remains available for compatibility, but it
+converts after data has already entered the RTK Query cache.
+
+#### SWR
 
 ```typescript
 import useSWR from 'swr';
+import { fetchJson } from '@adaskothebeast/hierarchical-convert-to-date';
+
+const { data } = useSWR<User[]>('/api/users', fetchJson);
+```
+
+### GraphQL
+
+Apollo Link can transform GraphQL response data before it reaches the cache:
+
+```typescript
+import {
+  ApolloClient,
+  ApolloLink,
+  HttpLink,
+  InMemoryCache,
+} from '@apollo/client';
 import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
 
-async function fetcher(url: string) {
-  const response = await fetch(url);
-  const data = await response.json();
-  hierarchicalConvertToDate(data);
-  return data;
-}
+const dateLink = new ApolloLink((operation, forward) =>
+  forward(operation).map(result => {
+    if (result.data) {
+      hierarchicalConvertToDate(result.data);
+    }
+    return result;
+  }),
+);
 
-function MyComponent() {
-  const { data } = useSWR('/api/users', fetcher);
-  // data dates are already converted!
+const client = new ApolloClient({
+  link: ApolloLink.from([
+    dateLink,
+    new HttpLink({ uri: '/graphql' }),
+  ]),
+  cache: new InMemoryCache(),
+});
+```
+
+Prefer scalar-aware code generation when the GraphQL schema declares exact
+`Date`, `DateTime`, or other temporal scalar semantics.
+
+### Generated clients and custom transports
+
+Place conversion in the generated-client boundary, such as a Typewriter
+service, Orval mutator, `openapi-fetch` middleware, or NSwag client:
+
+```typescript
+import { fetchJson } from '@adaskothebeast/hierarchical-convert-to-date';
+
+export function generatedClientMutator<T>(
+  config: { url: string; init?: RequestInit },
+): Promise<T> {
+  return fetchJson<T>(config.url, config.init);
 }
 ```
 
-### Redux Saga
+For property-exact Decimal, UUID, and Temporal hydration, generate schemas and
+use the [Typewriter runtime packages](#typewriter-runtime-schemas).
+
+### State-management recipes
+
+#### Redux Saga
 
 ```typescript
 import { call, put } from 'redux-saga/effects';
-import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
+import { fetchJson } from '@adaskothebeast/hierarchical-convert-to-date';
 
 function* fetchData(action) {
-  const response = yield call(axios.get, action.payload.url);
-  hierarchicalConvertToDate(response.data);
-  yield put({ type: 'FETCH_SUCCESS', payload: response.data });
+  const data = yield call(fetchJson, action.payload.url);
+  yield put({ type: 'FETCH_SUCCESS', payload: data });
 }
 ```
 
-### Redux Thunk
+#### Redux Thunk
 
 ```typescript
-import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
+import { fetchJson } from '@adaskothebeast/hierarchical-convert-to-date';
 
 function fetchApiData(url: string) {
   return async (dispatch: Function) => {
-    const response = await fetch(url);
-    const data = await response.json();
-    hierarchicalConvertToDate(data);
+    const data = await fetchJson(url);
     dispatch({ type: 'FETCH_SUCCESS', payload: data });
   };
 }
 ```
+
+### Streaming messages
+
+Convert WebSocket or Server-Sent Event payloads immediately after parsing:
+
+```typescript
+socket.addEventListener('message', event => {
+  const message = JSON.parse(event.data);
+  hierarchicalConvertToDate(message);
+  handleMessage(message);
+});
+```
+
+Fetch wrappers such as `ky` and `ofetch`, and RxJS `ajax`, can use the same
+boundary pattern. Dedicated framework packages are unnecessary unless they
+provide a cache or transport lifecycle that requires a specific hook.
 
 ---
 
@@ -439,12 +576,14 @@ if (v[4] === '-' && v[7] === '-' && v[10] === 'T') {
 
 ## 🎨 Framework Integrations
 
-| Framework   | Package                                      | Type             | Features                                   |
-| ----------- | -------------------------------------------- | ---------------- | ------------------------------------------ |
-| **Angular** | `angular-date-http-interceptor`              | Interceptor      | Auto date conversion for all HTTP calls    |
-| **Angular** | `angular-typed-http-client`                  | Typed Client     | Class-based DTOs + bidirectional transform |
-| **Axios**   | `axios-interceptor`                          | Instance Manager | Axios-specific interceptor                 |
-| **React**   | `react-redux-toolkit-hierarchical-date-hook` | RTK Query Hook   | Redux Toolkit Query integration            |
+| Framework or transport | Package | Type | Features |
+| --- | --- | --- | --- |
+| **Native Fetch** | `hierarchical-convert-to-date` | Fetch wrapper | Converts JSON before returning it |
+| **Angular** | `angular-date-http-interceptor` | Functional/class interceptor | Fetch, XHR, and `httpResource` support |
+| **Angular** | `angular-typed-http-client` | Typed client | Class-based DTOs and bidirectional transform |
+| **Axios** | `axios-interceptor` | Instance manager | Axios response conversion |
+| **RTK Query** | `react-redux-toolkit-hierarchical-date-hook` | Base query/endpoint helpers | Converts before caching |
+| **Typewriter** | `typewriter-http-angular`, `typewriter-http-axios`, `typewriter-http-fetch` | Schema-aware adapters | Decimal, UUID, Temporal, and custom types |
 
 ---
 
@@ -536,6 +675,32 @@ const mixed = {
 hierarchicalConvertToDate(mixed);
 // Only date strings converted, rest untouched
 ```
+
+### `fetchJson<T>(input, init?, options?)`
+
+Fetches JSON and runs `hierarchicalConvertToDate` before returning it.
+
+- `input: RequestInfo | URL`
+- `init?: RequestInit`
+- `options.fetch?: typeof fetch` for custom runtimes and tests
+- Throws `FetchJsonError` for unsuccessful HTTP responses
+
+### Angular functional integration
+
+- `hierarchicalDateHttpInterceptorFn`
+- `withHierarchicalDateHttpInterceptor()`
+- `HIERARCHICAL_DATE_ADJUST_FUNCTION`
+
+The older `HierarchicalDateHttpInterceptor` and
+`AngularDateHttpInterceptorModule` remain available.
+
+### RTK Query integration
+
+- `createHierarchicalDateTransformResponse(convert)`
+- `withHierarchicalDateConversion(baseQuery, convert)`
+- `useAdjustUseQueryHookResultWithHierarchicalDateConverter(...)`
+
+Prefer the first two APIs because they convert data before cache insertion.
 
 ---
 

@@ -1,1324 +1,183 @@
-# 🚀 Date Interceptors
+# 🗓️ @adaskothebeast/hierarchical-convert-to-date-fns
 
-> **Production-ready, security-hardened date/time conversion for JSON APIs**  
-> Automatically converts ISO 8601 date strings in JSON responses into native Date objects — deeply, safely, and blazingly fast.
+**The date-fns binding of [date-interceptors](https://github.com/AdaskoTheBeAsT/date-interceptors): hydrates ISO 8601 strings in JSON payloads into `Date` and date-fns `Duration` values, and plugs date-fns into the typewriter runtime.**
 
-[![CodeFactor](https://www.codefactor.io/repository/github/adaskothebeast/date-interceptors/badge)](https://www.codefactor.io/repository/github/adaskothebeast/date-interceptors)
-[![Build Status](https://img.shields.io/azure-devops/build/AdaskoTheBeAsT/date-interceptors/23)](https://img.shields.io/azure-devops/build/AdaskoTheBeAsT/date-interceptors/23)
-![Azure DevOps tests](https://img.shields.io/azure-devops/tests/AdaskoTheBeAsT/date-interceptors/23)
-![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/AdaskoTheBeAsT/date-interceptors/23?style=plastic)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=AdaskoTheBeAsT_date-interceptors&metric=alert_status)](https://sonarcloud.io/dashboard?id=AdaskoTheBeAsT_date-interceptors)
+[![npm](https://img.shields.io/npm/v/%40adaskothebeast%2Fhierarchical-convert-to-date-fns?color=cb3837&logo=npm)](https://www.npmjs.com/package/@adaskothebeast/hierarchical-convert-to-date-fns)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+
+Peer dependencies: `date-fns` (`^4.4.0`), `@adaskothebeast/typewriter-runtime` (`10.0.0`) and `tslib` (`^2.8.1`). Built with `tsc` to CommonJS plus `.d.ts` declarations.
 
 ---
 
-## 📊 NPM Downloads
-
-![NPM Downloads @adaskothebeast/angular-date-http-interceptor](https://img.shields.io/npm/dt/%40adaskothebeast%2Fangular-date-http-interceptor?label=angular-date-http-interceptor)
-![NPM Downloads @adaskothebeast/angular-typed-http-client](https://img.shields.io/npm/dt/%40adaskothebeast%2Fangular-typed-http-client?label=angular-typed-http-client)
-![NPM Downloads @adaskothebeast/axios-interceptor](https://img.shields.io/npm/dt/%40adaskothebeast%2Faxios-interceptor?label=axios-interceptor)
-![NPM Downloads @adaskothebeast/hierarchical-convert-to-date](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-date?label=hierarchical-convert-to-date)
-![NPM Downloads @adaskothebeast/hierarchical-convert-to-date-fns](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-date-fns?label=hierarchical-convert-to-date-fns)
-![NPM Downloads @adaskothebeast/hierarchical-convert-to-dayjs](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-dayjs?label=hierarchical-convert-to-dayjs)
-![NPM Downloads @adaskothebeast/hierarchical-convert-to-js-joda](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-js-joda?label=hierarchical-convert-to-js-joda)
-![NPM Downloads @adaskothebeast/hierarchical-convert-to-luxon](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-luxon?label=hierarchical-convert-to-luxon)
-![NPM Downloads @adaskothebeast/hierarchical-convert-to-moment](https://img.shields.io/npm/dt/%40adaskothebeast%2Fhierarchical-convert-to-moment?label=hierarchical-convert-to-moment)
-![NPM Downloads @adaskothebeast/react-redux-toolkit-hierarchical-date-hook](https://img.shields.io/npm/dt/%40adaskothebeast%2Freact-redux-toolkit-hierarchical-date-hook?label=react-redux-toolkit-hierarchical-date-hook)
-
----
-
-## 🎯 Why This Library?
-
-Working with dates in JSON is painful. Dates come as strings like `"2023-01-15T10:30:00.000Z"`, forcing you to manually parse them everywhere:
-
-```typescript
-// ❌ Without date-interceptors
-const response = await api.get('/users');
-const user = response.data;
-const createdAt = new Date(user.createdAt);  // Manual parsing
-const updatedAt = new Date(user.profile.updatedAt);  // Nested? More parsing!
-const postDates = user.posts.map(p => new Date(p.publishedAt));  // Arrays? Loop!
-```
-
-```typescript
-// ✅ With date-interceptors
-const response = await api.get('/users');
-const user = response.data;
-const createdAt = user.createdAt;  // Already a Date object! 🎉
-const updatedAt = user.profile.updatedAt;  // Nested? Converted!
-const postDates = user.posts.map(p => p.publishedAt);  // Arrays? Handled!
-```
-
-**One-time setup. Automatic conversion. Forever.**
-
----
-
-## ✨ Features
-
-### Core Features
-- 🔄 **Automatic Conversion** — ISO 8601 date strings → Date objects, no manual parsing
-- 🌳 **Deep Traversal** — Handles arbitrarily nested objects and arrays
-- ⏱️ **Duration Support** — ISO 8601 durations (`P1Y2M3DT4H5M6S`) converted too
-- 🌍 **Timezone Aware** — Preserves timezone information correctly
-- 📦 **Multiple Date Libraries** — Supports Date, date-fns, Day.js, Moment.js, Luxon, js-joda
-- 🎨 **Framework Ready** — Angular interceptors, React hooks, Axios plugins
-
-### Security & Performance (NEW!)
-- 🔒 **Prototype Pollution Protection** — Safe against malicious `__proto__` payloads
-- 🔁 **Circular Reference Handling** — No infinite loops or stack overflows
-- ⚡ **10-100x Faster** — Smart fast-path validation (99% reduction in regex)
-- 🛡️ **Crash-Proof** — Graceful error handling for invalid dates
-- 💎 **Immutable** — Deep cloning prevents unintended mutations
-- 📏 **Depth Limited** — Protects against deeply nested attacks (100 levels max)
-- ✅ **Type-Safe** — Comprehensive TypeScript definitions
-
----
-
-## 📊 Quick Stats
-
-| Metric | Value |
-|--------|-------|
-| **Security Review** | ✅ OWASP Top 10 compliant |
-| **Performance** | 10-100x faster than naive regex |
-| **Test Coverage** | 130+ tests, all passing |
-| **Type Safety** | Full TypeScript support |
-| **Bundle Size** | Minimal (tree-shakeable) |
-| **Dependencies** | Zero (except date library of choice) |
-| **Backward Compatible** | 100% (v8.0.0+) |
-
----
-
-## 🚀 Quick Start
-
-### 1. Install
-
-Choose your date library:
+## 📦 Install
 
 ```bash
-# Native JavaScript Date
-npm install @adaskothebeast/hierarchical-convert-to-date
-
-# date-fns
-npm install @adaskothebeast/hierarchical-convert-to-date-fns
-
-# Day.js
-npm install @adaskothebeast/hierarchical-convert-to-dayjs
-
-# Moment.js
-npm install @adaskothebeast/hierarchical-convert-to-moment
-
-# Luxon
-npm install @adaskothebeast/hierarchical-convert-to-luxon
-
-# js-joda
-npm install @adaskothebeast/hierarchical-convert-to-js-joda
+npm i @adaskothebeast/hierarchical-convert-to-date-fns date-fns
 ```
 
-### 2. Use
-
-```typescript
-import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
-
-const apiResponse = {
-  user: {
-    name: 'John Doe',
-    createdAt: '2023-01-15T10:30:00.000Z',
-    profile: {
-      birthday: '1990-05-20T00:00:00.000Z'
-    },
-    posts: [
-      { title: 'Hello', publishedAt: '2023-03-01T08:00:00.000Z' },
-      { title: 'World', publishedAt: '2023-03-15T14:30:00.000Z' }
-    ]
-  }
-};
-
-hierarchicalConvertToDate(apiResponse);
-
-// All date strings are now Date objects!
-console.log(apiResponse.user.createdAt instanceof Date);  // ✅ true
-console.log(apiResponse.user.profile.birthday instanceof Date);  // ✅ true
-console.log(apiResponse.user.posts[0].publishedAt instanceof Date);  // ✅ true
-```
-
----
-
-## 📦 Framework Integration
-
-### Angular
-
-```typescript
-import { NgModule } from '@angular/core';
-import { AngularDateHttpInterceptorModule, HIERARCHICAL_DATE_ADJUST_FUNCTION } 
-  from '@adaskothebeast/angular-date-http-interceptor';
-import { hierarchicalConvertToDate } 
-  from '@adaskothebeast/hierarchical-convert-to-date';
-
-@NgModule({
-  imports: [
-    AngularDateHttpInterceptorModule,
-  ],
-  providers: [
-    { provide: HIERARCHICAL_DATE_ADJUST_FUNCTION, useValue: hierarchicalConvertToDate }
-  ]
-})
-export class AppModule { }
-```
-
-Now **all HTTP responses** are automatically processed! 🎉
-
-> 💡 **Want more advanced features?** Check out the [🎁 BONUS: Angular Typed HTTP Client](#-bonus-angular-typed-http-client) section at the end for class-based DTOs, bidirectional transformation, and polymorphic type support!
-
-### Axios
-
-```typescript
-import { AxiosInstanceManager } from '@adaskothebeast/axios-interceptor';
-import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
-
-// 1. Define your DTO class with decorators
-class UserDto {
-  id!: number;
-  name!: string;
-  
-  @Transform(({ value }) => new Date(value), { toClassOnly: true })
-  createdAt!: Date;
-  
-  @Transform(({ value }) => new Date(value), { toClassOnly: true })
-  updatedAt!: Date;
-}
-
-// 2. Provide the typed HTTP client in your app config
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideTypedHttpClient(),  // Automatically sets up interceptors
-    // ... other providers
-  ]
-};
-
-// 3. Use in your component
-@Component({
-  selector: 'app-users',
-  template: `
-    <div *ngIf="user">
-      <h1>{{ user.name }}</h1>
-      <p>Created: {{ user.createdAt | date }}</p>
-    </div>
-  `
-})
-export class UsersComponent {
-  private typedHttp = inject(TypedHttpClient);
-  
-  user$ = this.typedHttp.get('/api/users/1', UserDto);
-  // Returns Observable<UserDto> with automatic transformation!
-}
-```
-
----
-
-### Axios
-
-```typescript
-import { AxiosInstanceManager } from '@adaskothebeast/axios-interceptor';
-import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
-
-// Create and export your Axios instance
-export const api = AxiosInstanceManager.createInstance(hierarchicalConvertToDate);
-
-// Use it anywhere
-const response = await api.get('/users');
-// response.data dates are already converted!
-```
-
-### React Query
-
-```typescript
-import { useQuery } from 'react-query';
-import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
-
-async function fetcher(url: string) {
-  const response = await fetch(url);
-  const data = await response.json();
-  hierarchicalConvertToDate(data);
-  return data;
-}
-
-function MyComponent() {
-  const { data } = useQuery('users', () => fetcher('/api/users'));
-  // data.createdAt is already a Date object!
-}
-```
-
-### RTK Query (Redux Toolkit)
-
-```typescript
-import { useAdjustUseQueryHookResultWithHierarchicalDateConverter } 
-  from '@adaskothebeast/react-redux-toolkit-hierarchical-date-hook';
-
-const MyComponent: React.FC = () => {
-  const queryResult = useGetUserQuery(userId);
-  const adjusted = useAdjustUseQueryHookResultWithHierarchicalDateConverter(queryResult);
-  // adjusted.data dates are converted!
-};
-```
-
-### SWR
-
-```typescript
-import useSWR from 'swr';
-import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
-
-async function fetcher(url: string) {
-  const response = await fetch(url);
-  const data = await response.json();
-  hierarchicalConvertToDate(data);
-  return data;
-}
-
-function MyComponent() {
-  const { data } = useSWR('/api/users', fetcher);
-  // data dates are already converted!
-}
-```
-
-### Redux Saga
-
-```typescript
-import { call, put } from 'redux-saga/effects';
-import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
-
-function* fetchData(action) {
-  const response = yield call(axios.get, action.payload.url);
-  hierarchicalConvertToDate(response.data);
-  yield put({ type: 'FETCH_SUCCESS', payload: response.data });
-}
-```
-
-### Redux Thunk
-
-```typescript
-import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
-
-function fetchApiData(url: string) {
-  return async (dispatch: Function) => {
-    const response = await fetch(url);
-    const data = await response.json();
-    hierarchicalConvertToDate(data);
-    dispatch({ type: 'FETCH_SUCCESS', payload: data });
-  };
-}
-```
-
----
-
-## 🔒 Security (NEW in v8.0.0+)
-
-### ✅ Production-Hardened
-
-This library has undergone comprehensive security review and hardening:
-
-| Security Feature | Status | Impact |
-|-----------------|--------|---------|
-| Prototype Pollution Protection | ✅ | Blocks `__proto__`, `constructor`, `prototype` |
-| Circular Reference Detection | ✅ | No infinite loops or stack overflows |
-| Depth Limiting | ✅ | Max 100 levels (DoS protection) |
-| Error Handling | ✅ | Graceful degradation on invalid dates |
-| Content-Type Validation | ✅ | Strict `application/json` only |
-| Immutable Operations | ✅ | Deep cloning prevents mutations |
-
-### 🔴 Critical Fix: Prototype Pollution
-
-**Problem:**
-```javascript
-// Malicious payload
-const evil = {
-  "__proto__": { "isAdmin": true },
-  "date": "2023-01-01T00:00:00.000Z"
-};
-// Could pollute Object.prototype! 😱
-```
-
-**Solution:**
-```typescript
-// Now safely ignored
-const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
-// ✅ Your app is safe
-```
-
-### 🟡 High Priority: Performance
-
-**Before:**
-```
-1000 string fields in JSON → 1000 regex tests
-CPU intensive, slow on large payloads
-```
-
-**After:**
-```
-1000 string fields → ~10 regex tests (990 fast rejections)
-10-100x faster, minimal CPU usage
-```
-
-**How?**
-```typescript
-// Fast character checks BEFORE expensive regex
-if (v[4] === '-' && v[7] === '-' && v[10] === 'T') {
-  // Only then check regex
-}
-```
-
-### 🛡️ Crash-Proof Error Handling
-
-**Before:**
-```typescript
-// Single invalid date crashed entire conversion
-{ "date": "2023-99-99" }  // ❌ Crash!
-```
-
-**After:**
-```typescript
-// Invalid dates remain strings, valid dates converted
-{ "date": "2023-99-99" }  // ✅ Left as string
-// + Console warning for debugging
-```
-
----
-
-## ⚡ Performance
-
-### Benchmarks
-
-| Payload Size | Strings | Dates | Before | After | Improvement |
-|-------------|---------|-------|--------|-------|-------------|
-| Small | 10 | 2 | 0.5ms | 0.1ms | 5x |
-| Medium | 100 | 10 | 5ms | 0.5ms | 10x |
-| Large | 1000 | 50 | 150ms | 2ms | **75x** |
-| Huge | 10000 | 100 | 3000ms | 30ms | **100x** |
-
-### Why So Fast?
-
-1. **Fast-path validation** — Rejects 99% of non-dates without regex
-2. **WeakSet tracking** — Efficient circular reference detection
-3. **Early bailout** — Depth limiting prevents unnecessary work
-4. **Zero allocations** — In-place mutations (optional deep clone)
-
----
-
-## 📚 Supported Date Libraries
-
-| Library | Date Type | Duration Type | Package |
-|---------|-----------|---------------|---------|
-| **Native Date** | `Date` | N/A | `hierarchical-convert-to-date` |
-| **date-fns** | `Date` | `Duration` | `hierarchical-convert-to-date-fns` |
-| **Day.js** | `Dayjs` | `Duration` | `hierarchical-convert-to-dayjs` |
-| **Moment.js** | `Moment` | `Duration` | `hierarchical-convert-to-moment` |
-| **Luxon** | `DateTime` | `Duration` | `hierarchical-convert-to-luxon` |
-| **js-joda** | `ZonedDateTime` | N/A | `hierarchical-convert-to-js-joda` |
-
-## 🎨 Framework Integrations
-
-| Framework | Package | Type | Features |
-|-----------|---------|------|----------|
-| **Angular** | `angular-date-http-interceptor` | Interceptor | Auto date conversion for all HTTP calls |
-| **Angular** | `angular-typed-http-client` | Typed Client | Class-based DTOs + bidirectional transform |
-| **Axios** | `axios-interceptor` | Instance Manager | Axios-specific interceptor |
-| **React** | `react-redux-toolkit-hierarchical-date-hook` | RTK Query Hook | Redux Toolkit Query integration |
-
----
-
-## 🧪 Testing
-
-### Security Tests
-
-```typescript
-describe('Security', () => {
-  it('blocks prototype pollution', () => {
-    const evil = { __proto__: { polluted: true } };
-    hierarchicalConvertToDate(evil);
-    expect(Object.prototype).not.toHaveProperty('polluted'); ✅
-  });
-
-  it('handles circular references', () => {
-    const circular: any = { date: '2023-01-01T00:00:00.000Z' };
-    circular.self = circular;
-    expect(() => hierarchicalConvertToDate(circular)).not.toThrow(); ✅
-  });
-
-  it('limits depth to 100', () => {
-    let deep: any = { date: '2023-01-01T00:00:00.000Z' };
-    for (let i = 0; i < 1000; i++) {
-      deep = { nested: deep };
-    }
-    expect(() => hierarchicalConvertToDate(deep)).not.toThrow(); ✅
-  });
-});
-```
-
-### Coverage
-
-- **130+ tests** across all libraries
-- **100% coverage** of security fixes
-- **Edge cases** tested (invalid dates, null, circular refs)
-- **Performance** benchmarks included
-
----
-
-## 📖 API Reference
-
-### `hierarchicalConvertToDate(obj, depth?, visited?)`
-
-Recursively converts ISO 8601 date strings to Date objects.
-
-**Parameters:**
-- `obj: unknown` — The object/array to process (mutated in place)
-- `depth?: number` — Current recursion depth (default: 0, max: 100)
-- `visited?: WeakSet` — Visited objects tracker (default: new WeakSet())
-
-**Returns:** `void` (mutates input object)
-
-**Examples:**
-
-```typescript
-// Simple object
-const data = { date: '2023-01-01T00:00:00.000Z' };
-hierarchicalConvertToDate(data);
-console.log(data.date instanceof Date);  // true
-
-// Nested
-const nested = {
-  user: {
-    profile: {
-      birthday: '1990-01-01T00:00:00.000Z'
-    }
-  }
-};
-hierarchicalConvertToDate(nested);
-// All levels converted!
-
-// Arrays
-const arr = [
-  { date: '2023-01-01T00:00:00.000Z' },
-  { date: '2023-02-01T00:00:00.000Z' }
-];
-hierarchicalConvertToDate(arr);
-// Both converted!
-
-// Mixed
-const mixed = {
-  name: 'John',
-  age: 30,
-  active: true,
-  metadata: null,
-  dates: ['2023-01-01T00:00:00.000Z', '2023-02-01T00:00:00.000Z']
-};
-hierarchicalConvertToDate(mixed);
-// Only date strings converted, rest untouched
-```
-
----
-
-## 🔧 TypeScript Support
-
-### Comprehensive Types
-
-```typescript
-/**
- * Value types that can appear in converted data
- */
-type DateValue = Date | string | number | boolean | null;
-
-/**
- * Object with potentially date-convertible fields
- */
-type DateObject = { [key: string]: DateValue | DateObject | DateArray };
-
-/**
- * Array of potentially date-convertible values
- */
-type DateArray = Array<DateValue | DateObject | DateArray>;
-
-/**
- * Root type for conversion
- */
-type RecordWithDate = DateObject;
-```
-
-### Full IDE Support
-
-- ✅ Autocompletion for all methods
-- ✅ Type inference for nested structures
-- ✅ JSDoc documentation
-- ✅ Error hints and warnings
-
----
-
-## 🚨 Breaking Changes & Migration
-
-### v7.0.0 → v8.0.0+ (Axios Only)
-
-**What Changed:**  
-Axios `AxiosInstanceManager` no longer caches instances (singleton pattern removed).
-
-**Before:**
-```typescript
-const instance1 = AxiosInstanceManager.createInstance(convertFunc);
-const instance2 = AxiosInstanceManager.createInstance(convertFunc);
-// instance1 === instance2 ✅ (cached)
-```
-
-**After:**
-```typescript
-const instance1 = AxiosInstanceManager.createInstance(convertFunc);
-const instance2 = AxiosInstanceManager.createInstance(convertFunc);
-// instance1 !== instance2 ⚠️ (new instances)
-```
-
-**Migration:**
-```typescript
-// Create once, export, reuse
-export const api = AxiosInstanceManager.createInstance(hierarchicalConvertToDate);
-
-// Import and use everywhere
-import { api } from './api';
-const response = await api.get('/users');
-```
-
-### Everything Else
-
-✅ **100% backward compatible!** All other changes are non-breaking.
-
----
-
-## 🐛 Troubleshooting
-
-### Invalid dates remain strings
-
-**Problem:**
-```typescript
-const data = { date: '2023-99-99T99:99:99.000Z' };
-hierarchicalConvertToDate(data);
-console.log(data.date);  // Still a string? 🤔
-```
-
-**Solution:**  
-This is **expected behavior**. Invalid date strings are left unchanged (graceful degradation). Check console for warnings:
-```
-⚠️ Failed to parse date string: 2023-99-99T99:99:99.000Z
-```
-
-### Performance issues
-
-**Problem:**  
-Conversion still slow on large payloads?
-
-**Solutions:**
-1. ✅ Upgrade to v8.0.0+ (10-100x faster)
-2. ✅ Profile your data — are there really many date strings?
-3. ✅ Consider server-side conversion for massive payloads (>100MB)
-
-### TypeScript errors
-
-**Problem:**
-```typescript
-Type 'unknown' is not assignable to type 'Date'
-```
-
-**Solution:**  
-Use type assertions or type guards:
-```typescript
-const data = apiResponse as { date: Date };
-// or
-if (data.date instanceof Date) {
-  // TypeScript knows it's a Date here
-}
-```
-
-### Circular references warning
-
-**Problem:**
-```
-⚠️ Circular reference detected in object
-```
-
-**Solution:**  
-This is **expected** if your data has circular refs. Conversion still succeeds, but circular paths are skipped.
-
----
-
-## 🎓 Advanced Usage
-
-### Custom Depth Limit
-
-```typescript
-// Default is 100, but you can customize
-function convertShallow(obj: unknown) {
-  hierarchicalConvertToDate(obj, 0, new WeakSet());
-  // Will stop at depth 100 (depth param is current depth, not max)
-}
-```
-
-### Performance Monitoring
-
-```typescript
-function convertWithTiming(obj: unknown) {
-  const start = performance.now();
-  hierarchicalConvertToDate(obj);
-  const end = performance.now();
-  console.log(`Conversion took ${end - start}ms`);
-}
-```
-
-### Conditional Conversion
-
-```typescript
-function convertIfNeeded(obj: unknown, shouldConvert: boolean) {
-  if (shouldConvert && obj != null && typeof obj === 'object') {
-    hierarchicalConvertToDate(obj);
-  }
-}
-```
-
----
-
-## 🎁 BONUS: Angular Typed HTTP Client
-
-**For advanced Angular developers:** If you need more than simple date conversion, check out our Type-Safe HTTP     
-Client with class-transformer integration!
-
-### Why Use It?
-
-- 🎯 **Full Type Safety** — Compile-time + runtime type checking with class constructors
-- 🔄 **Bidirectional Transform** — Serialize requests AND deserialize responses automatically  
-- 🏷️ **Decorator-Based** — Use `@Transform`, `@Type`, `@Expose`, `@Exclude` for custom logic
-- 📦 **DTO Pattern** — Clean separation of API models from domain models
-- ✅ **Validation Ready** — Seamless integration with `class-validator`
-- 💎 **Computed Properties** — Add getters and methods to your response objects
-- 🔥 **.NET Integration** — Perfect for Newtonsoft.Json/System.Text.Json polymorphic types
-- 📝 **Typewriter Support** — Auto-generate TypeScript classes from C# models
-
-### Quick Example
-
-```typescript
-import { Transform, Type, Expose, Exclude } from 'class-transformer';
-import { IsEmail, IsNotEmpty } from 'class-validator';
-
-class AddressDto {
-  @Expose()
-  street!: string;
-  
-  @Expose()
-  city!: string;
-}
-
-class UserDto {
-  @Expose()
-  @IsNotEmpty()
-  id!: number;
-  
-  @Expose()
-  @IsEmail()
-  email!: string;
-  
-  @Exclude()  // Won't be sent or received
-  password?: string;
-  
-  @Transform(({ value }) => new Date(value), { toClassOnly: true })
-  @Transform(({ value }) => value?.toISOString(), { toPlainOnly: true })
-  createdAt!: Date;
-  
-  @Type(() => AddressDto)
-  address?: AddressDto;
-  
-  @Type(() => PostDto)
-  posts?: PostDto[];
-  
-  // Computed property
-  get isRecent(): boolean {
-    const dayAgo = new Date();
-    dayAgo.setDate(dayAgo.getDate() - 1);
-    return this.createdAt > dayAgo;
-  }
-}
-
-// POST with automatic serialization
-const newUser = new UserDto();
-newUser.email = 'john@example.com';
-newUser.createdAt = new Date();
-
-typedHttp.post('/api/users', newUser, UserDto).subscribe(savedUser => {
-  console.log(savedUser instanceof UserDto);  // ✅ true
-  console.log(savedUser.isRecent);  // ✅ Works!
-});
-```
-
-**API Methods:**
-
-```typescript
-// Get response body only
-typedHttp.get<T>(url, Ctor, options?): Observable<T>
-typedHttp.post<T, K>(url, body, Ctor, options?): Observable<K>
-typedHttp.put<T, K>(url, body, Ctor, options?): Observable<K>
-typedHttp.patch<T, K>(url, body, Ctor, options?): Observable<K>
-typedHttp.delete<K>(url, Ctor, options?): Observable<K>
-
-// Get full HttpResponse
-typedHttp.getResponse<K>(url, Ctor, options?): Observable<HttpResponse<K>>
-typedHttp.postResponse<T, K>(url, body, Ctor, options?): Observable<HttpResponse<K>>
-// ... etc
-```
-
-**Options:**
-
-```typescript
-const options: RequestOptions = {
-  headers: { 'Authorization': 'Bearer token' },
-  params: { page: '1', limit: '10' },
-  serialize: true,  // Auto-serialize request body (default: true)
-  // or use class-transformer options:
-  serialize: {
-    excludeExtraneousValues: true,
-    enableImplicitConversion: true
-  }
-};
-```
-
-**Why use Typed HTTP Client over simple interceptor?**
-
-| Feature | Interceptor | Typed HTTP Client |
-|---------|-------------|-------------------|
-| Date conversion | ✅ Automatic | ✅ Automatic + custom |
-| Type safety | ⚠️ Runtime only | ✅ Compile-time + Runtime |
-| Request serialization | ❌ No | ✅ Yes |
-| Nested objects | ✅ Yes | ✅ Yes + validation |
-| Custom transforms | ❌ No | ✅ Full decorator support |
-| Class methods | ❌ No | ✅ Yes (computed props, etc.) |
-| Validation | ❌ No | ✅ class-validator integration |
-
-**Use Typed HTTP Client when:**
-- ✅ You want compile-time type safety
-- ✅ You need bidirectional transformation (request + response)
-- ✅ You're using DTOs/class-based architecture
-- ✅ You need validation with `class-validator`
-- ✅ You want computed properties on response objects
-
-**Use simple interceptor when:**
-- ✅ You only need date conversion (no other transforms)
-- ✅ You work with plain objects (no classes)
-- ✅ You want minimal setup
-- ✅ You don't need request serialization
-
----
-
-### 🔥 .NET Integration: Polymorphic Types
-
-**Perfect for .NET developers!** If you're using **Newtonsoft.Json** or **System.Text.Json** with polymorphic types, the Typed HTTP Client handles them beautifully with the **Typewriter** Visual Studio extension.
-
-#### The Problem: .NET Polymorphic Serialization
-
-.NET APIs often return polymorphic types with discriminators:
-
-**C# Model (Newtonsoft.Json):**
-```csharp
-// Base class
-[JsonConverter(typeof(JsonSubtypes), "$type")]
-[JsonSubtypes.KnownSubType(typeof(EmailNotification), "Email")]
-[JsonSubtypes.KnownSubType(typeof(SmsNotification), "Sms")]
-[JsonSubtypes.KnownSubType(typeof(PushNotification), "Push")]
-public abstract class Notification
-{
-    // $type is automatically generated by Newtonsoft.Json
-    public DateTime CreatedAt { get; set; }
-    public string Message { get; set; }
-}
-
-public class EmailNotification : Notification
-{
-    public string To { get; set; }
-    public string Subject { get; set; }
-    public string HtmlBody { get; set; }
-}
-
-public class SmsNotification : Notification
-{
-    public string PhoneNumber { get; set; }
-    public string ShortCode { get; set; }
-}
-
-public class PushNotification : Notification
-{
-    public string DeviceToken { get; set; }
-    public string Title { get; set; }
-    public Dictionary<string, string> Data { get; set; }
-}
-```
-
-**C# Model (System.Text.Json - .NET 7+):**
-```csharp
-// You can choose any discriminator property name
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]  // or "type", "kind", etc.
-[JsonDerivedType(typeof(EmailNotification), "email")]
-[JsonDerivedType(typeof(SmsNotification), "sms")]
-[JsonDerivedType(typeof(PushNotification), "push")]
-public abstract class Notification
-{
-    public DateTime CreatedAt { get; set; }
-    public string Message { get; set; }
-}
-
-// Alternative with custom discriminator
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "notificationType")]
-[JsonDerivedType(typeof(EmailNotification), "email")]
-[JsonDerivedType(typeof(SmsNotification), "sms")]
-public abstract class NotificationV2 { /* ... */ }
-```
-
-**JSON Response (Newtonsoft.Json):**
-```json
-{
-  "notifications": [
-    {
-      "$type": "Email",
-      "createdAt": "2023-01-15T10:30:00.000Z",
-      "message": "Welcome!",
-      "to": "user@example.com",
-      "subject": "Welcome to our app",
-      "htmlBody": "<h1>Welcome!</h1>"
-    },
-    {
-      "$type": "Sms",
-      "createdAt": "2023-01-15T11:00:00.000Z",
-      "message": "Your code: 123456",
-      "phoneNumber": "+1234567890",
-      "shortCode": "12345"
-    },
-    {
-      "$type": "Push",
-      "createdAt": "2023-01-15T12:00:00.000Z",
-      "message": "New message",
-      "deviceToken": "abc123...",
-      "title": "You have a new message",
-      "data": { "messageId": "456" }
-    }
-  ]
-}
-```
-
-#### The Solution: Typewriter + class-transformer
-
-**Step 1: Generate TypeScript with Typewriter**
-
-Install [Typewriter](https://github.com/AdaskoTheBeAsT/Typewriter) extension in Visual Studio, then create a `.tst` template:
-
-> **💡 Pro Tip:** Complete `.tst` template recipes for Angular and React (both Newtonsoft.Json and System.Text.Json) are available at [NetCoreTypewriterRecipes](https://github.com/AdaskoTheBeAsT/NetCoreTypewriterRecipes)!
-
-```typescript
-${
-    using Typewriter.Extensions.Types;
-    
-    Template(Settings settings)
-    {
-        settings.IncludeProject("YourApi.Models");
-        settings.OutputExtension = ".ts";
-    }
-    
-    string Imports(Class c) => c.BaseClass != null 
-        ? $"import {{ {c.BaseClass.Name} }} from './{c.BaseClass.Name}';"
-        : "";
-}
-$Classes(*Notification)[
-import { Transform, Type } from 'class-transformer';
-$Imports
-
-export class $Name$TypeParameters {
-    $Properties[
-    $Attributes[Transform][    @Transform(({ value }) => new Date(value), { toClassOnly: true })]
-    $Name: $Type;
-    ]
-}
-]
-```
-
-**Generated TypeScript:**
-```typescript
-// notification.base.ts
-import { Transform } from 'class-transformer';
-
-export abstract class Notification {
-  // $type is automatically handled by class-transformer discriminator
-  
-  @Transform(({ value }) => new Date(value), { toClassOnly: true })
-  createdAt!: Date;
-  
-  message!: string;
-}
-
-// email-notification.ts
-import { Notification } from './notification.base';
-
-export class EmailNotification extends Notification {
-  to!: string;
-  subject!: string;
-  htmlBody!: string;
-}
-
-// sms-notification.ts
-import { Notification } from './notification.base';
-
-export class SmsNotification extends Notification {
-  phoneNumber!: string;
-  shortCode!: string;
-}
-
-// push-notification.ts
-import { Notification } from './notification.base';
-
-export class PushNotification extends Notification {
-  deviceToken!: string;
-  title!: string;
-  data!: Record<string, string>;
-}
-```
-
-**Step 2: Add Discriminator Configuration**
-
-Create a factory that uses the discriminator:
-
-```typescript
-import { Transform, Type } from 'class-transformer';
-import { Notification } from './notification.base';
-import { EmailNotification } from './email-notification';
-import { SmsNotification } from './sms-notification';
-import { PushNotification } from './push-notification';
-
-export abstract class NotificationBase extends Notification {
-  @Transform(({ value }) => new Date(value), { toClassOnly: true })
-  createdAt!: Date;
-  
-  // Discriminator-based transformation (Newtonsoft.Json uses $type)
-  @Type(() => NotificationBase, {
-    discriminator: {
-      property: '$type',  // Newtonsoft.Json default
-      subTypes: [
-        { value: EmailNotification, name: 'Email' },
-        { value: SmsNotification, name: 'Sms' },
-        { value: PushNotification, name: 'Push' },
-      ],
-    },
-  })
-  static createFromType(data: any): Notification {
-    // class-transformer handles this automatically
-    return data;
-  }
-}
-
-export class NotificationListDto {
-  @Type(() => NotificationBase, {
-    discriminator: {
-      property: '$type',  // Match your C# configuration
-      subTypes: [
-        { value: EmailNotification, name: 'Email' },
-        { value: SmsNotification, name: 'Sms' },
-        { value: PushNotification, name: 'Push' },
-      ],
-    },
-  })
-  notifications!: Notification[];
-}
-```
-
-**Step 3: Use in Your Component**
-
-```typescript
-import { Component, inject } from '@angular/core';
-import { TypedHttpClient } from '@adaskothebeast/angular-typed-http-client';
-import { NotificationListDto, EmailNotification, SmsNotification, PushNotification } from './models';
-
-@Component({
-  selector: 'app-notifications',
-  template: `
-    <div *ngFor="let notification of (notifications$ | async)?.notifications">
-      <!-- Type guards work! -->
-      <div *ngIf="isEmail(notification)" class="email">
-        📧 Email to {{ notification.to }}: {{ notification.subject }}
-        <div [innerHTML]="notification.htmlBody"></div>
-      </div>
-      
-      <div *ngIf="isSms(notification)" class="sms">
-        💬 SMS to {{ notification.phoneNumber }}: {{ notification.message }}
-      </div>
-      
-      <div *ngIf="isPush(notification)" class="push">
-        📱 Push to device: {{ notification.title }}
-        <pre>{{ notification.data | json }}</pre>
-      </div>
-      
-      <!-- Date is already converted! -->
-      <small>{{ notification.createdAt | date:'short' }}</small>
-    </div>
-  `
-})
-export class NotificationsComponent {
-  private typedHttp = inject(TypedHttpClient);
-  
-  notifications$ = this.typedHttp.get('/api/notifications', NotificationListDto);
-  
-  // Type guards for template
-  isEmail(n: Notification): n is EmailNotification {
-    return n instanceof EmailNotification;
-  }
-  
-  isSms(n: Notification): n is SmsNotification {
-    return n instanceof SmsNotification;
-  }
-  
-  isPush(n: Notification): n is PushNotification {
-    return n instanceof PushNotification;
-  }
-  
-  // Or use type property
-  getNotificationType(notification: Notification): string {
-    if (notification instanceof EmailNotification) return 'email';
-    if (notification instanceof SmsNotification) return 'sms';
-    if (notification instanceof PushNotification) return 'push';
-    return 'unknown';
-  }
-}
-```
-
-**Step 4: Polymorphic POST/PUT Requests**
-
-Sending polymorphic types back to .NET:
-
-```typescript
-// Create different notification types
-const emailNotif = new EmailNotification();
-// $type is automatically added during serialization
-emailNotif.to = 'user@example.com';
-emailNotif.subject = 'Test';
-emailNotif.message = 'Hello!';
-emailNotif.htmlBody = '<p>Hello World!</p>';
-emailNotif.createdAt = new Date();
-
-const smsNotif = new SmsNotification();
-// $type is automatically added during serialization
-smsNotif.phoneNumber = '+1234567890';
-smsNotif.message = 'Your code: 123';
-smsNotif.createdAt = new Date();
-
-// Send to API - automatically serialized with discriminator!
-this.typedHttp.post('/api/notifications', emailNotif, EmailNotification)
-  .subscribe(result => {
-    console.log('Saved:', result);
-    console.log(result instanceof EmailNotification);  // ✅ true
-    console.log(result.createdAt instanceof Date);  // ✅ true
-  });
-```
-
-#### Benefits for .NET Developers
-
-| Feature | Without Typed Client | With Typed Client |
-|---------|---------------------|-------------------|
-| **Polymorphic Types** | ❌ Manual type checking | ✅ Automatic with discriminator |
-| **Type Safety** | ⚠️ `as` casts everywhere | ✅ True instanceof checks |
-| **Date Conversion** | ❌ Manual parsing | ✅ Automatic with @Transform |
-| **Typewriter Integration** | ⚠️ Manual class creation | ✅ Auto-generated from C# |
-| **Validation** | ❌ Runtime only | ✅ Compile-time + Runtime |
-| **Serialization** | ❌ Manual JSON.stringify | ✅ Automatic with decorators |
-| **Nested Types** | ⚠️ Complex manual handling | ✅ @Type decorator handles it |
-| **Discriminator** | ❌ Manual switch/case | ✅ class-transformer handles it |
-
-#### System.Text.Json Configuration
-
-For **System.Text.Json**, the discriminator property is configurable in C#:
-
-```typescript
-// Match your C# TypeDiscriminatorPropertyName setting
-export class NotificationListDto {
-  @Type(() => NotificationBase, {
-    discriminator: {
-      property: '$type',  // or 'type', 'kind', 'notificationType', etc.
-      subTypes: [
-        { value: EmailNotification, name: 'email' },      // lowercase in .NET 7+
-        { value: SmsNotification, name: 'sms' },
-        { value: PushNotification, name: 'push' },
-      ],
-    },
-  })
-  notifications!: Notification[];
-}
-
-// If you used custom discriminator in C#:
-// [JsonPolymorphic(TypeDiscriminatorPropertyName = "notificationType")]
-export class CustomNotificationListDto {
-  @Type(() => NotificationBase, {
-    discriminator: {
-      property: 'notificationType',  // Must match C# configuration!
-      subTypes: [
-        { value: EmailNotification, name: 'email' },
-        { value: SmsNotification, name: 'sms' },
-      ],
-    },
-  })
-  notifications!: Notification[];
-}
-```
-
-#### Advanced: Deeply Nested Polymorphism
-
-```csharp
-// C# - Nested polymorphic types
-public class NotificationGroup
-{
-    public string Name { get; set; }
-    public List<Notification> Notifications { get; set; }
-    public NotificationSettings Settings { get; set; }
-}
-
-[JsonPolymorphic]
-[JsonDerivedType(typeof(EmailSettings), "email")]
-[JsonDerivedType(typeof(SmsSettings), "sms")]
-public abstract class NotificationSettings
-{
-    public bool Enabled { get; set; }
-}
-```
-
-```typescript
-// TypeScript - Nested discriminators work too!
-export class NotificationGroupDto {
-  name!: string;
-  
-  @Type(() => NotificationBase, {
-    discriminator: {
-      property: '$type',  // Newtonsoft.Json
-      subTypes: [
-        { value: EmailNotification, name: 'Email' },
-        { value: SmsNotification, name: 'Sms' },
-      ],
-    },
-  })
-  notifications!: Notification[];
-  
-  @Type(() => NotificationSettingsBase, {
-    discriminator: {
-      property: '$type',  // Both can use same or different discriminators
-      subTypes: [
-        { value: EmailSettings, name: 'email' },
-        { value: SmsSettings, name: 'sms' },
-      ],
-    },
-  })
-  settings!: NotificationSettings;
-}
-```
-
-**Result:** Automatic deserialization of nested polymorphic hierarchies! 🎉
-
-#### Resources
-
-- **Typewriter Extension:** https://github.com/AdaskoTheBeAsT/Typewriter - Fork with enhanced features
-- **Typewriter .tst Recipes:** https://github.com/AdaskoTheBeAsT/NetCoreTypewriterRecipes - Templates for Angular & React (Newtonsoft.Json & System.Text.Json)
-- **nxsamples:** https://github.com/AdaskoTheBeAsT/nxsamples - Complete Nx workspace examples
-- **class-transformer Discriminators:** Use `@Type()` with `discriminator` option
-- **.NET Polymorphic Serialization:** https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism
-- **Newtonsoft.Json Type Handling:** Uses `$type` by default for polymorphic serialization
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! To get started:
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass: `yarn test:all`
-6. Commit: `git commit -m 'Add amazing feature'`
-7. Push: `git push origin feature/amazing-feature`
-8. Open a Pull Request
-
-### Development Setup
+The runtime peer is only needed for the `dateFnsDateBackend` export. If you use the schema stack, add it:
 
 ```bash
-# Clone
-git clone https://github.com/AdaskoTheBeAsT/date-interceptors.git
-cd date-interceptors
-
-# Install
-yarn install
-
-# Test
-yarn test:all
-
-# Build
-yarn build:all
-
-# Lint
-yarn lint:all
+npm i @adaskothebeast/typewriter-runtime
 ```
 
 ---
 
-## 🔐 Security
+## 🎯 What it does
 
-### Reporting Vulnerabilities
+Two independent tools ship in this package.
 
-If you discover a security vulnerability, please email:  
-📧 **adaskothebeast@gmail.com**
+**1. A blind traversal.** `hierarchicalConvertToDateFns` walks a parsed JSON graph and, without any schema, rewrites recognized strings in place: ISO date-times become `Date` (through date-fns `parseJSON`), ISO durations become date-fns `Duration` objects. Prototype keys are skipped, cycles are tracked in a `WeakSet` and recursion is depth limited, so it is safe on untrusted bodies.
 
-**Please include:**
-- Description of the vulnerability
-- Steps to reproduce
-- Potential impact
-- Suggested fix (if any)
+**2. A schema-driven backend.** `dateFnsDateBackend` is a `DateBackend` (the interface from `@adaskothebeast/typewriter-runtime`): a `name` plus a map of `DateCodec` objects keyed by `DateSchemaKind`. Pass it as the `dateBackend` option to the typewriter runtime and every date-shaped schema node is hydrated and serialized with date-fns, with real errors on malformed wire values instead of silent guessing.
 
-We take security seriously and will respond promptly.
+---
 
-### Security Audits
+## 🧰 API
 
-- ✅ OWASP Top 10 reviewed
-- ✅ CWE-1321 (Prototype Pollution) mitigated
-- ✅ DoS protection (depth limiting)
-- ✅ Input validation hardened
-- ✅ Error handling comprehensive
+### `hierarchicalConvertToDateFns(obj, depth?, visited?)`
+
+`(obj: unknown, depth?: number, visited?: WeakSet<object>) => void`
+
+Mutates `obj` and returns nothing. `depth` defaults to `0`, `visited` to a fresh `WeakSet`. Both optional parameters exist for the recursive calls but are usable: a higher `depth` shrinks the remaining budget, a shared `visited` set prevents re-walking the same graph.
+
+### `dateFnsDateBackend`
+
+Declared `satisfies DateBackend`, so `name` is `'date-fns'` and the `codecs` record is exactly:
+
+| Schema kind        | Value type          | `parse` accepts                                     | `serialize` emits                  |
+| ------------------ | ------------------- | --------------------------------------------------- | ---------------------------------- |
+| `instant`          | `Date`              | `YYYY-MM-DDTHH:mm[:ss[.sss]]` plus `Z` or `±HH:MM`  | `toISOString()` (always UTC)       |
+| `plain-date`       | `Date`              | `YYYY-MM-DD`                                        | `yyyy-MM-dd` (local fields)        |
+| `plain-date-time`  | `Date`              | `YYYY-MM-DDTHH:mm[:ss[.sss]]`, no zone allowed      | `yyyy-MM-dd'T'HH:mm:ss.SSS`        |
+| `duration`         | `Duration`          | ISO 8601 duration, fractions allowed (`.` or `,`)   | `P…T…`, `PT0S` when empty          |
+| `period`           | `Duration`          | same codec object as `duration`                     | same as `duration`                 |
+
+Every codec also exposes `is(value)`: the three date codecs use date-fns `isDate` plus `isValid`, the duration codec accepts a plain object whose keys are a subset of `years`, `months`, `weeks`, `days`, `hours`, `minutes`, `seconds` and whose values are finite non-negative numbers.
+
+`plain-time`, `zoned-date-time`, `plain-year-month` and `plain-month-day` are intentionally absent, because a native `Date` cannot carry those semantics. The runtime falls back to its own handling for kinds a backend does not advertise.
+
+---
+
+## ⚡ Usage
+
+Blind hydration of a response body:
+
+```ts
+import { hierarchicalConvertToDateFns } from '@adaskothebeast/hierarchical-convert-to-date-fns';
+import type { Duration } from 'date-fns';
+
+interface Booking {
+  startsAt: Date;
+  stay: Duration;
+}
+
+const raw: unknown = JSON.parse(text);
+hierarchicalConvertToDateFns(raw);
+const booking = raw as Booking;
+booking.stay.days; // 4
+```
+
+Schema-driven hydration with the typewriter runtime:
+
+```ts
+import { dateFnsDateBackend } from '@adaskothebeast/hierarchical-convert-to-date-fns';
+import { createJsonSerializer, createJsonTransformer } from '@adaskothebeast/typewriter-runtime';
+
+const toBooking = createJsonTransformer(bookingSchema, undefined, {
+  dateBackend: dateFnsDateBackend,
+  mode: 'strict',
+});
+const toWire = createJsonSerializer(bookingSchema, undefined, {
+  dateBackend: dateFnsDateBackend,
+});
+
+const booking = toBooking(await response.json());
+const body = toWire(booking);
+```
+
+Using a single codec directly, for example in a form adapter:
+
+```ts
+const { instant } = dateFnsDateBackend.codecs;
+instant.parse('2024-02-29T12:34:56.789+01:00'); // Date
+instant.serialize(new Date('2024-02-29T11:34:56.789Z')); // '2024-02-29T11:34:56.789Z'
+```
+
+---
+
+## 🎛️ Options and configuration
+
+`hierarchicalConvertToDateFns` has no configuration. What it recognizes is fixed:
+
+```text
+date      ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|([+-]\d{2}:\d{2}))?$
+duration  ^P(nY)?(nM)?(nW)?(nD)?(T(nH)?(nM)?(nS)?)$   with integer n only
+```
+
+Date candidates are pre-filtered by four cheap checks (length at least 20, `-` at index 4, `-` at index 7, `T` at index 10); duration candidates by length at least 2 and a leading `P`. The depth guard is `depth > 100`, so the root plus 100 nested levels are walked.
+
+The backend is configured entirely through the runtime option object (`dateBackend`), and `mode: 'strict'` is what turns codec `RangeError`s into reported failures rather than preserved raw values.
+
+---
+
+## 📤 Output examples
+
+`hierarchicalConvertToDateFns`:
+
+| Input                                       | After conversion                                                                        |
+| ------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `{ date: '2023-07-17T23:06:00.000Z' }`      | `{ date: Date('2023-07-17T23:06:00.000Z') }`                                            |
+| `{ date: '2023-07-17T23:06:00.000+01:00' }` | `{ date: Date('2023-07-17T23:06:00.000+01:00') }`                                       |
+| `{ duration: 'P0D' }`                       | `{ duration: { years: 0, months: 0, weeks: 0, days: 0, hours: 0, minutes: 0, seconds: 0 } }` |
+| `{ duration: 'P4W' }`                       | `{ duration: { ..., weeks: 4, ... } }` (other fields `0`)                                |
+| `{ duration: 'P1Y2M4DT2H3M2S' }`            | `{ duration: { years: 1, months: 2, weeks: 0, days: 4, hours: 2, minutes: 3, seconds: 2 } }` |
+| `['P1Y2M4DT2H3M2S', 'P1Y2M4DT2H3M2S']`      | both elements become `Duration` objects                                                 |
+| `{ text: 'adam' }`                          | untouched                                                                               |
+
+`dateFnsDateBackend` codecs:
+
+```text
+instant          '2024-02-29T12:34:56.789+01:00' -> Date  -> '2024-02-29T11:34:56.789Z'
+plain-date       '2024-02-29'                    -> Date  -> '2024-02-29'
+plain-date-time  '2024-02-29T12:34:56.789'       -> Date  -> '2024-02-29T12:34:56.789'
+duration         'P1Y2M3W4DT5H6M7.25S'           -> { years: 1, months: 2, weeks: 3, days: 4, hours: 5, minutes: 6, seconds: 7.25 }
+duration         'P0D'                           -> { days: 0 }              -> 'P0D'
+duration         {}                              ->                             'PT0S'
+```
+
+---
+
+## ⚠️ Edge cases
+
+- **Mutation in place.** The traversal returns `void` and rewrites your object; clone first (`structuredClone`) if you need the original strings.
+- **Prototype pollution is blocked.** `__proto__`, `constructor` and `prototype` keys are skipped, and non-own enumerable properties are ignored via `Object.hasOwn`.
+- **Cycles are safe**, tracked in a `WeakSet`, so a self-referencing payload terminates. Past 101 object levels (`depth > 100`) nothing is converted, silently.
+- **The traversal and the backend disagree about fractions.** `PT7.25S` is converted by `dateFnsDateBackend.codecs.duration` but not by `hierarchicalConvertToDateFns`, whose duration pattern accepts integers only, so it stays a string there.
+- **The traversal fills all seven duration fields with `0`**, while the codec sets only the components present on the wire (`P0D` becomes `{ days: 0 }`, not a full record). Do not compare the two shapes with strict deep equality.
+- **Any `P`-prefixed string of length 2 or more that matches the pattern is converted**, including the degenerate `'PT'`, which becomes an all-zero `Duration`. Human text starting with `P` is safe because it fails the pattern.
+- **Offset-less date-times are treated as UTC** by date-fns `parseJSON`, not as local time. This is a real behavioural difference from the plain [`-date`](https://www.npmjs.com/package/@adaskothebeast/hierarchical-convert-to-date) package, which uses `new Date` and therefore reads `2023-07-17T23:06:00.000` as local.
+- **Invalid but well-shaped dates stay strings.** `2023-99-99T99:99:99.000Z` matches the date pattern, fails validation, and is left alone; the duration branch is not attempted for it.
+- **Date-only strings are not touched by the traversal.** `2023-07-17` fails the 20 character floor. Use the schema stack with `plain-date` if your payload carries calendar dates.
+- **Negative durations are rejected by the backend.** `duration.parse('-P1D')` throws `RangeError: date-fns Duration does not support negative values`, `is({ days: -1 })` is `false` and `serialize({ days: -1 })` throws. date-fns has no sign on `Duration`.
+- **`duration.is({})` is `true`** (an empty key set satisfies the check) and `serialize({})` yields `PT0S`, so a stray empty object in a duration slot round-trips as a zero duration rather than failing.
+- **`instant` requires a zone, `plain-date-time` forbids one.** `instant.parse('2024-02-29T12:34:56')` and `plainDateTime.parse('2024-02-29T12:34:56Z')` both throw `RangeError`. `plain-date` rejects impossible calendar days such as `2024-02-30`. Bare `'P'` is rejected as a duration.
+- **`plain-date` and `plain-date-time` serialize local calendar fields** via date-fns `format`, so a `Date` created in one zone and formatted in another shifts. Keep those values as wall-clock data and never mix them with `instant`.
+- **`period` is the very same codec object as `duration`**, so a `period` node produces a date-fns `Duration`, not a calendar-only structure.
+
+---
+
+## 🔗 Related packages
+
+- Same traversal, other date libraries: [`-date`](https://www.npmjs.com/package/@adaskothebeast/hierarchical-convert-to-date), [`-dayjs`](https://www.npmjs.com/package/@adaskothebeast/hierarchical-convert-to-dayjs), [`-luxon`](https://www.npmjs.com/package/@adaskothebeast/hierarchical-convert-to-luxon), [`-moment`](https://www.npmjs.com/package/@adaskothebeast/hierarchical-convert-to-moment), [`-js-joda`](https://www.npmjs.com/package/@adaskothebeast/hierarchical-convert-to-js-joda), [`-temporal`](https://www.npmjs.com/package/@adaskothebeast/hierarchical-convert-to-temporal)
+- Other value kinds: [`-decimal`](https://www.npmjs.com/package/@adaskothebeast/hierarchical-convert-to-decimal), [`-uuid`](https://www.npmjs.com/package/@adaskothebeast/hierarchical-convert-to-uuid)
+- Schema stack: [`typewriter-schema`](https://www.npmjs.com/package/@adaskothebeast/typewriter-schema), [`typewriter-runtime`](https://www.npmjs.com/package/@adaskothebeast/typewriter-runtime), [`typewriter-http-angular`](https://www.npmjs.com/package/@adaskothebeast/typewriter-http-angular), [`typewriter-http-axios`](https://www.npmjs.com/package/@adaskothebeast/typewriter-http-axios), [`typewriter-http-fetch`](https://www.npmjs.com/package/@adaskothebeast/typewriter-http-fetch)
+- Transports: [`angular-date-http-interceptor`](https://www.npmjs.com/package/@adaskothebeast/angular-date-http-interceptor), [`axios-interceptor`](https://www.npmjs.com/package/@adaskothebeast/axios-interceptor), [`react-redux-toolkit-hierarchical-date-hook`](https://www.npmjs.com/package/@adaskothebeast/react-redux-toolkit-hierarchical-date-hook)
+
+Full matrix and recipes: [main README](https://github.com/AdaskoTheBeAsT/date-interceptors#readme).
 
 ---
 
 ## 📄 License
 
-MIT © [AdaskoTheBeAsT](https://github.com/AdaskoTheBeAsT)
-
----
-
-## 🌟 Show Your Support
-
-If this library saves you time, give it a ⭐ on [GitHub](https://github.com/AdaskoTheBeAsT/date-interceptors)!
-
----
-
-## 📞 Support
-
-- 📖 **Documentation:** You're reading it!
-- 🐛 **Issues:** [GitHub Issues](https://github.com/AdaskoTheBeAsT/date-interceptors/issues)
-- 💬 **Discussions:** [GitHub Discussions](https://github.com/AdaskoTheBeAsT/date-interceptors/discussions)
-- 📧 **Email:** adaskothebeast@gmail.com
-
----
-
-## 🎉 Acknowledgments
-
-Thanks to all contributors and the community for making this library better!
-
-Special thanks to:
-- OWASP for security guidelines
-- Date library maintainers for excellent date/time tooling
-- Framework teams for making integration smooth
-
----
-
-<div align="center">
-
-**Made with ❤️ by developers, for developers**
-
-[⬆ Back to Top](#-date-interceptors)
-
-</div>
+[MIT](./LICENSE) © Adam Pluciński

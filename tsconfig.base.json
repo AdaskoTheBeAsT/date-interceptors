@@ -47,8 +47,36 @@
       ],
       "@adaskothebeast/react-redux-toolkit-hierarchical-date-hook": [
         "libs/react-redux-toolkit-hierarchical-date-hook/src/index.ts"
+      ],
+      "@adaskothebeast/hierarchical-convert-to-uuid": [
+        "./libs/hierarchical-convert-to-uuid/src/index.ts"
+      ],
+      "@adaskothebeast/hierarchical-convert-to-decimal": [
+        "./libs/hierarchical-convert-to-decimal/src/index.ts"
+      ],
+      "@adaskothebeast/hierarchical-convert-to-temporal": [
+        "./libs/hierarchical-convert-to-temporal/src/index.ts"
+      ],
+      "@adaskothebeast/typewriter-schema": [
+        "./libs/typewriter-schema/src/index.ts"
+      ],
+      "@adaskothebeast/typewriter-runtime": [
+        "./libs/typewriter-runtime/src/index.ts"
+      ],
+      "@adaskothebeast/typewriter-http-axios": [
+        "./libs/typewriter-http-axios/src/index.ts"
+      ],
+      "@adaskothebeast/typewriter-http-fetch": [
+        "./libs/typewriter-http-fetch/src/index.ts"
+      ],
+      "@adaskothebeast/typewriter-http-angular": [
+        "./libs/typewriter-http-angular/src/index.ts"
       ]
-    }
+    },
+    "strict": false,
+    "noUncheckedSideEffectImports": false,
+    "types": ["*"],
+    "ignoreDeprecations": "6.0"
   },
   "exclude": ["node_modules", "tmp"]
 }

@@ -7,6 +7,7 @@ import {
   HttpRequest,
   provideHttpClient,
   withInterceptorsFromDi,
+  withXhr
 } from '@angular/common/http';
 import {
   HttpTestingController,
@@ -40,7 +41,7 @@ describe('ClassTransformerHttpInterceptor with prior cloning interceptor', () =>
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClient(withXhr(), withInterceptorsFromDi()),
         provideHttpClientTesting(),
         {
           provide: HTTP_INTERCEPTORS,

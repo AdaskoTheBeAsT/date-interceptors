@@ -21,13 +21,19 @@
       "dependsOn": ["build"]
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/.eslintrc.json",
+        "{workspaceRoot}/.eslintignore",
+        "{workspaceRoot}/eslint.config.cjs",
+        "{workspaceRoot}/tools/eslint-rules/**/*",
+        {
+          "externalDependencies": ["eslint"]
+        }
+      ],
       "options": {
-        "lintFilePatterns": [
-          "libs/hierarchical-convert-to-date-fns/**/*.{ts,tsx,js,jsx}",
-          "libs/hierarchical-convert-to-date-fns/package.json"
-        ]
+        "args": ["**/*.{ts,tsx,js,jsx}", "package.json"]
       }
     },
     "test": {

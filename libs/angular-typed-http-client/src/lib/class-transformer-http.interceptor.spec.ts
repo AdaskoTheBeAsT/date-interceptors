@@ -6,6 +6,7 @@ import {
   HttpContext,
   provideHttpClient,
   withInterceptorsFromDi,
+  withXhr
 } from '@angular/common/http';
 // class-transformer-http-interceptor.spec.ts
 import {
@@ -34,7 +35,7 @@ describe('ClassTransformerHttpInterceptor', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClient(withXhr(), withInterceptorsFromDi()),
         provideHttpClientTesting(),
         TypedHttpClient,
         {

@@ -4,6 +4,7 @@ import {
   HTTP_INTERCEPTORS,
   provideHttpClient,
   withInterceptorsFromDi,
+  withXhr
 } from '@angular/common/http';
 import {
   HttpTestingController,
@@ -24,7 +25,7 @@ describe('TypedHttpClient', () => {
     TestBed.configureTestingModule({
       imports: [],
       providers: [
-        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClient(withXhr(), withInterceptorsFromDi()),
         provideHttpClientTesting(),
         {
           provide: HTTP_INTERCEPTORS,

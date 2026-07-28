@@ -1,0 +1,61 @@
+{
+  "name": "typewriter-http-angular",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/typewriter-http-angular/src",
+  "projectType": "library",
+  "release": {
+    "version": {
+      "manifestRootsToUpdate": ["dist/{projectRoot}"],
+      "currentVersionResolver": "git-tag",
+      "fallbackCurrentVersionResolver": "disk"
+    }
+  },
+  "tags": [],
+  "implicitDependencies": ["typewriter-runtime", "typewriter-schema"],
+  "targets": {
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist/{projectRoot}"
+      }
+    },
+    "build": {
+      "executor": "@nx/angular:package",
+      "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "project": "libs/typewriter-http-angular/ng-package.json",
+        "tsConfig": "libs/typewriter-http-angular/tsconfig.lib.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/typewriter-http-angular/tsconfig.lib.prod.json"
+        },
+        "development": {}
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/typewriter-http-angular/jest.config.ts",
+        "tsConfig": "libs/typewriter-http-angular/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/.eslintrc.json",
+        "{workspaceRoot}/.eslintignore",
+        "{workspaceRoot}/eslint.config.cjs",
+        "{workspaceRoot}/tools/eslint-rules/**/*",
+        {
+          "externalDependencies": ["eslint"]
+        }
+      ],
+      "options": {
+        "args": ["**/*.{ts,tsx,js,jsx}", "package.json"]
+      }
+    }
+  }
+}

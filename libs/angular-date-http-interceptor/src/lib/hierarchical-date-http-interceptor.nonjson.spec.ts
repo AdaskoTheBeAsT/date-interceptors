@@ -6,6 +6,7 @@ import {
   HttpHeaders,
   provideHttpClient,
   withInterceptorsFromDi,
+  withXhr
 } from '@angular/common/http';
 import {
   HttpTestingController,
@@ -26,7 +27,7 @@ describe('HierarchicalDateHttpInterceptor - non JSON payloads (Jest)', () => {
     TestBed.configureTestingModule({
       providers: [
         // HttpClient + respect DI interceptors
-        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClient(withXhr(), withInterceptorsFromDi()),
         // Testing backend + HttpTestingController
         provideHttpClientTesting(),
 

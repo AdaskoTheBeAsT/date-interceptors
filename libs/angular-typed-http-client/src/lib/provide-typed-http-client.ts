@@ -2,6 +2,7 @@ import {
   HTTP_INTERCEPTORS,
   provideHttpClient,
   withInterceptorsFromDi,
+  withXhr
 } from '@angular/common/http';
 import { EnvironmentProviders, Provider } from '@angular/core';
 
@@ -10,7 +11,7 @@ import { ClassTransformerSerializeInterceptor } from './class-transformer-serial
 
 export function provideTypedHttpClient(): (Provider | EnvironmentProviders)[] {
   return [
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withXhr(), withInterceptorsFromDi()),
     {
       provide: HTTP_INTERCEPTORS,
       useClass: ClassTransformerSerializeInterceptor,

@@ -8,15 +8,16 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    "ignoreDeprecations": "6.0"
   },
   "files": [],
   "include": [],
   "references": [
     {
-      "path": "./tsconfig.lib.json",
+      "path": "./tsconfig.lib.json"
     },
     {
-      "path": "./tsconfig.spec.json",
-    },
-  ],
+      "path": "./tsconfig.spec.json"
+    }
+  ]
 }

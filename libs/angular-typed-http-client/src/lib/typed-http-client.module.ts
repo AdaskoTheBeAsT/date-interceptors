@@ -3,6 +3,7 @@ import {
   HTTP_INTERCEPTORS,
   provideHttpClient,
   withInterceptorsFromDi,
+  withXhr
 } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 
@@ -12,7 +13,7 @@ import { ClassTransformerSerializeInterceptor } from './class-transformer-serial
 @NgModule({
   imports: [CommonModule],
   providers: [
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withXhr(), withInterceptorsFromDi()),
     {
       provide: HTTP_INTERCEPTORS,
       useClass: ClassTransformerSerializeInterceptor,
