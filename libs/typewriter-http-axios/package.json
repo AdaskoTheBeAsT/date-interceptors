@@ -22,8 +22,8 @@
   "main": "./index.esm.js",
   "module": "./index.esm.js",
   "dependencies": {
-    "@adaskothebeast/typewriter-runtime": "10.0.0",
-    "@adaskothebeast/typewriter-schema": "10.0.0"
+    "@adaskothebeast/typewriter-runtime": "^10.0.0",
+    "@adaskothebeast/typewriter-schema": "^10.0.0"
   },
   "peerDependencies": {
     "axios": "^1.18.1"
