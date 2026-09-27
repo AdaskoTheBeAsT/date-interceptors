@@ -80,7 +80,7 @@ describe('ClassTransformerHttpInterceptor', () => {
 
   it('transforms body into the provided class via TypedHttpClient', (done) => {
     typed.get('/api/user/1', UserDto).subscribe((user) => {
-      expect(user instanceof UserDto).toBe(true);
+      expect(user).toBeInstanceOf(UserDto);
       expect(user.upper()).toBe('ALICE');
       done();
     });
@@ -95,7 +95,7 @@ describe('ClassTransformerHttpInterceptor', () => {
     http
       .get<UserDto>('/api/user/2', { context: ctx })
       .subscribe((user: UserDto) => {
-        expect(user instanceof UserDto).toBe(true);
+        expect(user).toBeInstanceOf(UserDto);
         expect(user.upper()).toBe('BOB');
         done();
       });

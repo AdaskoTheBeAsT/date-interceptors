@@ -21,7 +21,6 @@ export function handleProblemDetails(): MonoTypeOperatorFunction<
               new HttpErrorResponse({
                 error: event.body,
                 status: event.status,
-                statusText: event.statusText,
                 headers: event.headers,
                 url: event.url ?? undefined,
               }),

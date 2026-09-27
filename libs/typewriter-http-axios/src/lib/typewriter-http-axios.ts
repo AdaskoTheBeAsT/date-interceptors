@@ -64,30 +64,41 @@ export interface TypewriterAxiosSchemas<T = unknown, D = unknown> {
 
 const JSON_CONTENT_TYPE = /[/+]json\s*(?:;|$)/iu;
 
+type LegacyTypewriterAxiosConfig = {
+  readonly requestSchema?: TypewriterSchema;
+  readonly requestSchemaRegistry?: JsonTransformerRegistry;
+  readonly requestSerializeOptions?: JsonSerializerOptions;
+  readonly responseSchema?: TypewriterSchema;
+  readonly responseSchemaRegistry?: JsonTransformerRegistry;
+  readonly responseTransformOptions?: JsonTransformerOptions;
+};
+
 function requestSettings(config: AxiosRequestConfig) {
   const settings = config.typewriter;
+  const legacy = config as LegacyTypewriterAxiosConfig;
   return {
-    schema: settings?.requestSchema ?? config.requestSchema,
+    schema: settings?.requestSchema ?? legacy.requestSchema,
     registry:
       settings?.requestRegistry ??
       settings?.registry ??
-      config.requestSchemaRegistry,
+      legacy.requestSchemaRegistry,
     options: withStrictDefault(
-      settings?.serializeOptions ?? config.requestSerializeOptions,
+      settings?.serializeOptions ?? legacy.requestSerializeOptions,
     ),
   };
 }
 
 function responseSettings(config: AxiosRequestConfig) {
   const settings = config.typewriter;
+  const legacy = config as LegacyTypewriterAxiosConfig;
   return {
-    schema: settings?.responseSchema ?? config.responseSchema,
+    schema: settings?.responseSchema ?? legacy.responseSchema,
     registry:
       settings?.responseRegistry ??
       settings?.registry ??
-      config.responseSchemaRegistry,
+      legacy.responseSchemaRegistry,
     options: withStrictDefault(
-      settings?.transformOptions ?? config.responseTransformOptions,
+      settings?.transformOptions ?? legacy.responseTransformOptions,
     ),
   };
 }

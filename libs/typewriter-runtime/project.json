@@ -7,11 +7,29 @@
   "implicitDependencies": ["typewriter-schema"],
   "targets": {
     "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/.reports/{projectRoot}"],
-      "options": {
-        "jestConfig": "libs/typewriter-runtime/jest.config.cts"
-      }
+      "inputs": [
+        "default",
+        "^production",
+        "{workspaceRoot}/jest.preset.js",
+        "{workspaceRoot}/tools/testing/jest-reporters.cjs",
+        "{workspaceRoot}/tools/testing/swc-transform.cjs",
+        "{workspaceRoot}/tools/testing/jsdom-environment.cjs",
+        "{workspaceRoot}/tools/testing/coverage-thresholds.json",
+        {
+          "externalDependencies": [
+            "jest",
+            "@nx/jest",
+            "ts-jest",
+            "@swc/jest",
+            "jest-junit",
+            "jest-sonar"
+          ]
+        }
+      ],
+      "outputs": [
+        "{workspaceRoot}/.reports/{projectRoot}",
+        "{workspaceRoot}\\.reports\\libs\\typewriter-runtime\\coverage"
+      ]
     }
   }
 }

@@ -155,6 +155,11 @@ export function transformJson<T>(
   registry?: JsonTransformerRegistry,
   options: JsonTransformerOptions = {},
 ): T {
+  // Keep the deprecated option names available to existing callers.
+  const legacyOptions = options as {
+    readonly customTransformers?: RuntimeTransformerRegistry;
+    readonly registry?: RuntimeTransformerRegistry;
+  };
   const state: TransformationState = {
     strict: resolveStrict(options),
     maxDepth: normalizeMaxDepth(options.maxDepth),
@@ -162,8 +167,8 @@ export function transformJson<T>(
     dateBackend: options.dateBackend ?? temporalDateBackend,
     optionTransformers: [
       options.transformers,
-      options.customTransformers,
-      options.registry,
+      legacyOptions.customTransformers,
+      legacyOptions.registry,
     ],
     transformedPairs: new WeakMap<object, WeakMap<object, unknown>>(),
     recursion: new SchemaRecursionGuard(),
@@ -260,12 +265,7 @@ function transformNormalized(
         ? value
         : fail('Expected undefined', path, value, state);
     case 'literal':
-      if (!normalized.hasValue) {
-        return fail('Literal schema is missing a value', path, value, state);
-      }
-      return Object.is(value, normalized.value)
-        ? value
-        : fail('Value does not match the literal schema', path, value, state);
+      return transformLiteral(value, normalized, path, state);
     case 'decimal':
       return transformDecimal(value, normalized.wireType, path, state);
     case 'uuid':
@@ -297,6 +297,20 @@ function transformNormalized(
     case 'invalid':
       return fail('Unknown schema descriptor', path, value, state);
   }
+}
+
+function transformLiteral(
+  value: unknown,
+  normalized: Extract<NormalizedSchema, { type: 'literal' }>,
+  path: SchemaPath,
+  state: TransformationState,
+): unknown {
+  if (!normalized.hasValue) {
+    return fail('Literal schema is missing a value', path, value, state);
+  }
+  return Object.is(value, normalized.value)
+    ? value
+    : fail('Value does not match the literal schema', path, value, state);
 }
 
 function transformDecimal(

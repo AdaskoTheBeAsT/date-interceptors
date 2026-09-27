@@ -37,19 +37,30 @@ describe('ISO recognition contract', () => {
     expect(isIsoDateTime(value)).toBe(false);
   });
 
-  it.each(['PT0S', 'P1Y2M3DT4H5M6.123456789S', '-PT1.5S', 'P2W'])(
-    'recognizes a duration %s',
-    (value) => {
-      expect(isIsoDuration(value)).toBe(true);
-    },
-  );
+  it.each([
+    'PT0S',
+    'PT3H',
+    'P1Y',
+    'P1Y2M3DT4H5M6.123456789S',
+    '-PT1.5S',
+    'P2W',
+  ])('recognizes a duration %s', (value) => {
+    expect(isIsoDuration(value)).toBe(true);
+  });
 
-  it.each(['P', 'PT', 'P1DT', 'P-1D', 'PT1.1234567890S'])(
-    'rejects an incomplete or unsupported duration %s',
-    (value) => {
-      expect(isIsoDuration(value)).toBe(false);
-    },
-  );
+  it.each([
+    'P',
+    'PT',
+    '-T1H',
+    'P1DT',
+    'P-1D',
+    'PT1.1234567890S',
+    'P1YTT2H',
+    'P1YT2H3D',
+    'PT2H1Y',
+  ])('rejects an incomplete or unsupported duration %s', (value) => {
+    expect(isIsoDuration(value)).toBe(false);
+  });
 
   it.each([
     ['2024-01-01T00:00:00', false],

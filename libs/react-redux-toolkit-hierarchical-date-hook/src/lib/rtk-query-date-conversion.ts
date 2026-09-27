@@ -45,12 +45,12 @@ function toProblemQueryError(
     typeof originalError === 'object' && originalError !== null
       ? (originalError as Record<string, unknown>)
       : undefined;
-  const body =
-    originalError === undefined
-      ? data
-      : original !== undefined && 'data' in original
-        ? original['data']
-        : originalError;
+  let body = originalError;
+  if (originalError === undefined) {
+    body = data;
+  } else if (original !== undefined && 'data' in original) {
+    body = original['data'];
+  }
   const details = withProblemDetails({}, httpStatus, body);
   return {
     ...original,

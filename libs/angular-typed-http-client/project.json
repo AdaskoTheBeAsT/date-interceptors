@@ -22,12 +22,33 @@
       }
     },
     "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/.reports/{projectRoot}"],
-      "options": {
-        "jestConfig": "libs/angular-typed-http-client/jest.config.cts",
-        "tsConfig": "libs/angular-typed-http-client/tsconfig.spec.json"
-      }
+      "inputs": [
+        "default",
+        "^production",
+        "{workspaceRoot}/jest.preset.js",
+        "{workspaceRoot}/tools/testing/jest-reporters.cjs",
+        "{workspaceRoot}/tools/testing/swc-transform.cjs",
+        "{workspaceRoot}/tools/testing/jsdom-environment.cjs",
+        "{workspaceRoot}/tools/testing/coverage-thresholds.json",
+        {
+          "externalDependencies": [
+            "jest",
+            "@nx/jest",
+            "ts-jest",
+            "jest-preset-angular",
+            "jest-stare",
+            "jest-html-reporters",
+            "jest-xunit",
+            "jest-sonar",
+            "jest-trx-results-processor",
+            "jest-junit"
+          ]
+        }
+      ],
+      "outputs": [
+        "{workspaceRoot}/.reports/{projectRoot}",
+        "{workspaceRoot}\\.reports\\libs\\angular-typed-http-client\\coverage"
+      ]
     }
   }
 }

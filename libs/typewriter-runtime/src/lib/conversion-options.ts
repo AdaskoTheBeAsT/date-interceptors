@@ -8,6 +8,8 @@ export interface StrictnessOptions {
   readonly mode?: 'strict' | 'tolerant';
 }
 
+type LegacyStrictnessOptions = { readonly mode?: 'strict' | 'tolerant' };
+
 export function resolveStrict(
   options: StrictnessOptions,
   defaultStrict = false,
@@ -15,7 +17,7 @@ export function resolveStrict(
   if (options.strict !== undefined) {
     return options.strict;
   }
-  const mode = options.mode;
+  const mode = (options as LegacyStrictnessOptions).mode;
   return mode === undefined ? defaultStrict : mode === 'strict';
 }
 
@@ -29,7 +31,8 @@ export function withStrictDefault<TOptions extends StrictnessOptions>(
 ): TOptions {
   if (
     options !== undefined &&
-    (options.strict !== undefined || options.mode !== undefined)
+    (options.strict !== undefined ||
+      (options as LegacyStrictnessOptions).mode !== undefined)
   ) {
     return options;
   }

@@ -30,7 +30,8 @@ function cloneAndConvert<TConverted>(
   if (typeof value !== 'object' || value === null) return value;
   const cloned = structuredClone(value);
   const converted = convertFunc(cloned);
-  return converted === undefined ? cloned : converted;
+  if (converted === undefined) return cloned;
+  return converted;
 }
 
 /**

@@ -23,7 +23,8 @@ export function formatPath(path: SchemaPath): string {
   for (let node = path; node !== undefined; node = node.parent) {
     segments.push(formatSegment(node.key));
   }
-  return `$${segments.reverse().join('')}`;
+  segments.reverse();
+  return `$${segments.join('')}`;
 }
 
 function formatSegment(key: string | number): string {

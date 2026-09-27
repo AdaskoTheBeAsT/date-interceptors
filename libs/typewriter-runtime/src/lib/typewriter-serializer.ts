@@ -16,7 +16,7 @@ import {
   resolveLazySchema,
   resolveNamedSchema,
 } from './schema-descriptor';
-import type { NormalizedSchema } from './schema-descriptor';
+import type { NormalizedSchema, PropertyEntry } from './schema-descriptor';
 import { childPath, formatPath } from './schema-path';
 import type { SchemaPath } from './schema-path';
 import { SchemaRecursionGuard } from './schema-recursion';
@@ -103,6 +103,11 @@ export function serializeJson<T>(
   registry?: JsonTransformerRegistry,
   options: JsonSerializerOptions = {},
 ): unknown {
+  // Keep the deprecated option names available to existing callers.
+  const legacyOptions = options as {
+    readonly customSerializers?: RuntimeSerializerRegistry;
+    readonly registry?: RuntimeSerializerRegistry;
+  };
   const state: SerializationState = {
     strict: resolveStrict(options),
     maxDepth: normalizeMaxDepth(options.maxDepth),
@@ -110,8 +115,8 @@ export function serializeJson<T>(
     dateBackend: options.dateBackend ?? temporalDateBackend,
     optionSerializers: [
       options.serializers,
-      options.customSerializers,
-      options.registry,
+      legacyOptions.customSerializers,
+      legacyOptions.registry,
     ],
     serializedPairs: new WeakMap<object, WeakMap<object, unknown>>(),
     resolvedSchemas: new Map<string, unknown>(),
@@ -185,12 +190,7 @@ function serializeNormalized(
         ? value
         : fail('Expected undefined', path, value, state);
     case 'literal':
-      if (!normalized.hasValue) {
-        return fail('Literal schema is missing a value', path, value, state);
-      }
-      return Object.is(value, normalized.value)
-        ? value
-        : fail('Value does not match the literal schema', path, value, state);
+      return serializeLiteral(value, normalized, path, state);
     case 'decimal':
       return serializeDecimal(value, normalized.wireType, path, state);
     case 'uuid':
@@ -236,6 +236,20 @@ function serializeNormalized(
     case 'invalid':
       return fail('Unknown schema descriptor', path, value, state);
   }
+}
+
+function serializeLiteral(
+  value: unknown,
+  normalized: Extract<NormalizedSchema, { type: 'literal' }>,
+  path: SchemaPath,
+  state: SerializationState,
+): unknown {
+  if (!normalized.hasValue) {
+    return fail('Literal schema is missing a value', path, value, state);
+  }
+  return Object.is(value, normalized.value)
+    ? value
+    : fail('Value does not match the literal schema', path, value, state);
 }
 
 function serializeDecimal(
@@ -459,16 +473,42 @@ function serializeObject(
     }
   }
 
+  const { updates, removals } = serializePropertyUpdates(
+    value,
+    properties,
+    normalized.modelNames,
+    path,
+    depth,
+    state,
+  );
+
+  for (const name of removals) {
+    delete result[name];
+  }
+  for (const [name, serialized] of updates) {
+    result[name] = serialized;
+  }
+
+  return result;
+}
+
+function serializePropertyUpdates(
+  value: UnknownRecord,
+  properties: readonly PropertyEntry[],
+  modelNames: ReadonlySet<string>,
+  path: SchemaPath,
+  depth: number,
+  state: SerializationState,
+): { updates: [string, unknown][]; removals: string[] } {
   const updates: [string, unknown][] = [];
   const removals: string[] = [];
   for (const property of properties) {
-    const sourceName = Object.hasOwn(value, property.name)
-      ? property.name
-      : !state.strict &&
-          !normalized.modelNames.has(property.serializedName) &&
-          Object.hasOwn(value, property.serializedName)
-        ? property.serializedName
-        : undefined;
+    const sourceName = sourcePropertyName(
+      value,
+      property,
+      modelNames,
+      state.strict,
+    );
     if (sourceName === undefined) {
       if (state.strict) {
         serializeValue(
@@ -496,15 +536,24 @@ function serializeObject(
       removals.push(property.name);
     }
   }
+  return { updates, removals };
+}
 
-  for (const name of removals) {
-    delete result[name];
+function sourcePropertyName(
+  value: UnknownRecord,
+  property: PropertyEntry,
+  modelNames: ReadonlySet<string>,
+  strict: boolean,
+): string | undefined {
+  if (Object.hasOwn(value, property.name)) return property.name;
+  if (
+    !strict &&
+    !modelNames.has(property.serializedName) &&
+    Object.hasOwn(value, property.serializedName)
+  ) {
+    return property.serializedName;
   }
-  for (const [name, serialized] of updates) {
-    result[name] = serialized;
-  }
-
-  return result;
+  return undefined;
 }
 
 function serializeReference(

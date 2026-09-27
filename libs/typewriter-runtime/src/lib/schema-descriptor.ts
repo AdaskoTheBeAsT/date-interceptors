@@ -294,26 +294,7 @@ function objectProperties(
   );
 
   if (Array.isArray(rawProperties)) {
-    const result: PropertyEntry[] = [];
-    for (const rawProperty of rawProperties) {
-      const property = asRecord(rawProperty);
-      const name = firstString(
-        property?.['name'],
-        property?.['propertyName'],
-        property?.['key'],
-      );
-      const schema = firstDefined(
-        property?.['schema'],
-        property?.['descriptor'],
-        property?.['value'],
-        property?.['valueType'],
-        property?.['type'],
-      );
-      if (name !== undefined && schema !== undefined) {
-        pushProperty(result, name, serializedName(property) ?? name, schema);
-      }
-    }
-    return result;
+    return arrayProperties(rawProperties);
   }
 
   const propertyRecord = asRecord(rawProperties);
@@ -346,6 +327,29 @@ function objectProperties(
         (hasPropertyMetadata ? serializedName(property) : undefined) ?? name,
         schema,
       );
+    }
+  }
+  return result;
+}
+
+function arrayProperties(rawProperties: readonly unknown[]): PropertyEntry[] {
+  const result: PropertyEntry[] = [];
+  for (const rawProperty of rawProperties) {
+    const property = asRecord(rawProperty);
+    const name = firstString(
+      property?.['name'],
+      property?.['propertyName'],
+      property?.['key'],
+    );
+    const schema = firstDefined(
+      property?.['schema'],
+      property?.['descriptor'],
+      property?.['value'],
+      property?.['valueType'],
+      property?.['type'],
+    );
+    if (name !== undefined && schema !== undefined) {
+      pushProperty(result, name, serializedName(property) ?? name, schema);
     }
   }
   return result;
@@ -469,7 +473,9 @@ function safeKey(key: string | undefined): string | undefined {
 
 function variantLookup(variants: unknown): VariantLookup {
   if (variants instanceof Map) {
-    return (key) => variants.get(key) ?? variants.get(String(key));
+    return (key) =>
+      variants.get(key) ??
+      variants.get(typeof key === 'number' ? key.toString() : key);
   }
 
   const lookup = new Map<string, unknown>();
@@ -487,8 +493,9 @@ function variantLookup(variants: unknown): VariantLookup {
         variant?.['descriptor'],
         variant?.['type'],
       );
-      if (key !== undefined && !lookup.has(String(key))) {
-        lookup.set(String(key), schema);
+      if (typeof key === 'string' || typeof key === 'number') {
+        const name = typeof key === 'number' ? key.toString() : key;
+        if (!lookup.has(name)) lookup.set(name, schema);
       }
     }
   } else {
@@ -499,7 +506,7 @@ function variantLookup(variants: unknown): VariantLookup {
       }
     }
   }
-  return (key) => lookup.get(String(key));
+  return (key) => lookup.get(typeof key === 'number' ? key.toString() : key);
 }
 
 function uuidVersions(
@@ -514,12 +521,7 @@ function uuidVersions(
     return undefined;
   }
 
-  const values: readonly unknown[] =
-    rawVersions instanceof Set
-      ? [...(rawVersions as Set<unknown>)]
-      : Array.isArray(rawVersions)
-        ? rawVersions
-        : [rawVersions];
+  const values = versionValues(rawVersions);
   const versions = new Set<number>();
   for (const value of values) {
     const parsed =
@@ -531,6 +533,16 @@ function uuidVersions(
     }
   }
   return versions;
+}
+
+function versionValues(rawVersions: unknown): readonly unknown[] {
+  if (rawVersions instanceof Set) {
+    return [...rawVersions];
+  }
+  if (Array.isArray(rawVersions)) {
+    return rawVersions;
+  }
+  return [rawVersions];
 }
 
 /** Own-property lookup that never returns inherited members. */

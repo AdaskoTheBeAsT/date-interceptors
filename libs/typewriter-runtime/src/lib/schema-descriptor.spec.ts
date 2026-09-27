@@ -548,7 +548,7 @@ describe('Temporal brand checks', () => {
     });
     if (foreign === undefined) throw new Error('Polyfill was not loaded');
     const instant = foreign.Instant.from('2024-01-02T03:04:05Z');
-    expect(instant instanceof Temporal.Instant).toBe(false);
+    expect(instant).not.toBeInstanceOf(Temporal.Instant);
     expect(temporalDateBackend.codecs.instant.is(instant)).toBe(true);
     expect(serializeJson(instant, { kind: 'instant' })).toBe(
       '2024-01-02T03:04:05Z',

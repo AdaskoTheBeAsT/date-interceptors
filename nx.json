@@ -26,27 +26,6 @@
         }
       }
     },
-    "@nx/jest:jest": {
-      "inputs": [
-        "default",
-        "^production",
-        "{workspaceRoot}/jest.preset.js",
-        "{workspaceRoot}/tools/testing/jest-reporters.cjs",
-        "{workspaceRoot}/tools/testing/swc-transform.cjs",
-        "{workspaceRoot}/tools/testing/jsdom-environment.cjs",
-        "{workspaceRoot}/tools/testing/coverage-thresholds.json"
-      ],
-      "cache": true,
-      "options": {
-        "passWithNoTests": true
-      },
-      "configurations": {
-        "ci": {
-          "ci": true,
-          "codeCoverage": true
-        }
-      }
-    },
     "nx-release-publish": {
       "options": {
         "packageRoot": "dist/{projectRoot}"
@@ -65,7 +44,23 @@
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
-    }
+    },
+    "test": [
+      {
+        "filter": {
+          "plugin": "@nx/jest/plugin"
+        },
+        "configurations": {
+          "ci": {
+            "ci": true,
+            "coverage": true
+          }
+        },
+        "options": {
+          "passWithNoTests": true
+        }
+      }
+    ]
   },
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
@@ -220,6 +215,33 @@
       "options": {
         "buildTargetName": "build"
       }
+    },
+    {
+      "plugin": "@nx/jest/plugin",
+      "options": {
+        "targetName": "test"
+      },
+      "include": [
+        "libs/angular-date-http-interceptor/**/*",
+        "libs/angular-typed-http-client/**/*",
+        "libs/axios-interceptor/**/*",
+        "libs/hierarchical-convert-core/**/*",
+        "libs/hierarchical-convert-to-date/**/*",
+        "libs/hierarchical-convert-to-date-fns/**/*",
+        "libs/hierarchical-convert-to-dayjs/**/*",
+        "libs/hierarchical-convert-to-decimal/**/*",
+        "libs/hierarchical-convert-to-js-joda/**/*",
+        "libs/hierarchical-convert-to-luxon/**/*",
+        "libs/hierarchical-convert-to-moment/**/*",
+        "libs/hierarchical-convert-to-temporal/**/*",
+        "libs/hierarchical-convert-to-uuid/**/*",
+        "libs/react-redux-toolkit-hierarchical-date-hook/**/*",
+        "libs/typewriter-http-angular/**/*",
+        "libs/typewriter-http-axios/**/*",
+        "libs/typewriter-http-fetch/**/*",
+        "libs/typewriter-runtime/**/*",
+        "libs/typewriter-schema/**/*"
+      ]
     }
   ]
 }

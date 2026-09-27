@@ -1,7 +1,7 @@
 const DATE_TIME =
   /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,9})?(Z|[+-](\d{2}):(\d{2}))?$/;
-const DURATION =
-  /^(-)?P(?=\d|T\d)(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?=\d)(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:[.,]\d{1,9})?)S)?)?$/;
+const DURATION_DATE = /^(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?$/;
+const DURATION_TIME = /^(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:[.,]\d{1,9})?)S)?$/;
 const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 /** Facts about a recognised ISO 8601 timestamp. */
@@ -85,13 +85,37 @@ export function isIsoDateTime(value: string): boolean {
  * optional leading `-`. Individual backends may support a narrower subset.
  */
 export function parseIsoDuration(value: string): IsoDuration | undefined {
-  const match = DURATION.exec(value);
-  if (match === null) {
+  const negative = value.startsWith('-');
+  if (!value.startsWith(negative ? '-P' : 'P')) {
     return undefined;
   }
-  const [, sign, years, months, weeks, days, hours, minutes, seconds] = match;
+
+  const body = value.slice(negative ? 2 : 1);
+  const timeSeparator = body.indexOf('T');
+  if (timeSeparator !== -1 && body.indexOf('T', timeSeparator + 1) !== -1) {
+    return undefined;
+  }
+  const dateText = timeSeparator === -1 ? body : body.slice(0, timeSeparator);
+  const timeText =
+    timeSeparator === -1 ? undefined : body.slice(timeSeparator + 1);
+  const date = DURATION_DATE.exec(dateText);
+  const time =
+    timeText === undefined ? undefined : DURATION_TIME.exec(timeText);
+  if (
+    date === null ||
+    time === null ||
+    (timeText !== undefined && !time?.slice(1).some(Boolean)) ||
+    (!date.slice(1).some(Boolean) && !time?.slice(1).some(Boolean))
+  ) {
+    return undefined;
+  }
+
+  const [, years, months, weeks, days] = date;
+  const hours = time?.[1];
+  const minutes = time?.[2];
+  const seconds = time?.[3];
   return {
-    negative: sign !== undefined,
+    negative,
     components: {
       years: Number(years ?? 0),
       months: Number(months ?? 0),
@@ -106,7 +130,7 @@ export function parseIsoDuration(value: string): IsoDuration | undefined {
 
 /** Common duration syntax; individual backends may support a narrower subset. */
 export function isIsoDuration(value: string): boolean {
-  return DURATION.test(value);
+  return parseIsoDuration(value) !== undefined;
 }
 
 /**

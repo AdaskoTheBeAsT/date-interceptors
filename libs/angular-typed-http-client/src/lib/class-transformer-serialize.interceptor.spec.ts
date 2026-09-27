@@ -155,7 +155,7 @@ describe('ClassTransformerSerializeInterceptor (Jest)', () => {
       .subscribe();
     req = httpMock.expectOne('/native/URLSearchParams');
     expect(req.request.body).toBe(usp);
-    expect(req.request.headers.get('Content-Type')).toBe(null);
+    expect(req.request.headers.get('Content-Type')).toBeNull();
     req.flush({});
 
     // HttpParams

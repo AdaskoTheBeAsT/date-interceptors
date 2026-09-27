@@ -99,7 +99,7 @@ describe('TypedHttpClient getResponse', () => {
       expect(res.headers.get('x-foo')).toBe('bar');
       expect(res.body).toBeTruthy();
       const body = res.body;
-      expect(body instanceof OutputDto).toBe(true);
+      expect(body).toBeInstanceOf(OutputDto);
       expect(body?.key).toBe('v');
       expect(body?.date).toEqual(new Date('2023-07-22T16:08:00.000Z'));
       done();
