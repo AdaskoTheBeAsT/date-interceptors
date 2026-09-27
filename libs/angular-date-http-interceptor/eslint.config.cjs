@@ -38,6 +38,8 @@ module.exports = [
         'error',
         {
           ignoredFiles: ['{projectRoot}/eslint.config.{js,cjs,mjs}'],
+          // ng-packagr emits tslib imports that do not appear in the source.
+          ignoredDependencies: ['tslib'],
         },
       ],
     },

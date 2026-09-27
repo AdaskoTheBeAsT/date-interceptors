@@ -6,8 +6,6 @@ import {
 
 import { typewriterHttpInterceptor } from './typewriter-http-interceptor';
 
-export function withTypewriterHttpInterceptor(): HttpFeature<
-  HttpFeatureKind.Interceptors
-> {
+export function withTypewriterHttpInterceptor(): HttpFeature<HttpFeatureKind.Interceptors> {
   return withInterceptors([typewriterHttpInterceptor]);
 }

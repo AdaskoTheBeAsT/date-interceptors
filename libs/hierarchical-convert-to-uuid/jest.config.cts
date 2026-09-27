@@ -1,16 +1,16 @@
 /* eslint-disable */
-const { readFileSync } = require('fs')
+const { readFileSync } = require('fs');
 
 // Reading the SWC compilation config and remove the "exclude"
 // for the test files to be compiled by SWC
 const { exclude: _, ...swcJestConfig } = JSON.parse(
-  readFileSync(`${__dirname}/.swcrc`, 'utf-8')
+  readFileSync(`${__dirname}/.swcrc`, 'utf-8'),
 );
 
 // disable .swcrc look-up by SWC core because we're passing in swcJestConfig ourselves.
 // If we do not disable this, SWC Core will read .swcrc and won't transform our test files due to "exclude"
 if (swcJestConfig.swcrc === undefined) {
-    swcJestConfig.swcrc = false;
+  swcJestConfig.swcrc = false;
 }
 
 // Uncomment if using global setup/teardown files being transformed via swc
@@ -18,8 +18,21 @@ if (swcJestConfig.swcrc === undefined) {
 // jest needs EsModule Interop to find the default exported setup/teardown functions
 // swcJestConfig.module.noInterop = false;
 
+// Inline maps keep coverage locations on TypeScript rather than generated helpers.
+swcJestConfig.sourceMaps = 'inline';
+
 module.exports = {
   displayName: 'hierarchical-convert-to-uuid',
+  coverageThreshold: {
+    global: require('../../tools/testing/coverage-thresholds.json')[
+      'hierarchical-convert-to-uuid'
+    ],
+  },
+  reporters: require('../../tools/testing/jest-reporters.cjs')(
+    'hierarchical-convert-to-uuid',
+  ),
+  coverageDirectory:
+    '../../.reports/libs/hierarchical-convert-to-uuid/coverage',
   preset: '../../jest.preset.js',
   transform: {
     '^.+\\.[tj]s$': ['@swc/jest', swcJestConfig],
@@ -27,5 +40,4 @@ module.exports = {
   transformIgnorePatterns: ['node_modules/(?!(uuid)/)'],
   moduleFileExtensions: ['ts', 'js', 'html'],
   testEnvironment: 'node',
-  coverageDirectory: '../../coverage/libs/hierarchical-convert-to-uuid'
 };

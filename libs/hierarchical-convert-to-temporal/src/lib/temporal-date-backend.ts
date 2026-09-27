@@ -1,8 +1,8 @@
-import { Temporal } from '@js-temporal/polyfill';
 import type {
   DateBackend,
   DateCodec,
-} from '@adaskothebeast/typewriter-runtime';
+} from '@adaskothebeast/hierarchical-convert-core';
+import { Temporal } from '@js-temporal/polyfill';
 
 function temporalCodec<T extends { toString(): string }>(
   is: (value: unknown) => value is T,
@@ -19,8 +19,7 @@ export const temporalDateBackend = {
   name: 'temporal',
   codecs: {
     instant: temporalCodec(
-      (value): value is Temporal.Instant =>
-        value instanceof Temporal.Instant,
+      (value): value is Temporal.Instant => value instanceof Temporal.Instant,
       (value) => Temporal.Instant.from(value),
     ),
     'plain-date': temporalCodec(
@@ -44,13 +43,11 @@ export const temporalDateBackend = {
       (value) => Temporal.ZonedDateTime.from(value),
     ),
     duration: temporalCodec(
-      (value): value is Temporal.Duration =>
-        value instanceof Temporal.Duration,
+      (value): value is Temporal.Duration => value instanceof Temporal.Duration,
       (value) => Temporal.Duration.from(value),
     ),
     period: temporalCodec(
-      (value): value is Temporal.Duration =>
-        value instanceof Temporal.Duration,
+      (value): value is Temporal.Duration => value instanceof Temporal.Duration,
       (value) => Temporal.Duration.from(value),
     ),
     'plain-year-month': temporalCodec(

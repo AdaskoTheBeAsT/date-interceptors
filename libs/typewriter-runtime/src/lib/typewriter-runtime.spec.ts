@@ -168,9 +168,10 @@ describe('typewriter runtime', () => {
         },
       };
 
-      const result = transformJson<
-        { createdAt: Temporal.Instant; untouched: string }
-      >(value, schema);
+      const result = transformJson<{
+        createdAt: Temporal.Instant;
+        untouched: string;
+      }>(value, schema);
 
       expect(result).toBe(value);
       expect(result.createdAt).toBeInstanceOf(Temporal.Instant);
@@ -570,12 +571,10 @@ describe('typewriter runtime', () => {
       };
 
       expect(() =>
-        transformJson(
-          '2024-01-02',
-          { kind: 'plain-date' },
-          undefined,
-          { dateBackend: partialBackend, strict: true },
-        ),
+        transformJson('2024-01-02', { kind: 'plain-date' }, undefined, {
+          dateBackend: partialBackend,
+          strict: true,
+        }),
       ).toThrow('does not support plain-date');
     });
   });

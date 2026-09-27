@@ -7,7 +7,7 @@ import {
   HttpRequest,
   provideHttpClient,
   withInterceptorsFromDi,
-  withXhr
+  withXhr,
 } from '@angular/common/http';
 import {
   HttpTestingController,

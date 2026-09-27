@@ -1,14 +1,9 @@
 import type {
   DateBackend,
   DateCodec,
-} from '@adaskothebeast/typewriter-runtime';
-import {
-  format,
-  isDate,
-  isValid,
-  parseISO,
-  type Duration,
-} from 'date-fns';
+} from '@adaskothebeast/hierarchical-convert-core';
+import { format, isDate, isValid, parseISO } from 'date-fns';
+import type { Duration } from 'date-fns';
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/u;
 const DATE_TIME_PATTERN =

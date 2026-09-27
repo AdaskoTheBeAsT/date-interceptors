@@ -1,14 +1,38 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-to-temporal",
-  "version": "10.0.2",
+  "version": "11.0.0",
+  "description": "Deep, in-place conversion of ISO 8601 strings in JSON payloads into Temporal values, plus a Temporal backend for the Typewriter runtime.",
+  "keywords": [
+    "temporal",
+    "date",
+    "duration",
+    "iso8601",
+    "converter",
+    "json",
+    "typescript"
+  ],
+  "license": "MIT",
+  "author": "Adam Pluciński <adaskothebeast@gmail.com> (https://github.com/adaskothebeast)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/AdaskoTheBeAsT/date-interceptors",
+    "url": "git+https://github.com/AdaskoTheBeAsT/date-interceptors.git",
     "directory": "libs/hierarchical-convert-to-temporal"
   },
+  "bugs": {
+    "url": "https://github.com/AdaskoTheBeAsT/date-interceptors/issues"
+  },
+  "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors/tree/main/libs/hierarchical-convert-to-temporal#readme",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22.12"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@adaskothebeast/hierarchical-convert-core": "^11.0.0"
+  },
   "peerDependencies": {
-    "@adaskothebeast/typewriter-runtime": "^10.0.0",
-    "@js-temporal/polyfill": "^0.5.1",
-    "tslib": "^2.8.1"
+    "@js-temporal/polyfill": "^0.5.1"
   }
 }

@@ -1,74 +1,91 @@
-interface CustomQueryResult<ResultType> {
-  // State properties
-  data?: ResultType;
-  error?: Error;
-  isLoading: boolean;
-  isFetching: boolean;
-  isSuccess: boolean;
-  isError: boolean;
+import { useMemo } from 'react';
 
-  // Subscription methods
-  refetch: () => void;
-  // Add other methods if needed
+/** Preserves query flags, error unions, methods, and optional/required data. */
+export type ConvertedQueryResult<
+  TQuery,
+  TData,
+  TCurrentData = TData,
+> = TQuery extends unknown
+  ? {
+      [K in keyof TQuery]: K extends 'data'
+        ? TData
+        : K extends 'currentData'
+          ? TCurrentData
+          : TQuery[K];
+    }
+  : never;
 
-  // Additional properties if necessary
-  // [key: string]: any; // Optional, if you want to allow additional properties
+type ConvertedValue<TValue, TConverted> = TConverted extends void
+  ? TValue
+  : TConverted | Exclude<TValue, object>;
+
+type CurrentDataOf<TQuery> = TQuery extends { currentData?: infer C }
+  ? C
+  : undefined;
+
+function cloneAndConvert<TConverted>(
+  value: unknown,
+  convertFunc: (obj: object) => TConverted,
+): unknown {
+  if (typeof value !== 'object' || value === null) return value;
+  const cloned = structuredClone(value);
+  const converted = convertFunc(cloned);
+  return converted === undefined ? cloned : converted;
 }
 
 /**
- * This custom hook transforms the string date fields based on matching regex to Date objects
- * of a Redux Toolkit query result using the HierarchicalConverter.
- * In cases of some libraries it is also possible to convert Period automatically.
- * It deep-clones the data field and then performs the conversion.
- * If there's no data, it returns the original query result unchanged.
+ * Clones and converts `data` and `currentData` only when their references or
+ * the converter change; when both point at the same cache entry, the
+ * converted value is shared. A mutating converter may return void. Returning
+ * a value additionally infers a distinct output type, e.g. a schema
+ * transformer returning a hydrated model. Keep the converter reference stable
+ * (a module function or useCallback).
  *
- * Usage:
- * ```jsx
- *  // choose one function from below depending on library which you use for date manipulation
- *  import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
- *  import { hierarchicalConvertToDateFns } from '@adaskothebeast/hierarchical-convert-to-date-fns';
- *  import { hierarchicalConvertToDayjs } from '@adaskothebeast/hierarchical-convert-to-dayjs';
- *  import { hierarchicalConvertToJsJoda } from '@adaskothebeast/hierarchical-convert-to-js-joda';
- *  import { hierarchicalConvertToLuxon } from '@adaskothebeast/hierarchical-convert-to-luxon';
- *  import { hierarchicalConvertToMoment } from '@adaskothebeast/hierarchical-convert-to-moment';
- *   import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
- *
- *   const MyComponent: React.FC = () => {
- *     const useQueryResult = useGetUserQuery(userId);
- *     const adjustedResult = useAdjustUseQueryHookResultWithHierarchicalDateConverter(
- *       useQueryResult,
- *       hierarchicalConvertToDate
- *     );
- *
- *     if (adjustedResult.isLoading) {
- *       return <div>Loading...</div>;
- *     }
- *
- *     if (adjustedResult.error) {
- *       return <div>Error: {adjustedResult.error}</div>;
- *     }
- *
- *     return <div>User's name is {adjustedResult.data?.name}</div>;
- *   };
- * ```
- *
- * @param useQueryResult The result of a Redux Toolkit query hook
- * @param convertFunc The function that performs the conversion in place
- * @returns The original query result with its data field transformed, if it exists
+ * Converting here, rather than in the base query, keeps the Redux store
+ * serializable.
  */
 export function useAdjustUseQueryHookResultWithHierarchicalDateConverter<
-  ResultType,
+  TQuery extends { data?: unknown; currentData?: unknown },
+  TConverted,
 >(
-  useQueryResult: CustomQueryResult<ResultType>,
-  convertFunc: (obj: object) => void,
-): CustomQueryResult<ResultType> {
-  if (useQueryResult.data) {
-    const clonedData = structuredClone(useQueryResult.data);
-    convertFunc(clonedData as object);
-    return {
-      ...useQueryResult,
-      data: clonedData,
-    };
-  }
-  return useQueryResult;
+  useQueryResult: TQuery,
+  convertFunc: (obj: object) => TConverted,
+): ConvertedQueryResult<
+  TQuery,
+  ConvertedValue<TQuery['data'], TConverted>,
+  ConvertedValue<CurrentDataOf<TQuery>, TConverted>
+> {
+  const rawData = useQueryResult.data;
+  const rawCurrentData = useQueryResult.currentData;
+
+  const data = useMemo(
+    () => cloneAndConvert(rawData, convertFunc),
+    [rawData, convertFunc],
+  );
+  const currentData = useMemo(
+    () =>
+      rawCurrentData === rawData
+        ? data
+        : cloneAndConvert(rawCurrentData, convertFunc),
+    [rawCurrentData, rawData, data, convertFunc],
+  );
+
+  return useMemo(() => {
+    if (data === rawData && currentData === rawCurrentData) {
+      return useQueryResult;
+    }
+    const result: Record<string, unknown> = { ...useQueryResult, data };
+    if ('currentData' in useQueryResult) result['currentData'] = currentData;
+    return result;
+  }, [
+    useQueryResult,
+    rawData,
+    rawCurrentData,
+    data,
+    currentData,
+  ]) as ConvertedQueryResult<
+    TQuery,
+    ConvertedValue<TQuery['data'], TConverted>,
+    ConvertedValue<CurrentDataOf<TQuery>, TConverted>
+  >;
 }

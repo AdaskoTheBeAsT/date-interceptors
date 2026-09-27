@@ -3,5 +3,6 @@
   "dest": "../../dist/libs/typewriter-http-angular",
   "lib": {
     "entryFile": "src/index.ts"
-  }
+  },
+  "allowedNonPeerDependencies": ["@adaskothebeast/hierarchical-convert-core"]
 }

@@ -15,9 +15,6 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@adaskothebeast/angular-class-transformer-http-interceptor": [
-        "libs/angular-class-transformer-http-interceptor/src/index.ts"
-      ],
       "@adaskothebeast/angular-date-http-interceptor": [
         "libs/angular-date-http-interceptor/src/index.ts"
       ],
@@ -71,6 +68,9 @@
       ],
       "@adaskothebeast/typewriter-http-angular": [
         "./libs/typewriter-http-angular/src/index.ts"
+      ],
+      "@adaskothebeast/hierarchical-convert-core": [
+        "libs/hierarchical-convert-core/src/index.ts"
       ]
     },
     "strict": false,

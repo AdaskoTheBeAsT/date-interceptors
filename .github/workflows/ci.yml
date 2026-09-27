@@ -6,23 +6,35 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: "24"
+          node-version: "26"
           cache: "yarn"
 
       - name: Install dependencies
         run: yarn install --immutable
+
+      - name: Check versions and release tooling
+        run: |
+          yarn check-versions
+          yarn test:tools
 
       - name: Build all
         run: yarn build:all
@@ -30,9 +42,17 @@ jobs:
       - name: Test all
         run: yarn test:all
 
+      - name: Typecheck source and tests
+        run: yarn typecheck
+
       - name: Lint all
         run: yarn lint:ci:all
-        continue-on-error: true
+
+      - name: Test packed package consumers
+        run: yarn test:packages
+
+      - name: Test minimum supported peer dependencies
+        run: yarn test:packages:minimum
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v7.0.0
@@ -41,14 +61,14 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test-results
           path: .reports/libs/**/test-report.junit.xml
 
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: coverage-reports

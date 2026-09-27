@@ -70,20 +70,21 @@ export interface PlainMonthDaySchema<T = unknown> extends SchemaOutput<T> {
 
 export type LiteralValue = string | number | boolean | null;
 
-export interface LiteralSchema<T extends LiteralValue = LiteralValue>
-  extends SchemaOutput<T> {
+export interface LiteralSchema<
+  T extends LiteralValue = LiteralValue,
+> extends SchemaOutput<T> {
   readonly kind: 'literal';
   readonly value: T;
 }
 
-export interface NullableSchema<T = unknown>
-  extends SchemaOutput<T | null> {
+export interface NullableSchema<T = unknown> extends SchemaOutput<T | null> {
   readonly kind: 'nullable';
   readonly schema: RuntimeSchema<T>;
 }
 
-export interface OptionalSchema<T = unknown>
-  extends SchemaOutput<T | undefined> {
+export interface OptionalSchema<T = unknown> extends SchemaOutput<
+  T | undefined
+> {
   readonly kind: 'optional';
   readonly schema: RuntimeSchema<T>;
 }
@@ -93,8 +94,9 @@ export interface ArraySchema<T = unknown> extends SchemaOutput<T[]> {
   readonly items: RuntimeSchema<T>;
 }
 
-export interface RecordSchema<T = unknown>
-  extends SchemaOutput<Record<string, T>> {
+export interface RecordSchema<T = unknown> extends SchemaOutput<
+  Record<string, T>
+> {
   readonly kind: 'record';
   readonly values: RuntimeSchema<T>;
 }
@@ -108,8 +110,9 @@ export type RuntimeSchemaMap<T extends object> = {
   readonly [TKey in keyof T]-?: RuntimeProperty<T[TKey]>;
 };
 
-export interface ObjectSchema<T extends object = object>
-  extends SchemaOutput<T> {
+export interface ObjectSchema<
+  T extends object = object,
+> extends SchemaOutput<T> {
   readonly kind: 'object';
   readonly id?: string;
   readonly properties: RuntimeSchemaMap<T>;
@@ -120,15 +123,16 @@ export interface ReferenceSchema<T = unknown> extends SchemaOutput<T> {
   readonly typeName: string;
 }
 
-export interface CustomSchema<T = unknown, TOptions = unknown>
-  extends SchemaOutput<T> {
+export interface CustomSchema<
+  T = unknown,
+  TOptions = unknown,
+> extends SchemaOutput<T> {
   readonly kind: 'custom';
   readonly name: string;
   readonly options?: TOptions;
 }
 
-export interface DiscriminatedUnionSchema<T = unknown>
-  extends SchemaOutput<T> {
+export interface DiscriminatedUnionSchema<T = unknown> extends SchemaOutput<T> {
   readonly kind: 'discriminated-union';
   readonly discriminator: string;
   readonly variants: Readonly<Record<string, RuntimeSchema<T>>>;
@@ -165,8 +169,7 @@ export type RuntimeSchema<T = unknown> = AnyRuntimeSchema & SchemaOutput<T>;
 export type RuntimeSchemaFactory<T = unknown> = () => RuntimeSchema<T>;
 
 export type RuntimeSchemaDefinition<T = unknown> =
-  | RuntimeSchema<T>
-  | RuntimeSchemaFactory<T>;
+  RuntimeSchema<T> | RuntimeSchemaFactory<T>;
 
 export type RuntimeSchemaDefinitions = Record<
   string,
@@ -186,9 +189,7 @@ export interface TypeRegistry<
   register<TName extends string, T>(
     typeName: TName,
     definition: RuntimeSchemaDefinition<T>,
-  ): TypeRegistry<
-    TDefinitions & Record<TName, RuntimeSchemaDefinition<T>>
-  >;
+  ): TypeRegistry<TDefinitions & Record<TName, RuntimeSchemaDefinition<T>>>;
   get<TName extends keyof TDefinitions & string>(
     typeName: TName,
   ): RuntimeSchema<SchemaDefinitionOutput<TDefinitions[TName]>> | undefined;
@@ -222,12 +223,8 @@ export function decimalSchema<T = unknown>(
   return { kind: 'decimal', wireType };
 }
 
-export function uuidSchema(
-  versions?: readonly UuidVersion[],
-): UuidSchema {
-  return versions === undefined
-    ? { kind: 'uuid' }
-    : { kind: 'uuid', versions };
+export function uuidSchema(versions?: readonly UuidVersion[]): UuidSchema {
+  return versions === undefined ? { kind: 'uuid' } : { kind: 'uuid', versions };
 }
 
 export function instantSchema<T = unknown>(): InstantSchema<T> {
@@ -284,9 +281,7 @@ export function optionalSchema<T>(
   return { kind: 'optional', schema: valueSchema };
 }
 
-export function arraySchema<T>(
-  itemSchema: RuntimeSchema<T>,
-): ArraySchema<T> {
+export function arraySchema<T>(itemSchema: RuntimeSchema<T>): ArraySchema<T> {
   return { kind: 'array', items: itemSchema };
 }
 
@@ -338,12 +333,12 @@ export function discriminatedUnionSchema<T>(
 
 class RuntimeTypeRegistry<
   TDefinitions extends RuntimeSchemaDefinitions,
-> implements TypeRegistry<TDefinitions>
-{
+> implements TypeRegistry<TDefinitions> {
   private readonly definitions = new Map<
     string,
     RuntimeSchemaDefinition<unknown>
   >();
+  private readonly resolved = new Map<string, RuntimeSchema>();
 
   constructor(definitions: TDefinitions) {
     for (const [typeName, definition] of Object.entries(definitions)) {
@@ -354,9 +349,7 @@ class RuntimeTypeRegistry<
   register<TName extends string, T>(
     typeName: TName,
     definition: RuntimeSchemaDefinition<T>,
-  ): TypeRegistry<
-    TDefinitions & Record<TName, RuntimeSchemaDefinition<T>>
-  > {
+  ): TypeRegistry<TDefinitions & Record<TName, RuntimeSchemaDefinition<T>>> {
     this.registerDefinition(typeName, definition);
     return this;
   }
@@ -366,12 +359,24 @@ class RuntimeTypeRegistry<
   ): RuntimeSchema<SchemaDefinitionOutput<TDefinitions[TName]>> | undefined;
   get(typeName: string): RuntimeSchema | undefined;
   get(typeName: string): RuntimeSchema | undefined {
+    const cached = this.resolved.get(typeName);
+    if (cached !== undefined) {
+      return cached;
+    }
+
     const definition = this.definitions.get(typeName);
     if (definition === undefined) {
       return undefined;
     }
 
-    return typeof definition === 'function' ? definition() : definition;
+    if (typeof definition !== 'function') {
+      return definition;
+    }
+
+    // Factories run once so runtime descriptor caches see a stable object.
+    const schema = definition();
+    this.resolved.set(typeName, schema);
+    return schema;
   }
 
   has(typeName: string): boolean {

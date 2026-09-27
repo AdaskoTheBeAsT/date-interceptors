@@ -1,31 +1,23 @@
 const { withNx } = require('@nx/rollup/with-nx');
+const dualPackage = require('../../tools/rollup/dual-package.cjs');
+const nodeDeclarations = require('../../tools/rollup/node-declarations.cjs');
 
-// These options were migrated by @nx/rollup:convert-to-inferred from project.json
-const options = {
-  main: './src/index.ts',
-  outputPath: '../../dist/libs/typewriter-http-fetch',
-  tsConfig: './tsconfig.lib.json',
-  compiler: 'swc',
-  project: './package.json',
-  format: ['esm'],
-  assets: [
+module.exports = dualPackage(
+  withNx(
     {
-      glob: 'libs/typewriter-http-fetch/README.md',
-      input: '.',
-      output: '.',
+      main: './src/index.ts',
+      outputPath: '../../dist/libs/typewriter-http-fetch',
+      tsConfig: './tsconfig.lib.json',
+      compiler: 'swc',
+      project: './package.json',
+      format: ['esm', 'cjs'],
+      assets: [
+        { input: 'libs/typewriter-http-fetch', glob: 'README.md', output: '.' },
+        { input: 'libs/typewriter-http-fetch', glob: 'LICENSE', output: '.' },
+      ],
     },
     {
-      glob: 'LICENSE',
-      input: '.',
-      output: '.',
+      plugins: [nodeDeclarations()],
     },
-  ],
-};
-
-const config = withNx(options, {
-  // Provide additional rollup configuration here. See: https://rollupjs.org/configuration-options
-  // e.g.
-  // output: { sourcemap: true },
-});
-
-module.exports = config;
+  ),
+);

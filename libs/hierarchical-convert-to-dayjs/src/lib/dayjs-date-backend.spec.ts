@@ -1,6 +1,25 @@
 import dayjs from 'dayjs';
 
-import { dayjsDateBackend } from './dayjs-date-backend';
+import { dayjsDateBackend } from '../index';
+
+describe('Day.js invalid codec values', () => {
+  it.each(['instant', 'plain-date', 'plain-date-time', 'duration'] as const)(
+    'rejects malformed %s text',
+    (kind) => {
+      expect(() => dayjsDateBackend.codecs[kind].parse('invalid')).toThrow(
+        RangeError,
+      );
+    },
+  );
+  it.each(['instant', 'plain-date', 'plain-date-time'] as const)(
+    'rejects an invalid date during %s serialization',
+    (kind) => {
+      expect(() =>
+        dayjsDateBackend.codecs[kind].serialize(dayjs('invalid')),
+      ).toThrow(RangeError);
+    },
+  );
+});
 
 describe('dayjsDateBackend', () => {
   it('hydrates and serializes instants in UTC', () => {

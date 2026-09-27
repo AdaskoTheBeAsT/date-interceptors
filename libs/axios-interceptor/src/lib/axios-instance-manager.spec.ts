@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { AxiosInstanceManager } from './axios-instance-manager';
+import { AxiosInstanceManager } from '../index';
 
 jest.mock('axios');
 
@@ -54,7 +54,7 @@ describe('AxiosInstanceManager', () => {
   it('should allow creating instances with different interceptor functions', () => {
     const convertFunc1 = jest.fn();
     const convertFunc2 = jest.fn();
-    
+
     const instance1 = AxiosInstanceManager.createInstance(convertFunc1);
     const instance2 = AxiosInstanceManager.createInstance(convertFunc2);
 
@@ -96,7 +96,7 @@ describe('AxiosInstanceManager', () => {
     const interceptor1 = jest.fn();
     const interceptor2 = jest.fn();
     const interceptor3 = jest.fn();
-    
+
     AxiosInstanceManager.createInstanceWithMultipleInterceptors([
       interceptor1,
       interceptor2,
@@ -114,7 +114,7 @@ describe('AxiosInstanceManager', () => {
     expect(interceptor1).toHaveBeenCalledWith(responseData);
     expect(interceptor2).toHaveBeenCalledWith(responseData);
     expect(interceptor3).toHaveBeenCalledWith(responseData);
-    
+
     // Verify order of execution
     const order = [
       interceptor1.mock.invocationCallOrder[0],

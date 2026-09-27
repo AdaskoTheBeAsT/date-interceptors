@@ -1,6 +1,30 @@
 import moment from 'moment';
 
-import { momentDateBackend } from './moment-date-backend';
+import { momentDateBackend } from '../index';
+
+describe('Moment invalid codec values', () => {
+  it.each(['instant', 'plain-date', 'plain-date-time', 'duration'] as const)(
+    'rejects malformed %s text',
+    (kind) => {
+      expect(() => momentDateBackend.codecs[kind].parse('invalid')).toThrow(
+        RangeError,
+      );
+    },
+  );
+  it.each(['instant', 'plain-date', 'plain-date-time'] as const)(
+    'rejects an invalid date during %s serialization',
+    (kind) => {
+      expect(() =>
+        momentDateBackend.codecs[kind].serialize(moment.invalid()),
+      ).toThrow(RangeError);
+    },
+  );
+  it('rejects an invalid duration during serialization', () => {
+    expect(() =>
+      momentDateBackend.codecs.duration.serialize(moment.duration(NaN)),
+    ).toThrow(RangeError);
+  });
+});
 
 describe('momentDateBackend', () => {
   it('hydrates and serializes instants in UTC', () => {

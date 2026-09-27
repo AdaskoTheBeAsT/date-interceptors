@@ -1,5 +1,7 @@
 import 'reflect-metadata';
 
+import { ReadableStream as NodeReadableStream } from 'node:stream/web';
+
 import {
   HTTP_INTERCEPTORS,
   HttpClient,
@@ -8,7 +10,7 @@ import {
   HttpParams,
   provideHttpClient,
   withInterceptorsFromDi,
-  withXhr
+  withXhr,
 } from '@angular/common/http';
 import {
   HttpTestingController,
@@ -183,6 +185,42 @@ describe('ClassTransformerSerializeInterceptor (Jest)', () => {
       true,
     );
     req.flush({});
+  });
+
+  it('passes raw string bodies through without relabelling them as JSON', () => {
+    http.post('/native/string', 'a=b', { context: ctx(true) }).subscribe();
+    const req = httpMock.expectOne('/native/string');
+    expect(req.request.body).toBe('a=b');
+    expect(req.request.headers.has('Content-Type')).toBe(false);
+    req.flush({});
+  });
+
+  it.each([
+    ['Uint8Array', () => new Uint8Array([1, 2, 3])],
+    ['DataView', () => new DataView(new ArrayBuffer(4))],
+  ])('passes %s bodies through untouched', (_, create) => {
+    const body = create();
+    http.post('/native/view', body, { context: ctx(true) }).subscribe();
+    const req = httpMock.expectOne('/native/view');
+    expect(req.request.body).toBe(body);
+    expect(req.request.headers.has('Content-Type')).toBe(false);
+    req.flush({});
+  });
+
+  it('passes ReadableStream bodies through untouched', () => {
+    // jsdom does not expose ReadableStream; borrow Node's implementation.
+    const globals = globalThis as { ReadableStream?: unknown };
+    const original = globals.ReadableStream;
+    globals.ReadableStream ??= NodeReadableStream;
+    try {
+      const body = new (globals.ReadableStream as typeof NodeReadableStream)();
+      http.post('/native/stream', body, { context: ctx(true) }).subscribe();
+      const req = httpMock.expectOne('/native/stream');
+      expect(req.request.body).toBe(body);
+      req.flush({});
+    } finally {
+      globals.ReadableStream = original;
+    }
   });
 
   it('does not override existing Content-Type header', () => {

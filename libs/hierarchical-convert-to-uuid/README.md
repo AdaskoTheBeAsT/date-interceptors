@@ -5,7 +5,7 @@
 [![npm](https://img.shields.io/npm/v/%40adaskothebeast%2Fhierarchical-convert-to-uuid?color=cb3837&logo=npm)](https://www.npmjs.com/package/@adaskothebeast/hierarchical-convert-to-uuid)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-Single peer dependency: `uuid ^14.0.1` (its `parse` does the validation and the hex decoding). ESM build, version `10.0.0`.
+Peer dependency: `uuid` (its `validate` and `parse` do the validation and the hex decoding). Runtime dependency: the dependency-free `@adaskothebeast/hierarchical-convert-core`, which provides the shared traversal.
 
 ---
 
@@ -28,7 +28,7 @@ Walks a parsed JSON payload and replaces every canonical, RFC valid UUID string 
 
 Bytes, not a normalised string. That is the whole point: byte form is compact, comparable and directly usable when you re-encode identifiers for a binary protocol, a `Uint8Array` backed cache key or a database driver that wants raw bytes. If you wanted lowercase strings you would not need a converter at all.
 
-The traversal is the same hardened walk used by the sibling date converters: own enumerable properties only, arrays included, `__proto__` / `constructor` / `prototype` skipped, depth capped at 100, circular references tracked with a `WeakSet`. Conversion happens in place and the function returns `void`.
+The traversal is the same hardened walk used by the sibling date converters (shared through `hierarchical-convert-core`): arrays and plain objects only, own enumerable properties only, `__proto__` / `constructor` / `prototype` skipped, the root plus 100 nested levels, cycles visited once, frozen or read-only properties left alone. Conversion happens in place and the function returns `void`. The full traversal rules are in the repository [conversion contract](https://github.com/AdaskoTheBeAsT/date-interceptors/blob/main/docs/conversion-contract.md#heuristic-date-conversion).
 
 Recognition is **content driven, not key driven**. There is no allow-list of field names, so a UUID-shaped value in a `note` field is converted just like the one in `id`. Where that is unacceptable, hydrate through a schema with [`@adaskothebeast/typewriter-runtime`](https://www.npmjs.com/package/@adaskothebeast/typewriter-runtime) instead.
 
@@ -36,13 +36,11 @@ Recognition is **content driven, not key driven**. There is no allow-list of fie
 
 ## 🧰 API
 
-| Export                      | Signature                                                          | Notes                                                                                                    |
-| --------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| `hierarchicalConvertToUuid` | `(obj: unknown, depth?: number, visited?: WeakSet<object>) => void` | Mutates `obj` in place, returns `void`. `depth` defaults to `0`, `visited` defaults to a fresh `WeakSet`. |
+| Export                      | Signature                | Notes                                   |
+| --------------------------- | ------------------------ | --------------------------------------- |
+| `hierarchicalConvertToUuid` | `(obj: unknown) => void` | Mutates `obj` in place, returns `void`. |
 
-Non-object inputs (`null`, numbers, strings, `undefined`) are accepted and ignored, so you can call it on any deserialized body without a guard.
-
-`depth` and `visited` are recursion plumbing. Passing a non-zero `depth` shrinks the remaining budget (the walk stops once `depth > 100`); passing a pre-populated `visited` set makes those objects be skipped.
+Non-object inputs (`null`, numbers, strings, `undefined`) are accepted and ignored, so you can call it on any deserialized body without a guard. (Before 11.0.0 the signature also exposed internal `depth` and `visited` parameters.)
 
 ---
 
@@ -91,8 +89,8 @@ function sameUuid(a: Uint8Array, b: Uint8Array): boolean {
 
 None. The recogniser is fixed and runs in two stages:
 
-1. **Fast rejection.** The value must be a string of exactly 36 characters with `-` at indexes 8, 13, 18 and 23. Anything else skips the regex entirely.
-2. **Validation and decoding** via `parse` from `uuid`, which accepts only
+1. **Fast rejection.** The value must be a string of exactly 36 characters. Anything else skips validation entirely.
+2. **Validation and decoding** via `validate` and `parse` from `uuid`, which accept only
 
    ```text
    /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}
@@ -102,17 +100,17 @@ None. The recogniser is fixed and runs in two stages:
 
    so the version nibble must be `1` to `8` and the variant nibble must be `8`, `9`, `a` or `b`, with the nil and max UUIDs allowed as explicit exceptions. A `TypeError` from `parse` is swallowed and the original string is left in place.
 
-| Input                                    | Result                                       |
-| ---------------------------------------- | -------------------------------------------- |
-| `550e8400-e29b-41d4-a716-446655440000`   | 16 bytes (v4)                                |
-| `6ba7b810-9dad-11d1-80b4-00c04fd430c8`   | 16 bytes (v1)                                |
-| `550E8400-E29B-41D4-A716-446655440000`   | 16 bytes, same bytes as the lowercase form   |
-| `00000000-0000-0000-0000-000000000000`   | 16 zero bytes (nil UUID)                     |
-| `ffffffff-ffff-ffff-ffff-ffffffffffff`   | 16 `0xff` bytes (max UUID)                   |
-| `550e8400-e29b-91d4-a716-446655440000`   | unchanged (version `9` is not valid)         |
-| `550e8400e29b41d4a716446655440000`       | unchanged (no hyphens, 32 characters)        |
-| `{550e8400-e29b-41d4-a716-446655440000}` | unchanged (braced form, 38 characters)       |
-| `urn:uuid:550e8400-...`                  | unchanged (URN form)                         |
+| Input                                    | Result                                     |
+| ---------------------------------------- | ------------------------------------------ |
+| `550e8400-e29b-41d4-a716-446655440000`   | 16 bytes (v4)                              |
+| `6ba7b810-9dad-11d1-80b4-00c04fd430c8`   | 16 bytes (v1)                              |
+| `550E8400-E29B-41D4-A716-446655440000`   | 16 bytes, same bytes as the lowercase form |
+| `00000000-0000-0000-0000-000000000000`   | 16 zero bytes (nil UUID)                   |
+| `ffffffff-ffff-ffff-ffff-ffffffffffff`   | 16 `0xff` bytes (max UUID)                 |
+| `550e8400-e29b-91d4-a716-446655440000`   | unchanged (version `9` is not valid)       |
+| `550e8400e29b41d4a716446655440000`       | unchanged (no hyphens, 32 characters)      |
+| `{550e8400-e29b-41d4-a716-446655440000}` | unchanged (braced form, 38 characters)     |
+| `urn:uuid:550e8400-...`                  | unchanged (URN form)                       |
 
 ---
 
@@ -149,16 +147,16 @@ Top-level arrays work as well: `['550e8400-e29b-41d4-a716-446655440000']` become
 - **The result is bytes, so it is no longer JSON friendly.** `JSON.stringify` turns a `Uint8Array` into `{"0":85,"1":14,...}`, not a UUID string. Re-encode with `stringify` from `uuid` before sending the object back, or keep a converted copy separate from the outbound payload.
 - **`Uint8Array` has no value equality.** `a === b` is false for two equal identifiers, `Map` and `Set` keys will not dedupe, and `JSON.stringify` comparisons are misleading. Compare byte by byte (see the helper above) or convert back to a string for keys.
 - **Version and variant are enforced.** `550e8400-e29b-91d4-a716-446655440000` (version `9`) stays a string, so non-RFC identifiers are not silently accepted. The nil UUID and the max UUID are accepted as special cases.
-- **Only the canonical hyphenated form is recognised.** The 32-character no-dash form, the braced `{...}` .NET "B" form and the `urn:uuid:` form all fail the length and hyphen-position gate, and any other 36-character string fails the regex.
+- **Only the canonical hyphenated form is recognised.** The 32-character no-dash form, the braced `{...}` .NET "B" form and the `urn:uuid:` form all fail the length gate, and any other 36-character string fails `validate`.
 - **Case is normalised into bytes.** Uppercase input produces exactly the same bytes as lowercase input, so the original casing is lost. If a backend echoes identifiers case-sensitively, keep the string.
 - **Byte order is RFC 9562 network order,** the same order `uuid`'s `stringify` expects. .NET `Guid.ToByteArray()` uses a mixed-endian layout for the first three fields, so a service doing `new Guid(bytes)` on these bytes sees a different identifier unless it re-orders them (or uses `Guid.Parse` on a re-encoded string).
-- **Failures are silent.** Unlike the date and decimal converters, an invalid UUID string produces no `console.warn`; the `TypeError` from `parse` is caught and ignored, and the value is left as it was.
+- **Failures are silent.** As with every converter in this family, an invalid UUID string produces no log output and the value is left as it was.
 - **False positives are possible.** Any 36-character string that satisfies the RFC layout is converted regardless of the field name, so a UUID pasted into a free-text field becomes bytes too. The schema-driven [`@adaskothebeast/typewriter-runtime`](https://www.npmjs.com/package/@adaskothebeast/typewriter-runtime) path exists for payloads where that matters.
-- **Prototype pollution is blocked.** The keys `__proto__`, `constructor` and `prototype` are skipped, so a hostile payload cannot reach `Object.prototype`. The side effect is that a nested object stored under a key literally named `constructor` or `prototype` is never traversed either.
-- **Inherited properties are ignored,** every key passes an `Object.hasOwn` check.
-- **Depth is capped at 100.** Once `depth > 100` the walk returns and deeper strings stay strings; this is DoS protection against adversarially nested JSON.
-- **Circular graphs are safe.** A `WeakSet` records visited objects, so `input.self = input` converts once and does not loop.
-- **Running the converter twice is harmless.** An already converted value is a `Uint8Array`, and although the walk does descend into it, its indexed properties hold numbers rather than strings, so nothing is converted a second time.
+- **Prototype pollution is blocked.** Own `__proto__`, `constructor` and `prototype` keys are skipped, so a hostile payload cannot reach `Object.prototype`. The side effect is that a nested object stored under a key literally named `constructor` or `prototype` is never traversed either.
+- **Only arrays and plain objects are entered (11.0.0).** Class instances, `Map`, `Set`, Buffers, and typed arrays (including already converted `Uint8Array` values) are left untouched, so running the converter twice is a no-op.
+- **Frozen or read-only values stay strings.** Frozen objects, non-writable properties, and getter-only properties are skipped instead of throwing mid-walk.
+- **Depth is capped.** The root plus 100 nested levels are walked; deeper strings stay strings. This is DoS protection against adversarially nested JSON.
+- **Circular graphs are safe.** Visited objects are recorded, so `input.self = input` converts once and does not loop.
 
 ---
 

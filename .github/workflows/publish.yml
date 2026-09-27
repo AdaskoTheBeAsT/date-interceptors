@@ -5,23 +5,37 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: '26'
           cache: 'yarn'
 
       - name: Install dependencies
         run: yarn install --immutable
+
+      - name: Check release versions and tooling
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          yarn check-versions "$RELEASE_TAG"
+          yarn test:tools
 
       - name: Build all
         run: yarn build:all
@@ -29,20 +43,54 @@ jobs:
       - name: Test all
         run: yarn test:all
 
+      - name: Typecheck source and tests
+        run: yarn typecheck
+
+      - name: Lint all
+        run: yarn lint:ci:all
+
+      - name: Test packed package consumers
+        run: yarn test:packages
+
+      - name: Test minimum supported peer dependencies
+        run: yarn test:packages:minimum
+
       - name: Upload dist artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist/libs/
 
-  publish:
+  publish-core:
     needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/libs/
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '26'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Ensure trusted publishing support
+        run: npm install --global npm@11.19.0
+      - name: Publish and verify core
+        run: node tools/scripts/release-package.mjs dist/libs/hierarchical-convert-core
+
+  publish:
+    needs: [build, publish-core]
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
 
     strategy:
+      fail-fast: false
       matrix:
         package:
           - angular-date-http-interceptor
@@ -51,11 +99,11 @@ jobs:
           - hierarchical-convert-to-date
           - hierarchical-convert-to-date-fns
           - hierarchical-convert-to-dayjs
+          - hierarchical-convert-to-decimal
           - hierarchical-convert-to-js-joda
           - hierarchical-convert-to-luxon
           - hierarchical-convert-to-moment
           - hierarchical-convert-to-temporal
-          - hierarchical-convert-to-decimal
           - hierarchical-convert-to-uuid
           - react-redux-toolkit-hierarchical-date-hook
           - typewriter-schema
@@ -65,18 +113,23 @@ jobs:
           - typewriter-http-angular
 
     steps:
+      - uses: actions/checkout@v6
       - name: Download dist artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist/libs/
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: '26'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Ensure trusted publishing support
+        run: npm install --global npm@11.19.0
+
       - name: Publish ${{ matrix.package }}
-        run: npm publish --provenance --access public
-        working-directory: dist/libs/${{ matrix.package }}
+        env:
+          PACKAGE: ${{ matrix.package }}
+        run: node tools/scripts/release-package.mjs "dist/libs/$PACKAGE"

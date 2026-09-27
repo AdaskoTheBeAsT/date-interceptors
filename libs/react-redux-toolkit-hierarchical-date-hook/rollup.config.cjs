@@ -1,34 +1,32 @@
 const { withNx } = require('@nx/rollup/with-nx');
+const dualPackage = require('../../tools/rollup/dual-package.cjs');
+const nodeDeclarations = require('../../tools/rollup/node-declarations.cjs');
 
-// These options were migrated by @nx/rollup:convert-to-inferred from project.json
-const options = {
-  outputPath: '../../dist/libs/react-redux-toolkit-hierarchical-date-hook',
-  tsConfig: './tsconfig.lib.json',
-  project: './package.json',
-  main: 'libs/react-redux-toolkit-hierarchical-date-hook/src/index.ts',
-  external: [
-    'react',
-    'react-dom',
-    'react/jsx-runtime',
-    '@reduxjs/toolkit',
-    'core-js',
-  ],
-  compiler: 'babel',
-  assets: [
+module.exports = dualPackage(
+  withNx(
     {
-      glob: 'libs/react-redux-toolkit-hierarchical-date-hook/README.md',
-      input: '.',
-      output: '.',
+      main: './src/index.ts',
+      outputPath: '../../dist/libs/react-redux-toolkit-hierarchical-date-hook',
+      tsConfig: './tsconfig.lib.json',
+      compiler: 'babel',
+      project: './package.json',
+      format: ['esm', 'cjs'],
+      external: ['react/jsx-runtime'],
+      assets: [
+        {
+          input: 'libs/react-redux-toolkit-hierarchical-date-hook',
+          glob: 'README.md',
+          output: '.',
+        },
+        {
+          input: 'libs/react-redux-toolkit-hierarchical-date-hook',
+          glob: 'LICENSE',
+          output: '.',
+        },
+      ],
     },
-  ],
-};
-
-let config = withNx(options, {
-  // Provide additional rollup configuration here. See: https://rollupjs.org/configuration-options
-  // e.g.
-  // output: { sourcemap: true },
-});
-
-config = require('@nx/react/plugins/bundle-rollup')(config, options);
-
-module.exports = config;
+    {
+      plugins: [nodeDeclarations()],
+    },
+  ),
+);

@@ -1,6 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill';
 
-import { hierarchicalConvertToTemporal } from './hierarchical-convert-to-temporal';
+import { hierarchicalConvertToTemporal } from '../index';
 
 describe('hierarchicalConvertToTemporal', () => {
   it.each`
@@ -77,8 +77,44 @@ describe('hierarchicalConvertToTemporal', () => {
     expect(current['date']).toBe('2023-07-17T23:06:00.000Z');
   });
 
+  it('keeps nanoseconds and weeks, and leaves out-of-range durations as strings', () => {
+    const input = {
+      precise: 'PT0.123456789S',
+      comma: 'PT1,5S',
+      weeks: 'P1Y2W',
+      huge: 'P99999999999999999999Y',
+    };
+
+    hierarchicalConvertToTemporal(input);
+
+    expect(String(input.precise)).toBe('PT0.123456789S');
+    expect(
+      (input.comma as unknown as Temporal.Duration).total('milliseconds'),
+    ).toBe(1500);
+    expect((input.weeks as unknown as Temporal.Duration).weeks).toBe(2);
+    expect(input.huge).toBe('P99999999999999999999Y');
+  });
+
+  it('is a no-op when run twice and leaves non-plain objects untouched', () => {
+    const map = new Map([['date', '2023-07-17T23:06:00.000Z']]);
+    const input = {
+      date: '2023-07-17T23:06:00.000Z',
+      duration: 'PT1S',
+      map,
+    };
+
+    hierarchicalConvertToTemporal(input);
+    const { date, duration } = input;
+    const snapshot = JSON.stringify(input);
+    hierarchicalConvertToTemporal(input);
+
+    expect(input.date).toBe(date);
+    expect(input.duration).toBe(duration);
+    expect(JSON.stringify(input)).toBe(snapshot);
+    expect(map.get('date')).toBe('2023-07-17T23:06:00.000Z');
+  });
+
   it('leaves invalid and primitive values unchanged', () => {
-    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
     const input = {
       invalidDate: '2023-99-99T99:99:99.000Z',
       invalidDuration: 'P',
@@ -98,6 +134,5 @@ describe('hierarchicalConvertToTemporal', () => {
       boolean: true,
       nullValue: null,
     });
-    consoleWarnSpy.mockRestore();
   });
 });

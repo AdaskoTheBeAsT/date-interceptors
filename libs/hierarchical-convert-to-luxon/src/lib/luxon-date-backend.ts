@@ -1,12 +1,11 @@
 import type {
   DateBackend,
   DateCodec,
-} from '@adaskothebeast/typewriter-runtime';
+} from '@adaskothebeast/hierarchical-convert-core';
 import { DateTime, Duration, IANAZone } from 'luxon';
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/u;
-const TIME_PATTERN =
-  /^\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?$/u;
+const TIME_PATTERN = /^\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?$/u;
 const DATE_TIME_PATTERN =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?$/u;
 const INSTANT_PATTERN =
@@ -69,17 +68,12 @@ const plainTimeCodec: DateCodec<DateTime> = {
     if (!TIME_PATTERN.test(value)) {
       throw new RangeError(`Invalid ISO time value: ${value}`);
     }
-    return parseDateTime(
-      `2000-01-01T${value}`,
-      DATE_TIME_PATTERN,
-      { zone: 'utc' },
-    );
+    return parseDateTime(`2000-01-01T${value}`, DATE_TIME_PATTERN, {
+      zone: 'utc',
+    });
   },
   serialize(value) {
-    return required(
-      value.toISOTime({ includeOffset: false }),
-      'plain time',
-    );
+    return required(value.toISOTime({ includeOffset: false }), 'plain time');
   },
 };
 
@@ -89,10 +83,7 @@ const plainDateTimeCodec: DateCodec<DateTime> = {
     return parseDateTime(value, DATE_TIME_PATTERN, { zone: 'utc' });
   },
   serialize(value) {
-    return required(
-      value.toISO({ includeOffset: false }),
-      'plain date-time',
-    );
+    return required(value.toISO({ includeOffset: false }), 'plain date-time');
   },
 };
 

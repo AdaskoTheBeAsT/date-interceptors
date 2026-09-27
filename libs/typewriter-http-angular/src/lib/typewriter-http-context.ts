@@ -1,41 +1,59 @@
-import { HttpContext, HttpContextToken } from '@angular/common/http';
 import type {
   JsonSerializerOptions,
   JsonTransformerOptions,
   JsonTransformerRegistry,
+  SchemaDescriptor,
 } from '@adaskothebeast/typewriter-runtime';
-import type { RuntimeSchema } from '@adaskothebeast/typewriter-schema';
+import { HttpContext, HttpContextToken } from '@angular/common/http';
 
-export type TypewriterRequestSchema<T = unknown> = RuntimeSchema<T>;
-export type TypewriterResponseSchema<T = unknown> = RuntimeSchema<T>;
+export type TypewriterRequestSchema<T = unknown> = SchemaDescriptor<T>;
+export type TypewriterResponseSchema<T = unknown> = SchemaDescriptor<T>;
 export type TypewriterSchemaRegistry = JsonTransformerRegistry;
 export type TypewriterSerializeOptions = JsonSerializerOptions;
 export type TypewriterTransformOptions = JsonTransformerOptions;
 
-export const TYPEWRITER_REQUEST_SCHEMA =
-  new HttpContextToken<TypewriterRequestSchema | undefined>(() => undefined);
+export const TYPEWRITER_REQUEST_SCHEMA = new HttpContextToken<
+  TypewriterRequestSchema | undefined
+>(() => undefined);
 
-export const TYPEWRITER_RESPONSE_SCHEMA =
-  new HttpContextToken<TypewriterResponseSchema | undefined>(() => undefined);
+export const TYPEWRITER_RESPONSE_SCHEMA = new HttpContextToken<
+  TypewriterResponseSchema | undefined
+>(() => undefined);
 
-export const TYPEWRITER_SCHEMA_REGISTRY =
-  new HttpContextToken<TypewriterSchemaRegistry | undefined>(() => undefined);
+/** Registry for both directions when no direction-specific registry is set. */
+export const TYPEWRITER_SCHEMA_REGISTRY = new HttpContextToken<
+  TypewriterSchemaRegistry | undefined
+>(() => undefined);
 
-export const TYPEWRITER_TRANSFORM_OPTIONS =
-  new HttpContextToken<TypewriterTransformOptions | undefined>(() => undefined);
+export const TYPEWRITER_REQUEST_REGISTRY = new HttpContextToken<
+  TypewriterSchemaRegistry | undefined
+>(() => undefined);
 
-export const TYPEWRITER_SERIALIZE_OPTIONS =
-  new HttpContextToken<TypewriterSerializeOptions | undefined>(() => undefined);
+export const TYPEWRITER_RESPONSE_REGISTRY = new HttpContextToken<
+  TypewriterSchemaRegistry | undefined
+>(() => undefined);
+
+export const TYPEWRITER_TRANSFORM_OPTIONS = new HttpContextToken<
+  TypewriterTransformOptions | undefined
+>(() => undefined);
+
+export const TYPEWRITER_SERIALIZE_OPTIONS = new HttpContextToken<
+  TypewriterSerializeOptions | undefined
+>(() => undefined);
 
 export interface TypewriterRequestContextOptions {
   readonly context?: HttpContext;
+  /** Registry for the request schema, stored in `TYPEWRITER_REQUEST_REGISTRY`. */
   readonly registry?: TypewriterSchemaRegistry;
+  /** Serialization options. Strict unless `strict: false` is passed. */
   readonly serializeOptions?: TypewriterSerializeOptions;
 }
 
 export interface TypewriterResponseContextOptions {
   readonly context?: HttpContext;
+  /** Registry for the response schema, stored in `TYPEWRITER_RESPONSE_REGISTRY`. */
   readonly registry?: TypewriterSchemaRegistry;
+  /** Hydration options. Strict unless `strict: false` is passed. */
   readonly transformOptions?: TypewriterTransformOptions;
 }
 
@@ -51,7 +69,7 @@ export function withTypewriterRequestSchema<T>(
   );
 
   if (options.registry !== undefined) {
-    context.set(TYPEWRITER_SCHEMA_REGISTRY, options.registry);
+    context.set(TYPEWRITER_REQUEST_REGISTRY, options.registry);
   }
 
   if (options.serializeOptions !== undefined) {
@@ -73,7 +91,7 @@ export function withTypewriterResponseSchema<T>(
   );
 
   if (options.registry !== undefined) {
-    context.set(TYPEWRITER_SCHEMA_REGISTRY, options.registry);
+    context.set(TYPEWRITER_RESPONSE_REGISTRY, options.registry);
   }
 
   if (options.transformOptions !== undefined) {

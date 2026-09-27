@@ -6,8 +6,8 @@ import {
   HttpResponse,
 } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { ClassTransformOptions } from 'class-transformer/types/interfaces/class-transformer-options.interface';
-import { Observable, filter, map } from 'rxjs';
+import type { ClassTransformOptions } from 'class-transformer';
+import { Observable, map } from 'rxjs';
 
 import { SERIALIZE_REQUEST } from './serialize-token';
 import { Ctor, RESPONSE_TYPE_CLASS } from './tokens';
@@ -17,10 +17,7 @@ type ParamInit =
   | HttpParams
   | {
       [param: string]:
-        | string
-        | number
-        | boolean
-        | ReadonlyArray<string | number | boolean>;
+        string | number | boolean | ReadonlyArray<string | number | boolean>;
     };
 
 export type RequestOptions = {
@@ -33,8 +30,7 @@ export type RequestOptions = {
   serialize?: boolean | ClassTransformOptions;
 };
 
-const isHttpResponse = <K>(e: unknown): e is HttpResponse<K> =>
-  e instanceof HttpResponse;
+type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 @Injectable({
   providedIn: 'root',
@@ -48,6 +44,15 @@ export class TypedHttpClient {
     options: RequestOptions = {},
   ): Observable<HttpResponse<K>> {
     return this.requestResponse<K>('GET', url, undefined, ctor, options);
+  }
+
+  /** For endpoints returning a JSON array; each element becomes a `ctor` instance. */
+  getArrayResponse<K>(
+    url: string,
+    ctor: Ctor<K>,
+    options: RequestOptions = {},
+  ): Observable<HttpResponse<K[]>> {
+    return this.requestResponse<K[]>('GET', url, undefined, ctor, options);
   }
 
   postResponse<T, K>(
@@ -85,9 +90,10 @@ export class TypedHttpClient {
     return this.requestResponse<K>('DELETE', url, undefined, ctor, options);
   }
 
-  // -------------------
-  // Existing body-only methods (now built on top of *Response)
-  // -------------------
+  /**
+   * Returns a single `ctor` instance. For JSON array responses use
+   * {@link getArray}, which types the result as `K[]`.
+   */
   get<K>(
     url: string,
     ctor: Ctor<K>,
@@ -95,6 +101,17 @@ export class TypedHttpClient {
   ): Observable<K> {
     return this.getResponse<K>(url, ctor, options).pipe(
       map((r) => r.body as K),
+    );
+  }
+
+  /** For endpoints returning a JSON array; each element becomes a `ctor` instance. */
+  getArray<K>(
+    url: string,
+    ctor: Ctor<K>,
+    options: RequestOptions = {},
+  ): Observable<K[]> {
+    return this.getArrayResponse<K>(url, ctor, options).pipe(
+      map((r) => r.body as K[]),
     );
   }
 
@@ -141,24 +158,20 @@ export class TypedHttpClient {
     );
   }
 
-  private requestResponse<K>(
-    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+  private requestResponse<R>(
+    method: Method,
     url: string,
-    body: unknown | undefined,
-    ctor: Ctor<K>,
-    options: RequestOptions,
-  ): Observable<HttpResponse<K>> {
-    const context = (options.context ?? new HttpContext())
-      .set(RESPONSE_TYPE_CLASS, ctor)
-      .set(SERIALIZE_REQUEST, options.serialize ?? true);
-
-    return this.httpClient
-      .request<K>(method, url, {
-        ...options,
-        body,
-        context,
-        observe: 'response',
-      })
-      .pipe(filter(isHttpResponse<K>));
+    body: unknown,
+    ctor: Ctor<unknown>,
+    { serialize, context, ...options }: RequestOptions,
+  ): Observable<HttpResponse<R>> {
+    return this.httpClient.request<R>(method, url, {
+      ...options,
+      body,
+      context: (context ?? new HttpContext())
+        .set(RESPONSE_TYPE_CLASS, ctor)
+        .set(SERIALIZE_REQUEST, serialize ?? true),
+      observe: 'response',
+    });
   }
 }

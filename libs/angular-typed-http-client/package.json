@@ -1,22 +1,42 @@
 {
   "name": "@adaskothebeast/angular-typed-http-client",
-  "version": "10.0.2",
+  "version": "11.0.0",
+  "description": "Angular HttpClient wrapper that serializes requests and hydrates JSON responses into class instances with class-transformer.",
+  "keywords": [
+    "angular",
+    "httpclient",
+    "class-transformer",
+    "hydration",
+    "date",
+    "json",
+    "typescript"
+  ],
   "license": "MIT",
   "author": "Adam Pluciński <adaskothebeast@gmail.com> (https://github.com/adaskothebeast)",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AdaskoTheBeAsT/date-interceptors.git"
+    "url": "git+https://github.com/AdaskoTheBeAsT/date-interceptors.git",
+    "directory": "libs/angular-typed-http-client"
   },
   "bugs": {
     "url": "https://github.com/AdaskoTheBeAsT/date-interceptors/issues"
   },
-  "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors",
-  "peerDependencies": {
-    "@angular/common": "^22.0.8",
-    "@angular/core": "^22.0.8",
-    "class-transformer": "^0.5.1",
-    "rxjs": "~7.8.2"
+  "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors/tree/main/libs/angular-typed-http-client#readme",
+  "sideEffects": false,
+  "engines": {
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
   },
-  "dependencies": {},
-  "sideEffects": false
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@adaskothebeast/hierarchical-convert-core": "^11.0.0",
+    "tslib": "^2.3.0"
+  },
+  "peerDependencies": {
+    "@angular/common": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "class-transformer": "^0.5.1",
+    "rxjs": "^7.8.0"
+  }
 }

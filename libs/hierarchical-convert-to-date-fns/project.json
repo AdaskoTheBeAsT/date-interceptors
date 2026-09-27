@@ -4,43 +4,13 @@
   "sourceRoot": "libs/hierarchical-convert-to-date-fns/src",
   "projectType": "library",
   "tags": [],
+  "implicitDependencies": ["typewriter-schema"],
   "targets": {
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
-      "options": {
-        "outputPath": "dist/libs/hierarchical-convert-to-date-fns",
-        "tsConfig": "libs/hierarchical-convert-to-date-fns/tsconfig.lib.json",
-        "packageJson": "libs/hierarchical-convert-to-date-fns/package.json",
-        "main": "libs/hierarchical-convert-to-date-fns/src/index.ts",
-        "assets": ["libs/hierarchical-convert-to-date-fns/*.md"]
-      }
-    },
-    "publish": {
-      "command": "node tools/scripts/publish.mjs hierarchical-convert-to-date-fns {args.ver} {args.tag}",
-      "dependsOn": ["build"]
-    },
-    "lint": {
-      "inputs": [
-        "default",
-        "^default",
-        "{workspaceRoot}/.eslintrc.json",
-        "{workspaceRoot}/.eslintignore",
-        "{workspaceRoot}/eslint.config.cjs",
-        "{workspaceRoot}/tools/eslint-rules/**/*",
-        {
-          "externalDependencies": ["eslint"]
-        }
-      ],
-      "options": {
-        "args": ["**/*.{ts,tsx,js,jsx}", "package.json"]
-      }
-    },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": ["{workspaceRoot}/.reports/{projectRoot}"],
       "options": {
-        "jestConfig": "libs/hierarchical-convert-to-date-fns/jest.config.ts"
+        "jestConfig": "libs/hierarchical-convert-to-date-fns/jest.config.cts"
       }
     }
   }

@@ -1,6 +1,6 @@
 import { ZonedDateTime } from '@js-joda/core';
 
-import { hierarchicalConvertToJsJoda } from './hierarchical-convert-to-js-joda';
+import { hierarchicalConvertToJsJoda } from '../index';
 
 describe('hierarchicalConvertToJsJoda', () => {
   it.each`
@@ -16,5 +16,35 @@ describe('hierarchicalConvertToJsJoda', () => {
     hierarchicalConvertToJsJoda(input);
 
     expect(input).toEqual(expected);
+  });
+
+  it('leaves local timestamps, durations, and invalid values as strings', () => {
+    const input = {
+      local: '2023-07-17T23:06:00',
+      duration: 'PT1S',
+      invalid: '2023-02-30T00:00:00Z',
+    };
+
+    hierarchicalConvertToJsJoda(input);
+
+    expect(input).toEqual({
+      local: '2023-07-17T23:06:00',
+      duration: 'PT1S',
+      invalid: '2023-02-30T00:00:00Z',
+    });
+  });
+
+  it('is a no-op when run twice and leaves non-plain objects untouched', () => {
+    const map = new Map([['date', '2023-07-17T23:06:00.000Z']]);
+    const input = { date: '2023-07-17T23:06:00.000Z', map };
+
+    hierarchicalConvertToJsJoda(input);
+    const { date } = input;
+    const snapshot = JSON.stringify(input);
+    hierarchicalConvertToJsJoda(input);
+
+    expect(input.date).toBe(date);
+    expect(JSON.stringify(input)).toBe(snapshot);
+    expect(map.get('date')).toBe('2023-07-17T23:06:00.000Z');
   });
 });

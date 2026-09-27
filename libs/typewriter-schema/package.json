@@ -1,6 +1,14 @@
 {
   "name": "@adaskothebeast/typewriter-schema",
-  "version": "10.0.2",
+  "version": "11.0.0",
+  "description": "Runtime schema descriptors for Typewriter-generated TypeScript contracts.",
+  "keywords": [
+    "typewriter",
+    "typescript",
+    "schema",
+    "dotnet",
+    "json"
+  ],
   "license": "MIT",
   "author": "Adam Pluciński <adaskothebeast@gmail.com> (https://github.com/adaskothebeast)",
   "repository": {
@@ -11,16 +19,12 @@
   "bugs": {
     "url": "https://github.com/AdaskoTheBeAsT/date-interceptors/issues"
   },
-  "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors#readme",
-  "keywords": [
-    "typewriter",
-    "typescript",
-    "schema",
-    "dotnet",
-    "json"
-  ],
-  "main": "./index.esm.js",
-  "module": "./index.esm.js",
-  "dependencies": {},
-  "sideEffects": false
+  "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors/tree/main/libs/typewriter-schema#readme",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22.12"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -2,6 +2,7 @@ import {
   HttpEvent,
   HttpHandler,
   HttpInterceptor,
+  HttpInterceptorFn,
   HttpRequest,
   HttpResponse,
 } from '@angular/common/http';
@@ -10,7 +11,29 @@ import { plainToInstance } from 'class-transformer';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import { handleProblemDetails } from './problem-details';
 import { RESPONSE_TYPE_CLASS } from './tokens';
+
+function hydrate(
+  request: HttpRequest<unknown>,
+  response$: Observable<HttpEvent<unknown>>,
+): Observable<HttpEvent<unknown>> {
+  const ctor = request.context.get(RESPONSE_TYPE_CLASS);
+  return response$.pipe(
+    handleProblemDetails(),
+    map((event) =>
+      !(event instanceof HttpResponse) || !ctor || event.body == null
+        ? event
+        : event.clone({ body: plainToInstance(ctor, event.body) }),
+    ),
+  );
+}
+
+/** Hydrates response bodies into the class carried by {@link RESPONSE_TYPE_CLASS}. */
+export const classTransformerHttpInterceptorFn: HttpInterceptorFn = (
+  request,
+  next,
+) => hydrate(request, next(request));
 
 @Injectable()
 export class ClassTransformerHttpInterceptor implements HttpInterceptor {
@@ -18,21 +41,6 @@ export class ClassTransformerHttpInterceptor implements HttpInterceptor {
     req: HttpRequest<unknown>,
     next: HttpHandler,
   ): Observable<HttpEvent<unknown>> {
-    const ctor = req.context.get(RESPONSE_TYPE_CLASS);
-
-    return next.handle(req).pipe(
-      map((event) => {
-        if (!(event instanceof HttpResponse)) {
-          return event;
-        }
-
-        if (!ctor || event.body == null) {
-          return event;
-        }
-
-        const transformed = plainToInstance(ctor, event.body);
-        return event.clone({ body: transformed });
-      }),
-    );
+    return hydrate(req, next.handle(req));
   }
 }

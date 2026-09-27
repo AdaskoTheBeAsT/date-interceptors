@@ -23,3 +23,9 @@ serializeJson(value, InvoiceSchema, apiTypeRegistry, { strict: true });
 ```
 
 Custom schema kinds can be supplied through `customTransformers` and `customSerializers`.
+
+Shared input objects transformed with the same schema reuse the replacement result.
+Valid cyclic data is preserved. Circular schema references that do not descend into
+data raise path-aware errors in strict mode and preserve the value in tolerant mode.
+
+Strict object conversion validates missing properties as `undefined`. Use `schema.optional(...)` for absent fields; nullable fields still require a value. Renames are staged so overlapping model/wire names round trip without data loss.

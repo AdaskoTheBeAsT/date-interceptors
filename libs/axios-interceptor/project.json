@@ -5,42 +5,11 @@
   "projectType": "library",
   "tags": [],
   "targets": {
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
-      "options": {
-        "outputPath": "dist/libs/axios-interceptor",
-        "tsConfig": "libs/axios-interceptor/tsconfig.lib.json",
-        "packageJson": "libs/axios-interceptor/package.json",
-        "main": "libs/axios-interceptor/src/index.ts",
-        "assets": ["libs/axios-interceptor/*.md"]
-      }
-    },
-    "publish": {
-      "command": "node tools/scripts/publish.mjs axios-interceptor {args.ver} {args.tag}",
-      "dependsOn": ["build"]
-    },
-    "lint": {
-      "inputs": [
-        "default",
-        "^default",
-        "{workspaceRoot}/.eslintrc.json",
-        "{workspaceRoot}/.eslintignore",
-        "{workspaceRoot}/eslint.config.cjs",
-        "{workspaceRoot}/tools/eslint-rules/**/*",
-        {
-          "externalDependencies": ["eslint"]
-        }
-      ],
-      "options": {
-        "args": ["**/*.{ts,tsx,js,jsx}", "package.json"]
-      }
-    },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": ["{workspaceRoot}/.reports/{projectRoot}"],
       "options": {
-        "jestConfig": "libs/axios-interceptor/jest.config.ts"
+        "jestConfig": "libs/axios-interceptor/jest.config.cts"
       }
     }
   }

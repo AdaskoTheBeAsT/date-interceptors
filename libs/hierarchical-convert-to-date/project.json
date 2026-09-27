@@ -5,42 +5,11 @@
   "projectType": "library",
   "tags": [],
   "targets": {
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
-      "options": {
-        "outputPath": "dist/libs/hierarchical-convert-to-date",
-        "tsConfig": "libs/hierarchical-convert-to-date/tsconfig.lib.json",
-        "packageJson": "libs/hierarchical-convert-to-date/package.json",
-        "main": "libs/hierarchical-convert-to-date/src/index.ts",
-        "assets": ["libs/hierarchical-convert-to-date/*.md"]
-      }
-    },
-    "publish": {
-      "command": "node tools/scripts/publish.mjs hierarchical-convert-to-date {args.ver} {args.tag}",
-      "dependsOn": ["build"]
-    },
-    "lint": {
-      "inputs": [
-        "default",
-        "^default",
-        "{workspaceRoot}/.eslintrc.json",
-        "{workspaceRoot}/.eslintignore",
-        "{workspaceRoot}/eslint.config.cjs",
-        "{workspaceRoot}/tools/eslint-rules/**/*",
-        {
-          "externalDependencies": ["eslint"]
-        }
-      ],
-      "options": {
-        "args": ["**/*.{ts,tsx,js,jsx}", "package.json"]
-      }
-    },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": ["{workspaceRoot}/.reports/{projectRoot}"],
       "options": {
-        "jestConfig": "libs/hierarchical-convert-to-date/jest.config.ts"
+        "jestConfig": "libs/hierarchical-convert-to-date/jest.config.cts"
       }
     }
   }

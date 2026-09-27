@@ -1,20 +1,41 @@
 {
   "name": "@adaskothebeast/angular-date-http-interceptor",
-  "version": "10.0.2",
+  "version": "11.0.0",
+  "description": "Angular HttpClient interceptor that deeply converts ISO 8601 date strings in JSON responses with a pluggable hierarchical converter.",
+  "keywords": [
+    "angular",
+    "http-interceptor",
+    "httpclient",
+    "date",
+    "iso8601",
+    "json",
+    "typescript"
+  ],
   "license": "MIT",
   "author": "Adam Pluciński <adaskothebeast@gmail.com> (https://github.com/adaskothebeast)",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AdaskoTheBeAsT/date-interceptors.git"
+    "url": "git+https://github.com/AdaskoTheBeAsT/date-interceptors.git",
+    "directory": "libs/angular-date-http-interceptor"
   },
   "bugs": {
     "url": "https://github.com/AdaskoTheBeAsT/date-interceptors/issues"
   },
-  "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors",
-  "peerDependencies": {
-    "@angular/common": "^22.0.8",
-    "@angular/core": "^22.0.8",
-    "rxjs": "^7.8.2"
+  "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors/tree/main/libs/angular-date-http-interceptor#readme",
+  "sideEffects": false,
+  "engines": {
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
   },
-  "sideEffects": false
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@adaskothebeast/hierarchical-convert-core": "^11.0.0",
+    "tslib": "^2.3.0"
+  },
+  "peerDependencies": {
+    "@angular/common": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "rxjs": "^7.8.0"
+  }
 }

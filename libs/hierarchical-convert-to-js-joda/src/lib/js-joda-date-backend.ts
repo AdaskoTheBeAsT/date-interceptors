@@ -1,3 +1,9 @@
+import '@js-joda/timezone';
+
+import type {
+  DateBackend,
+  DateCodec,
+} from '@adaskothebeast/hierarchical-convert-core';
 import {
   Duration,
   Instant,
@@ -9,12 +15,6 @@ import {
   YearMonth,
   ZonedDateTime,
 } from '@js-joda/core';
-import type {
-  DateBackend,
-  DateCodec,
-} from '@adaskothebeast/typewriter-runtime';
-
-require('@js-joda/timezone');
 
 function jsJodaCodec<T extends { toString(): string }>(
   is: (value: unknown) => value is T,
@@ -47,8 +47,7 @@ export const jsJodaDateBackend = {
       (value) => LocalDateTime.parse(value),
     ),
     'zoned-date-time': jsJodaCodec(
-      (value): value is ZonedDateTime =>
-        value instanceof ZonedDateTime,
+      (value): value is ZonedDateTime => value instanceof ZonedDateTime,
       (value) => ZonedDateTime.parse(value),
     ),
     duration: jsJodaCodec(

@@ -6,8 +6,36 @@
       "inputs": ["production", "^production"],
       "cache": true
     },
+    "lint": {
+      "cache": true,
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/eslint.config.cjs",
+        {
+          "externalDependencies": ["eslint"]
+        }
+      ],
+      "outputs": ["{workspaceRoot}/.reports/{projectRoot}/eslint.json"],
+      "configurations": {
+        "ci": {
+          "args": [
+            "--format=json",
+            "--output-file=../../.reports/{projectRoot}/eslint.json"
+          ]
+        }
+      }
+    },
     "@nx/jest:jest": {
-      "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
+      "inputs": [
+        "default",
+        "^production",
+        "{workspaceRoot}/jest.preset.js",
+        "{workspaceRoot}/tools/testing/jest-reporters.cjs",
+        "{workspaceRoot}/tools/testing/swc-transform.cjs",
+        "{workspaceRoot}/tools/testing/jsdom-environment.cjs",
+        "{workspaceRoot}/tools/testing/coverage-thresholds.json"
+      ],
       "cache": true,
       "options": {
         "passWithNoTests": true
@@ -17,6 +45,11 @@
           "ci": true,
           "codeCoverage": true
         }
+      }
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist/{projectRoot}"
       }
     },
     "@nx/vite:build": {
@@ -31,29 +64,25 @@
     "@nx/rollup:rollup": {
       "cache": true,
       "dependsOn": ["^build"],
-      "inputs": [
-        "production",
-        "^production",
-        {
-          "json": "{workspaceRoot}/tsconfig.json",
-          "fields": ["extends", "files", "include"]
-        }
-      ]
+      "inputs": ["production", "^production"]
     }
   },
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
       "default",
-      "!{projectRoot}/.eslintrc.json",
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
       "!{projectRoot}/tsconfig.spec.json",
-      "!{projectRoot}/jest.config.[jt]s",
+      "!{projectRoot}/jest.config.cts",
       "!{projectRoot}/src/test-setup.[jt]s",
       "!{projectRoot}/test-setup.[jt]s",
+      "!{projectRoot}/FixJSDOMEnvironment.ts",
       "!{projectRoot}/eslint.config.cjs"
     ],
-    "sharedGlobals": []
+    "sharedGlobals": [
+      "{workspaceRoot}/tsconfig.base.json",
+      "{workspaceRoot}/tools/rollup/**/*"
+    ]
   },
   "workspaceLayout": {
     "appsDir": "apps",
@@ -140,10 +169,42 @@
     }
   },
   "useInferencePlugins": false,
-  "defaultBase": "master",
+  "defaultBase": "main",
   "release": {
+    "projects": [
+      "angular-date-http-interceptor",
+      "angular-typed-http-client",
+      "axios-interceptor",
+      "hierarchical-convert-core",
+      "hierarchical-convert-to-date",
+      "hierarchical-convert-to-date-fns",
+      "hierarchical-convert-to-dayjs",
+      "hierarchical-convert-to-decimal",
+      "hierarchical-convert-to-js-joda",
+      "hierarchical-convert-to-luxon",
+      "hierarchical-convert-to-moment",
+      "hierarchical-convert-to-temporal",
+      "hierarchical-convert-to-uuid",
+      "react-redux-toolkit-hierarchical-date-hook",
+      "typewriter-http-angular",
+      "typewriter-http-axios",
+      "typewriter-http-fetch",
+      "typewriter-runtime",
+      "typewriter-schema"
+    ],
+    "projectsRelationship": "fixed",
+    "releaseTag": {
+      "pattern": "v{version}"
+    },
     "version": {
-      "preVersionCommand": "yarn dlx nx run-many -t build"
+      "preVersionCommand": "yarn nx run-many -t build",
+      "currentVersionResolver": "disk",
+      "preserveMatchingDependencyRanges": false,
+      "manifestRootsToUpdate": ["{projectRoot}"]
+    },
+    "changelog": {
+      "workspaceChangelog": false,
+      "projectChangelogs": false
     }
   },
   "analytics": false,

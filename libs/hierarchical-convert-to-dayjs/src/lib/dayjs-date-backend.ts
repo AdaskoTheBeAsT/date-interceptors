@@ -1,11 +1,11 @@
 import type {
   DateBackend,
   DateCodec,
-} from '@adaskothebeast/typewriter-runtime';
+} from '@adaskothebeast/hierarchical-convert-core';
 import dayjs from 'dayjs';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-import duration from 'dayjs/plugin/duration';
-import utc from 'dayjs/plugin/utc';
+import customParseFormat from 'dayjs/plugin/customParseFormat.js';
+import duration from 'dayjs/plugin/duration.js';
+import utc from 'dayjs/plugin/utc.js';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -55,10 +55,7 @@ const plainDateCodec: DateCodec<dayjs.Dayjs> = {
     if (!PLAIN_DATE_PATTERN.test(value)) {
       throw new RangeError('Invalid plain-date value');
     }
-    return validDayjs(
-      dayjs(value, PLAIN_DATE_FORMAT, true),
-      'plain-date',
-    );
+    return validDayjs(dayjs(value, PLAIN_DATE_FORMAT, true), 'plain-date');
   },
   serialize(value) {
     return validDayjs(value, 'plain-date').format(PLAIN_DATE_FORMAT);

@@ -26,7 +26,10 @@ module.exports = [
         'error',
         {
           enforceBuildableLibDependency: true,
-          allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?js$'],
+          allow: [
+            '^.*/eslint(\\.base)?\\.config\\.[cm]?js$',
+            '^.*/tools/testing/(coverage-thresholds\\.json|jest-reporters\\.cjs)$',
+          ],
           depConstraints: [
             {
               sourceTag: '*',

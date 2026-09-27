@@ -1,0 +1,16 @@
+{
+  "name": "hierarchical-convert-core",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/hierarchical-convert-core/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/.reports/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/hierarchical-convert-core/jest.config.cts"
+      }
+    }
+  }
+}

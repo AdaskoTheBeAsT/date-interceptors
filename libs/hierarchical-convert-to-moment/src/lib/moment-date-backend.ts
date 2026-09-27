@@ -1,7 +1,7 @@
 import type {
   DateBackend,
   DateCodec,
-} from '@adaskothebeast/typewriter-runtime';
+} from '@adaskothebeast/hierarchical-convert-core';
 import moment from 'moment';
 
 const INSTANT_PATTERN =
@@ -27,10 +27,7 @@ function validMoment(value: moment.Moment, kind: string): moment.Moment {
   return value;
 }
 
-function validDuration(
-  value: moment.Duration,
-  kind: string,
-): moment.Duration {
+function validDuration(value: moment.Duration, kind: string): moment.Duration {
   if (!value.isValid()) {
     throw new RangeError(`Invalid ${kind} value`);
   }
@@ -59,10 +56,7 @@ const plainDateCodec: DateCodec<moment.Moment> = {
     if (!PLAIN_DATE_PATTERN.test(value)) {
       throw new RangeError('Invalid plain-date value');
     }
-    return validMoment(
-      moment(value, PLAIN_DATE_FORMAT, true),
-      'plain-date',
-    );
+    return validMoment(moment(value, PLAIN_DATE_FORMAT, true), 'plain-date');
   },
   serialize(value) {
     return validMoment(value, 'plain-date').format(PLAIN_DATE_FORMAT);

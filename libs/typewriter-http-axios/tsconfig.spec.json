@@ -4,19 +4,9 @@
     "outDir": "../../dist/out-tsc",
     "module": "commonjs",
     "moduleResolution": "bundler",
-    "baseUrl": "../..",
-    "paths": {
-      "@adaskothebeast/typewriter-runtime": [
-        "libs/typewriter-runtime/src/index.ts"
-      ],
-      "@adaskothebeast/typewriter-schema": [
-        "libs/typewriter-schema/src/index.ts"
-      ]
-    },
     "types": ["jest", "node"]
   },
   "include": [
-    "jest.config.ts",
     "jest.config.cts",
     "src/**/*.test.ts",
     "src/**/*.spec.ts",

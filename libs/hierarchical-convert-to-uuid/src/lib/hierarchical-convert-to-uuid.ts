@@ -1,48 +1,20 @@
-import { parse } from 'uuid';
+import { visitStrings } from '@adaskothebeast/hierarchical-convert-core';
+import { parse, validate } from 'uuid';
 
-type UuidValue = Uint8Array | string | number | boolean | null;
-type UuidObject = { [key: string]: UuidValue | UuidObject | UuidArray };
-type UuidArray = Array<UuidValue | UuidObject | UuidArray>;
+/**
+ * Replaces UUID strings accepted by `uuid.validate` with their 16-byte
+ * `Uint8Array` form in place, walking arrays and plain objects only; cycles and
+ * levels deeper than 100 are skipped.
+ */
+export function hierarchicalConvertToUuid(obj: unknown): void {
+  visitStrings(obj, convert);
+}
 
-const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
-
-export function hierarchicalConvertToUuid(
-  obj: unknown,
-  depth = 0,
-  visited = new WeakSet(),
-): void {
-  if (typeof obj !== 'object' || obj === null || depth > 100) {
-    return;
+function convert(value: string): unknown {
+  try {
+    if (value.length === 36 && validate(value)) return parse(value);
+  } catch {
+    // Unsupported or invalid backend values remain strings.
   }
-
-  if (visited.has(obj)) {
-    return;
-  }
-  visited.add(obj);
-
-  const record = obj as UuidObject;
-
-  for (const key in record) {
-    if (DANGEROUS_KEYS.has(key) || !Object.hasOwn(record, key)) {
-      continue;
-    }
-
-    const value = record[key];
-    if (
-      typeof value === 'string' &&
-      value.length === 36 &&
-      value[8] === '-' &&
-      value[13] === '-' &&
-      value[18] === '-' &&
-      value[23] === '-'
-    ) {
-      try {
-        record[key] = parse(value);
-      } catch {
-        // Leave invalid UUID strings unchanged.
-      }
-    } else if (typeof value === 'object' && value !== null) {
-      hierarchicalConvertToUuid(value, depth + 1, visited);
-    }
-  }
+  return value;
 }

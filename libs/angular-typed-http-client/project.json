@@ -23,26 +23,10 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": ["{workspaceRoot}/.reports/{projectRoot}"],
       "options": {
-        "jestConfig": "libs/angular-typed-http-client/jest.config.ts",
+        "jestConfig": "libs/angular-typed-http-client/jest.config.cts",
         "tsConfig": "libs/angular-typed-http-client/tsconfig.spec.json"
-      }
-    },
-    "lint": {
-      "inputs": [
-        "default",
-        "^default",
-        "{workspaceRoot}/.eslintrc.json",
-        "{workspaceRoot}/.eslintignore",
-        "{workspaceRoot}/eslint.config.cjs",
-        "{workspaceRoot}/tools/eslint-rules/**/*",
-        {
-          "externalDependencies": ["eslint"]
-        }
-      ],
-      "options": {
-        "args": ["**/*.{ts,tsx,js,jsx}", "package.json"]
       }
     }
   }

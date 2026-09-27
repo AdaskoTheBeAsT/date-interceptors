@@ -1,16 +1,16 @@
 import dayjs from 'dayjs';
 
-import { hierarchicalConvertToDayjs } from './hierarchical-convert-to-dayjs';
+import { hierarchicalConvertToDayjs } from '../index';
 
 describe('hierarchicalConvertToDayjs', () => {
   it.each`
     input                                                                           | expected
     ${{}}                                                                           | ${{}}
     ${{ text: 'adam' }}                                                             | ${{ text: 'adam' }}
-    ${{ date: '2023-07-17T23:06:00.000Z' }}                                         | ${{ date: dayjs.utc('2023-07-17T23:06:00.000Z') }}
-    ${{ someNewObj: { text: 'adam', date: '2023-07-17T23:06:00.000Z' } }}           | ${{ someNewObj: { text: 'adam', date: dayjs.utc('2023-07-17T23:06:00.000Z') } }}
-    ${[{ date: '2023-07-17T23:06:00.000Z' }, { date: '2023-07-17T23:06:00.000Z' }]} | ${[{ date: dayjs.utc('2023-07-17T23:06:00.000Z') }, { date: dayjs.utc('2023-07-17T23:06:00.000Z') }]}
-    ${['2023-07-17T23:06:00.000Z', '2023-07-17T23:06:00.000Z']}                     | ${[dayjs.utc('2023-07-17T23:06:00.000Z'), dayjs.utc('2023-07-17T23:06:00.000Z')]}
+    ${{ date: '2023-07-17T23:06:00.000Z' }}                                         | ${{ date: dayjs('2023-07-17T23:06:00.000Z') }}
+    ${{ someNewObj: { text: 'adam', date: '2023-07-17T23:06:00.000Z' } }}           | ${{ someNewObj: { text: 'adam', date: dayjs('2023-07-17T23:06:00.000Z') } }}
+    ${[{ date: '2023-07-17T23:06:00.000Z' }, { date: '2023-07-17T23:06:00.000Z' }]} | ${[{ date: dayjs('2023-07-17T23:06:00.000Z') }, { date: dayjs('2023-07-17T23:06:00.000Z') }]}
+    ${['2023-07-17T23:06:00.000Z', '2023-07-17T23:06:00.000Z']}                     | ${[dayjs('2023-07-17T23:06:00.000Z'), dayjs('2023-07-17T23:06:00.000Z')]}
     ${{ date: '2023-07-17T23:06:00.000+01:00' }}                                    | ${{ date: dayjs('2023-07-17T23:06:00.000+01:00') }}
   `('converts date $input expecting $expected', ({ input, expected }) => {
     hierarchicalConvertToDayjs(input);
@@ -32,17 +32,81 @@ describe('hierarchicalConvertToDayjs', () => {
     expect(input).toEqual(expected);
   });
 
+  it('produces local-mode objects for Z and numeric offsets alike', () => {
+    const input = {
+      zulu: '2023-07-17T23:06:00Z',
+      zero: '2023-07-17T23:06:00+00:00',
+      shifted: '2023-07-18T01:06:00+02:00',
+    };
+
+    hierarchicalConvertToDayjs(input);
+
+    const values = Object.values(input) as unknown as dayjs.Dayjs[];
+    for (const value of values) {
+      expect(dayjs.isDayjs(value)).toBe(true);
+      expect(value.isUTC()).toBe(false);
+      expect(value.valueOf()).toBe(Date.UTC(2023, 6, 17, 23, 6));
+    }
+  });
+
+  it('accepts a decimal comma and keeps negative durations as strings', () => {
+    const input = { comma: 'PT1,5S', negative: '-PT1.5S' };
+
+    hierarchicalConvertToDayjs(input);
+
+    expect(
+      (
+        input.comma as unknown as ReturnType<typeof dayjs.duration>
+      ).asMilliseconds(),
+    ).toBe(1500);
+    expect(input.negative).toBe('-PT1.5S');
+  });
+
+  it('keeps the string when Day.js reports an invalid value', () => {
+    const isValid = jest
+      .spyOn(dayjs.prototype, 'isValid')
+      .mockReturnValueOnce(false);
+    const input = { date: '2023-07-17T23:06:00.000Z' };
+
+    hierarchicalConvertToDayjs(input);
+
+    expect(input.date).toBe('2023-07-17T23:06:00.000Z');
+    isValid.mockRestore();
+  });
+
+  it('is a no-op when run twice and leaves non-plain objects untouched', () => {
+    const map = new Map([['date', '2023-07-17T23:06:00.000Z']]);
+    const input = {
+      date: '2023-07-17T23:06:00.000Z',
+      duration: 'PT1S',
+      map,
+    };
+
+    hierarchicalConvertToDayjs(input);
+    const { date, duration } = input;
+    const snapshot = JSON.stringify(input);
+    hierarchicalConvertToDayjs(input);
+
+    expect(input.date).toBe(date);
+    expect(input.duration).toBe(duration);
+    expect(JSON.stringify(input)).toBe(snapshot);
+    expect(map.get('date')).toBe('2023-07-17T23:06:00.000Z');
+  });
+
   describe('Security - Prototype Pollution Protection', () => {
-    it('should not process __proto__ property', () => {
-      const input = {
-        date: '2023-07-17T23:06:00.000Z',
-        __proto__: { polluted: true },
-      };
+    it('should not process an own __proto__ key from JSON', () => {
+      const input = JSON.parse(
+        '{"date":"2023-07-17T23:06:00.000Z","__proto__":"2024-01-01T00:00:00Z","nested":{"__proto__":{}}}',
+      );
 
       hierarchicalConvertToDayjs(input);
 
       expect(dayjs.isDayjs(input.date)).toBe(true);
-      expect(Object.prototype).not.toHaveProperty('polluted');
+      expect(Object.getPrototypeOf(input)).toBe(Object.prototype);
+      expect(Object.getPrototypeOf(input.nested)).toBe(Object.prototype);
+      expect(Object.getOwnPropertyDescriptor(input, '__proto__')?.value).toBe(
+        '2024-01-01T00:00:00Z',
+      );
     });
 
     it('should not process dangerous properties', () => {
