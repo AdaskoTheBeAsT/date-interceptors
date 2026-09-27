@@ -92,7 +92,7 @@ export function parseIsoDuration(value: string): IsoDuration | undefined {
 
   const body = value.slice(negative ? 2 : 1);
   const timeSeparator = body.indexOf('T');
-  if (timeSeparator !== -1 && body.indexOf('T', timeSeparator + 1) !== -1) {
+  if (timeSeparator !== -1 && body.includes('T', timeSeparator + 1)) {
     return undefined;
   }
   const dateText = timeSeparator === -1 ? body : body.slice(0, timeSeparator);

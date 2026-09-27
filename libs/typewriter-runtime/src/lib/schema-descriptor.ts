@@ -480,24 +480,7 @@ function variantLookup(variants: unknown): VariantLookup {
 
   const lookup = new Map<string, unknown>();
   if (Array.isArray(variants)) {
-    for (const rawVariant of variants) {
-      const variant = asRecord(rawVariant);
-      const key = firstDefined(
-        variant?.['value'],
-        variant?.['tag'],
-        variant?.['discriminator'],
-        variant?.['key'],
-      );
-      const schema = firstDefined(
-        variant?.['schema'],
-        variant?.['descriptor'],
-        variant?.['type'],
-      );
-      if (typeof key === 'string' || typeof key === 'number') {
-        const name = typeof key === 'number' ? key.toString() : key;
-        if (!lookup.has(name)) lookup.set(name, schema);
-      }
-    }
+    addArrayVariants(lookup, variants);
   } else {
     const variantRecord = asRecord(variants);
     if (variantRecord !== undefined) {
@@ -507,6 +490,30 @@ function variantLookup(variants: unknown): VariantLookup {
     }
   }
   return (key) => lookup.get(typeof key === 'number' ? key.toString() : key);
+}
+
+function addArrayVariants(
+  lookup: Map<string, unknown>,
+  variants: readonly unknown[],
+): void {
+  for (const rawVariant of variants) {
+    const variant = asRecord(rawVariant);
+    const key = firstDefined(
+      variant?.['value'],
+      variant?.['tag'],
+      variant?.['discriminator'],
+      variant?.['key'],
+    );
+    const schema = firstDefined(
+      variant?.['schema'],
+      variant?.['descriptor'],
+      variant?.['type'],
+    );
+    if (typeof key === 'string' || typeof key === 'number') {
+      const name = typeof key === 'number' ? key.toString() : key;
+      if (!lookup.has(name)) lookup.set(name, schema);
+    }
+  }
 }
 
 function uuidVersions(
