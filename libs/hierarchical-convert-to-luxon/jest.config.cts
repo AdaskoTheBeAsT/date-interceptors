@@ -1,14 +1,12 @@
 const coverageThresholds = require('../../tools/testing/coverage-thresholds.json');
 
-const reportPath = '.reports/libs/hierarchical-convert-to-luxon/';
+const reportPath = '../../.reports/libs/hierarchical-convert-to-luxon/';
 const reportName = 'test-report';
 
 module.exports = {
   displayName: 'hierarchical-convert-to-luxon',
   coverageThreshold: {
-    global: coverageThresholds[
-      'hierarchical-convert-to-luxon'
-    ],
+    global: coverageThresholds['hierarchical-convert-to-luxon'],
   },
   coverageDirectory:
     '../../.reports/libs/hierarchical-convert-to-luxon/coverage',
@@ -60,7 +58,7 @@ module.exports = {
         outputDirectory: reportPath,
         outputName: `${reportName}.sonar.xml`,
         reportedFilePath: 'relative',
-        relativeRootDir: './',
+        relativeRootDir: '../../',
       },
     ],
     [

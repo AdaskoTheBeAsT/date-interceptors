@@ -12,6 +12,8 @@ module.exports = [
   {
     ignores: [
       '**/dist',
+      '**/.reports/**',
+      '**/coverage/**',
       '**/vite.config.*.timestamp*',
       '**/vitest.config.*.timestamp*',
     ],

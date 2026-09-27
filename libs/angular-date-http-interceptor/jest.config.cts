@@ -1,14 +1,12 @@
 const coverageThresholds = require('../../tools/testing/coverage-thresholds.json');
 
-const reportPath = '.reports/libs/angular-date-http-interceptor/';
+const reportPath = '../../.reports/libs/angular-date-http-interceptor/';
 const reportName = 'test-report';
 
 module.exports = {
   displayName: 'angular-date-http-interceptor',
   coverageThreshold: {
-    global: coverageThresholds[
-      'angular-date-http-interceptor'
-    ],
+    global: coverageThresholds['angular-date-http-interceptor'],
   },
   coverageDirectory:
     '../../.reports/libs/angular-date-http-interceptor/coverage',
@@ -73,7 +71,7 @@ module.exports = {
         outputDirectory: reportPath,
         outputName: `${reportName}.sonar.xml`,
         reportedFilePath: 'relative',
-        relativeRootDir: './',
+        relativeRootDir: '../../',
       },
     ],
     [

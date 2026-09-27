@@ -1,14 +1,12 @@
 const coverageThresholds = require('../../tools/testing/coverage-thresholds.json');
 
-const reportPath = '.reports/libs/hierarchical-convert-to-moment/';
+const reportPath = '../../.reports/libs/hierarchical-convert-to-moment/';
 const reportName = 'test-report';
 
 module.exports = {
   displayName: 'hierarchical-convert-to-moment',
   coverageThreshold: {
-    global: coverageThresholds[
-      'hierarchical-convert-to-moment'
-    ],
+    global: coverageThresholds['hierarchical-convert-to-moment'],
   },
   coverageDirectory:
     '../../.reports/libs/hierarchical-convert-to-moment/coverage',
@@ -60,7 +58,7 @@ module.exports = {
         outputDirectory: reportPath,
         outputName: `${reportName}.sonar.xml`,
         reportedFilePath: 'relative',
-        relativeRootDir: './',
+        relativeRootDir: '../../',
       },
     ],
     [

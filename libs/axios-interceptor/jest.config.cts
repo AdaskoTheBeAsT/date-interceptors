@@ -1,14 +1,12 @@
 const coverageThresholds = require('../../tools/testing/coverage-thresholds.json');
 
-const reportPath = '.reports/libs/axios-interceptor/';
+const reportPath = '../../.reports/libs/axios-interceptor/';
 const reportName = 'test-report';
 
 module.exports = {
   displayName: 'axios-interceptor',
   coverageThreshold: {
-    global: coverageThresholds[
-      'axios-interceptor'
-    ],
+    global: coverageThresholds['axios-interceptor'],
   },
   coverageDirectory: '../../.reports/libs/axios-interceptor/coverage',
   preset: '../../jest.preset.js',
@@ -59,7 +57,7 @@ module.exports = {
         outputDirectory: reportPath,
         outputName: `${reportName}.sonar.xml`,
         reportedFilePath: 'relative',
-        relativeRootDir: './',
+        relativeRootDir: '../../',
       },
     ],
     [

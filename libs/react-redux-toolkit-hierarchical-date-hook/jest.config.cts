@@ -1,14 +1,13 @@
 const coverageThresholds = require('../../tools/testing/coverage-thresholds.json');
 
-const reportPath = '.reports/libs/react-redux-toolkit-hierarchical-date-hook/';
+const reportPath =
+  '../../.reports/libs/react-redux-toolkit-hierarchical-date-hook/';
 const reportName = 'test-report';
 
 module.exports = {
   displayName: 'react-redux-toolkit-hierarchical-date-hook',
   coverageThreshold: {
-    global: coverageThresholds[
-      'react-redux-toolkit-hierarchical-date-hook'
-    ],
+    global: coverageThresholds['react-redux-toolkit-hierarchical-date-hook'],
   },
   coverageDirectory:
     '../../.reports/libs/react-redux-toolkit-hierarchical-date-hook/coverage',
@@ -61,7 +60,7 @@ module.exports = {
         outputDirectory: reportPath,
         outputName: `${reportName}.sonar.xml`,
         reportedFilePath: 'relative',
-        relativeRootDir: './',
+        relativeRootDir: '../../',
       },
     ],
     [

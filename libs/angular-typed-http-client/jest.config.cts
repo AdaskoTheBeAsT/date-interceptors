@@ -1,14 +1,12 @@
 const coverageThresholds = require('../../tools/testing/coverage-thresholds.json');
 
-const reportPath = '.reports/libs/angular-typed-http-client/';
+const reportPath = '../../.reports/libs/angular-typed-http-client/';
 const reportName = 'test-report';
 
 module.exports = {
   displayName: 'angular-typed-http-client',
   coverageThreshold: {
-    global: coverageThresholds[
-      'angular-typed-http-client'
-    ],
+    global: coverageThresholds['angular-typed-http-client'],
   },
   coverageDirectory: '../../.reports/libs/angular-typed-http-client/coverage',
   preset: '../../jest.preset.js',
@@ -72,7 +70,7 @@ module.exports = {
         outputDirectory: reportPath,
         outputName: `${reportName}.sonar.xml`,
         reportedFilePath: 'relative',
-        relativeRootDir: './',
+        relativeRootDir: '../../',
       },
     ],
     [

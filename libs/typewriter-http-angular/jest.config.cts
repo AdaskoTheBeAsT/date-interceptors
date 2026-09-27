@@ -1,14 +1,12 @@
 const coverageThresholds = require('../../tools/testing/coverage-thresholds.json');
 
-const reportPath = '.reports/libs/typewriter-http-angular/';
+const reportPath = '../../.reports/libs/typewriter-http-angular/';
 const reportName = 'test-report';
 
 module.exports = {
   displayName: 'typewriter-http-angular',
   coverageThreshold: {
-    global: coverageThresholds[
-      'typewriter-http-angular'
-    ],
+    global: coverageThresholds['typewriter-http-angular'],
   },
   coverageDirectory: '../../.reports/libs/typewriter-http-angular/coverage',
   preset: '../../jest.preset.js',
@@ -79,7 +77,7 @@ module.exports = {
         outputDirectory: reportPath,
         outputName: `${reportName}.sonar.xml`,
         reportedFilePath: 'relative',
-        relativeRootDir: './',
+        relativeRootDir: '../../',
       },
     ],
     [

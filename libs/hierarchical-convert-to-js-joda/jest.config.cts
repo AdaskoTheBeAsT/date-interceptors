@@ -1,14 +1,12 @@
 const coverageThresholds = require('../../tools/testing/coverage-thresholds.json');
 
-const reportPath = '.reports/libs/hierarchical-convert-to-js-joda/';
+const reportPath = '../../.reports/libs/hierarchical-convert-to-js-joda/';
 const reportName = 'test-report';
 
 module.exports = {
   displayName: 'hierarchical-convert-to-js-joda',
   coverageThreshold: {
-    global: coverageThresholds[
-      'hierarchical-convert-to-js-joda'
-    ],
+    global: coverageThresholds['hierarchical-convert-to-js-joda'],
   },
   coverageDirectory:
     '../../.reports/libs/hierarchical-convert-to-js-joda/coverage',
@@ -60,7 +58,7 @@ module.exports = {
         outputDirectory: reportPath,
         outputName: `${reportName}.sonar.xml`,
         reportedFilePath: 'relative',
-        relativeRootDir: './',
+        relativeRootDir: '../../',
       },
     ],
     [

@@ -1,14 +1,12 @@
 const coverageThresholds = require('../../tools/testing/coverage-thresholds.json');
 
-const reportPath = '.reports/libs/hierarchical-convert-to-dayjs/';
+const reportPath = '../../.reports/libs/hierarchical-convert-to-dayjs/';
 const reportName = 'test-report';
 
 module.exports = {
   displayName: 'hierarchical-convert-to-dayjs',
   coverageThreshold: {
-    global: coverageThresholds[
-      'hierarchical-convert-to-dayjs'
-    ],
+    global: coverageThresholds['hierarchical-convert-to-dayjs'],
   },
   coverageDirectory:
     '../../.reports/libs/hierarchical-convert-to-dayjs/coverage',
@@ -60,7 +58,7 @@ module.exports = {
         outputDirectory: reportPath,
         outputName: `${reportName}.sonar.xml`,
         reportedFilePath: 'relative',
-        relativeRootDir: './',
+        relativeRootDir: '../../',
       },
     ],
     [

@@ -9,5 +9,10 @@ module.exports = {
     '!<rootDir>/src/test-setup.ts',
     '!<rootDir>/src/**/fixtures/**',
   ],
-  coverageReporters: ['text', 'lcov', 'json-summary', 'cobertura'],
+  coverageReporters: [
+    'text',
+    ['lcov', { projectRoot: __dirname }],
+    'json-summary',
+    'cobertura',
+  ],
 };
