@@ -86,11 +86,31 @@ describe('dateFnsDateBackend', () => {
     expect(codecs.duration.serialize({ days: 0 })).toBe('P0D');
   });
 
+  it('parses fractional components with either decimal separator', () => {
+    expect(codecs.duration.parse('P1.5Y2,25M3W4DT5H6M7,25S')).toEqual({
+      years: 1.5,
+      months: 2.25,
+      weeks: 3,
+      days: 4,
+      hours: 5,
+      minutes: 6,
+      seconds: 7.25,
+    });
+    expect(codecs.duration.parse('PT0S')).toEqual({ seconds: 0 });
+  });
+
   it('rejects negative durations because date-fns has no duration sign', () => {
     expect(() => codecs.duration.parse('-P1D')).toThrow(RangeError);
     expect(codecs.duration.is({ days: -1 })).toBe(false);
     expect(() => codecs.duration.serialize({ days: -1 })).toThrow(RangeError);
   });
+
+  it.each(['+P1D', 'P1DT', 'PT', 'P1D2D', 'P1DT2H3D'])(
+    'rejects invalid duration syntax %s',
+    (value) => {
+      expect(() => codecs.duration.parse(value)).toThrow(RangeError);
+    },
+  );
 
   it('does not advertise unsupported date semantics', () => {
     expect(Object.keys(codecs).sort()).toEqual([

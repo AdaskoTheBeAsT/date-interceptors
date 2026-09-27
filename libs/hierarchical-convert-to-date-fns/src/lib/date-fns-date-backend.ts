@@ -2,6 +2,7 @@ import type {
   DateBackend,
   DateCodec,
 } from '@adaskothebeast/hierarchical-convert-core';
+import { parseFractionalIsoDuration } from '@adaskothebeast/hierarchical-convert-core';
 import { format, isDate, isValid, parseISO } from 'date-fns';
 import type { Duration } from 'date-fns';
 
@@ -10,8 +11,6 @@ const DATE_TIME_PATTERN =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?$/u;
 const INSTANT_PATTERN =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})$/u;
-const DURATION_PATTERN =
-  /^(?<sign>-)?P(?=.)(?:(?<years>\d+(?:[.,]\d+)?)Y)?(?:(?<months>\d+(?:[.,]\d+)?)M)?(?:(?<weeks>\d+(?:[.,]\d+)?)W)?(?:(?<days>\d+(?:[.,]\d+)?)D)?(?:T(?=.)(?:(?<hours>\d+(?:[.,]\d+)?)H)?(?:(?<minutes>\d+(?:[.,]\d+)?)M)?(?:(?<seconds>\d+(?:[.,]\d+)?)S)?)?$/u;
 const DURATION_KEYS = [
   'years',
   'months',
@@ -91,26 +90,15 @@ function isDuration(value: unknown): value is Duration {
 }
 
 function parseDuration(value: string): Duration {
-  const match = DURATION_PATTERN.exec(value);
-  if (match?.groups === undefined) {
+  const parsed = parseFractionalIsoDuration(value);
+  if (parsed === undefined || parsed.sign === '+') {
     throw new RangeError(`Invalid ISO duration value: ${value}`);
   }
-  if (match.groups['sign'] === '-') {
+  if (parsed.sign === '-') {
     throw new RangeError('date-fns Duration does not support negative values');
   }
 
-  const duration: Duration = {};
-  for (const key of DURATION_KEYS) {
-    const component = match.groups[key];
-    if (component !== undefined) {
-      duration[key] = Number(component.replace(',', '.'));
-    }
-  }
-
-  if (Object.keys(duration).length === 0) {
-    throw new RangeError(`Invalid ISO duration value: ${value}`);
-  }
-  return duration;
+  return parsed.components;
 }
 
 function serializeDuration(value: Duration): string {
@@ -133,7 +121,8 @@ function serializeDuration(value: Duration): string {
   if (datePart === '' && timePart === '') {
     return 'PT0S';
   }
-  return `P${datePart}${timePart === '' ? '' : `T${timePart}`}`;
+  const timeSuffix = timePart === '' ? '' : `T${timePart}`;
+  return `P${datePart}${timeSuffix}`;
 }
 
 function durationComponent(

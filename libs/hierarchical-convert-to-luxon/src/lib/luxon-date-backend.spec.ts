@@ -99,6 +99,25 @@ describe('luxonDateBackend', () => {
     );
   });
 
+  it('accepts zoned date-times without seconds and with a UTC designator', () => {
+    expect(
+      codecs['zoned-date-time'].parse('2024-07-01T12:34+02:00[Europe/Paris]')
+        .zoneName,
+    ).toBe('Europe/Paris');
+    expect(
+      codecs['zoned-date-time'].parse('2024-01-01T12:34Z[Europe/London]')
+        .zoneName,
+    ).toBe('Europe/London');
+  });
+
+  it.each([
+    '2024-07-01T12:34:56.1234+02:00[Europe/Paris]',
+    '2024-07-01T12:34+02:00[Europe/Paris]extra',
+    '2024-07-01T12:34+02:00[]',
+  ])('rejects malformed zoned date-time %s', (value) => {
+    expect(() => codecs['zoned-date-time'].parse(value)).toThrow(RangeError);
+  });
+
   it('rejects a zoned date-time whose offset disagrees with its zone', () => {
     expect(() =>
       codecs['zoned-date-time'].parse(

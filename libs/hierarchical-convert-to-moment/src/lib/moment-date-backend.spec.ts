@@ -64,6 +64,24 @@ describe('momentDateBackend', () => {
     expect(codec.serialize(value)).toBe('P1Y2M3DT4H5M6.7S');
   });
 
+  it.each(['+P1.5Y', '-PT1,5S', 'P1DT'])(
+    'accepts supported duration syntax %s',
+    (value) => {
+      expect(
+        moment.isDuration(momentDateBackend.codecs.duration.parse(value)),
+      ).toBe(true);
+    },
+  );
+
+  it.each(['P', 'PT', 'P1D2D', 'P1DT2H3D', 'P1YTT2H'])(
+    'rejects invalid duration syntax %s',
+    (value) => {
+      expect(() => momentDateBackend.codecs.duration.parse(value)).toThrow(
+        RangeError,
+      );
+    },
+  );
+
   it('does not advertise mappings that Moment cannot preserve', () => {
     expect(momentDateBackend.codecs).not.toHaveProperty('plain-time');
     expect(momentDateBackend.codecs).not.toHaveProperty('zoned-date-time');

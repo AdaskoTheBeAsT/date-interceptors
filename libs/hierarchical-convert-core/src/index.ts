@@ -6,6 +6,8 @@ export type {
 } from './lib/date-backend';
 export { isJsonContainer, visitStrings } from './lib/visit-strings';
 export type { StringConverter } from './lib/visit-strings';
+export { parseFractionalIsoDuration } from './lib/fractional-iso-duration';
+export type { FractionalIsoDuration } from './lib/fractional-iso-duration';
 export {
   isIsoDateTime,
   isIsoDuration,
