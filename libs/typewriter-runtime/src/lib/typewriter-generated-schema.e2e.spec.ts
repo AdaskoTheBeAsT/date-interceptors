@@ -3,10 +3,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import Decimal from 'decimal.js';
 import { stringify as stringifyUuid } from 'uuid';
 
-import {
-  Invoice,
-  apiTypeRegistry,
-} from './fixtures/invoice.generated';
+import { Invoice, apiTypeRegistry } from './fixtures/invoice.generated';
 import { transformJson } from './typewriter-runtime';
 import { serializeJson } from './typewriter-serializer';
 

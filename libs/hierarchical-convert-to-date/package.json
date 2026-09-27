@@ -1,17 +1,34 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-to-date",
-  "version": "10.0.2",
+  "version": "11.0.0",
+  "description": "Deep, in-place conversion of ISO 8601 date strings in JSON payloads into native JavaScript Date objects.",
+  "keywords": [
+    "date",
+    "iso8601",
+    "converter",
+    "deserialize",
+    "json",
+    "typescript"
+  ],
   "license": "MIT",
   "author": "Adam Pluciński <adaskothebeast@gmail.com> (https://github.com/adaskothebeast)",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AdaskoTheBeAsT/date-interceptors.git"
+    "url": "git+https://github.com/AdaskoTheBeAsT/date-interceptors.git",
+    "directory": "libs/hierarchical-convert-to-date"
   },
   "bugs": {
     "url": "https://github.com/AdaskoTheBeAsT/date-interceptors/issues"
   },
-  "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors",
-  "peerDependencies": {
-    "tslib": "^2.8.1"
+  "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors/tree/main/libs/hierarchical-convert-to-date#readme",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22.12"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@adaskothebeast/hierarchical-convert-core": "^11.0.0"
   }
 }

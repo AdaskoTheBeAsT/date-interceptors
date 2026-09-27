@@ -7,7 +7,7 @@ import {
   HttpRequest,
   provideHttpClient,
   withInterceptorsFromDi,
-  withXhr
+  withXhr,
 } from '@angular/common/http';
 import {
   HttpTestingController,
@@ -73,7 +73,7 @@ describe('ClassTransformerHttpInterceptor with prior cloning interceptor', () =>
     http
       .get<PetDto>('/api/pet/1', { context: ctx })
       .subscribe((pet: PetDto) => {
-        expect(pet instanceof PetDto).toBe(true);
+        expect(pet).toBeInstanceOf(PetDto);
         expect(pet.isCat()).toBe(true);
         done();
       });

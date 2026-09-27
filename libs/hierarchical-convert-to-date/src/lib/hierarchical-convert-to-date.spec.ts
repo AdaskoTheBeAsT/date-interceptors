@@ -1,4 +1,4 @@
-import { hierarchicalConvertToDate } from './hierarchical-convert-to-date';
+import { hierarchicalConvertToDate } from '../index';
 
 describe('hierarchicalConvertToDate', () => {
   it.each`
@@ -17,15 +17,22 @@ describe('hierarchicalConvertToDate', () => {
   });
 
   describe('Security - Prototype Pollution Protection', () => {
-    it('should not process __proto__ property', () => {
-      const input = {
-        date: '2023-07-17T23:06:00.000Z',
-        __proto__: { polluted: true },
-      };
+    it('should not process an own __proto__ key from JSON', () => {
+      const input = JSON.parse(
+        '{"date":"2023-07-17T23:06:00.000Z","__proto__":"2024-01-01T00:00:00Z","nested":{"__proto__":{"polluted":"2024-01-01T00:00:00Z"}}}',
+      );
 
       hierarchicalConvertToDate(input);
 
       expect(input.date).toBeInstanceOf(Date);
+      expect(Object.getPrototypeOf(input)).toBe(Object.prototype);
+      expect(Object.getPrototypeOf(input.nested)).toBe(Object.prototype);
+      expect(Object.getOwnPropertyDescriptor(input, '__proto__')?.value).toBe(
+        '2024-01-01T00:00:00Z',
+      );
+      expect(
+        Object.getOwnPropertyDescriptor(input.nested, '__proto__')?.value,
+      ).toEqual({ polluted: '2024-01-01T00:00:00Z' });
       expect(Object.prototype).not.toHaveProperty('polluted');
     });
 
@@ -110,7 +117,65 @@ describe('hierarchicalConvertToDate', () => {
       hierarchicalConvertToDate(input);
 
       expect(input.date).toBeInstanceOf(Date);
-      // Deep nested dates beyond 100 levels remain strings
+      let node = input;
+      for (let level = 0; level <= 100; level++) {
+        expect(node.date).toBeInstanceOf(Date);
+        node = node.nested;
+      }
+      expect(node.date).toBe('2023-07-17T23:06:00.000Z');
+    });
+  });
+
+  describe('Traversal boundaries', () => {
+    it('is a no-op when run twice and leaves non-plain objects untouched', () => {
+      class Holder {
+        date = '2023-07-17T23:06:00.000Z';
+      }
+      const holder = new Holder();
+      const map = new Map([['date', '2023-07-17T23:06:00.000Z']]);
+      const buffer = Buffer.from('2023-07-17T23:06:00.000Z');
+      const input = {
+        date: '2023-07-17T23:06:00.000Z',
+        list: ['2023-07-17T23:06:00.000Z'],
+        holder,
+        map,
+        buffer,
+      };
+
+      hierarchicalConvertToDate(input);
+      const first = input.date as unknown as Date;
+      const firstItem = input.list[0];
+      hierarchicalConvertToDate(input);
+
+      expect(input.date).toBe(first);
+      expect(input.list[0]).toBe(firstItem);
+      expect(first.toISOString()).toBe('2023-07-17T23:06:00.000Z');
+      expect(holder.date).toBe('2023-07-17T23:06:00.000Z');
+      expect(map.get('date')).toBe('2023-07-17T23:06:00.000Z');
+      expect(buffer.toString()).toBe('2023-07-17T23:06:00.000Z');
+    });
+
+    it('keeps the string when the parsed Date is invalid', () => {
+      const getTime = jest
+        .spyOn(Date.prototype, 'getTime')
+        .mockReturnValueOnce(Number.NaN);
+      const input = { date: '2023-07-17T23:06:00.000Z' };
+
+      hierarchicalConvertToDate(input);
+
+      expect(input.date).toBe('2023-07-17T23:06:00.000Z');
+      getTime.mockRestore();
+    });
+
+    it('leaves frozen objects unchanged without throwing', () => {
+      const input = {
+        frozen: Object.freeze({ date: '2023-07-17T23:06:00.000Z' }),
+        date: '2023-07-17T23:06:00.000Z',
+      };
+
+      expect(() => hierarchicalConvertToDate(input)).not.toThrow();
+      expect(input.frozen.date).toBe('2023-07-17T23:06:00.000Z');
+      expect(input.date).toBeInstanceOf(Date);
     });
   });
 

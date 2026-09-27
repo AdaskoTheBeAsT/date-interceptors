@@ -1,6 +1,6 @@
 import { DateTime, Duration } from 'luxon';
 
-import { hierarchicalConvertToLuxon } from './hierarchical-convert-to-luxon';
+import { hierarchicalConvertToLuxon } from '../index';
 
 describe('hierarchicalConvertToLuxon', () => {
   it.each`
@@ -30,5 +30,49 @@ describe('hierarchicalConvertToLuxon', () => {
     hierarchicalConvertToLuxon(input);
 
     expect(input).toEqual(expected);
+  });
+
+  it('accepts a decimal comma natively and keeps weeks', () => {
+    const input = { comma: 'PT1,5S', weeks: 'P1Y2W' };
+
+    hierarchicalConvertToLuxon(input);
+
+    expect((input.comma as unknown as Duration).as('milliseconds')).toBe(1500);
+    expect((input.weeks as unknown as Duration).weeks).toBe(2);
+  });
+
+  it('keeps strings when Luxon reports invalid values', () => {
+    const fromIso = jest
+      .spyOn(DateTime, 'fromISO')
+      .mockReturnValueOnce(DateTime.invalid('test'));
+    const durationFromIso = jest
+      .spyOn(Duration, 'fromISO')
+      .mockReturnValueOnce(Duration.invalid('test'));
+    const input = { date: '2023-07-17T23:06:00Z', duration: 'PT1S' };
+
+    hierarchicalConvertToLuxon(input);
+
+    expect(input).toEqual({ date: '2023-07-17T23:06:00Z', duration: 'PT1S' });
+    fromIso.mockRestore();
+    durationFromIso.mockRestore();
+  });
+
+  it('is a no-op when run twice and leaves non-plain objects untouched', () => {
+    const map = new Map([['date', '2023-07-17T23:06:00.000Z']]);
+    const input = {
+      date: '2023-07-17T23:06:00.000Z',
+      duration: 'PT1S',
+      map,
+    };
+
+    hierarchicalConvertToLuxon(input);
+    const { date, duration } = input;
+    const snapshot = JSON.stringify(input);
+    hierarchicalConvertToLuxon(input);
+
+    expect(input.date).toBe(date);
+    expect(input.duration).toBe(duration);
+    expect(JSON.stringify(input)).toBe(snapshot);
+    expect(map.get('date')).toBe('2023-07-17T23:06:00.000Z');
   });
 });

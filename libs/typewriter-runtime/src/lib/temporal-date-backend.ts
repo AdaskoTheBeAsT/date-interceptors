@@ -2,12 +2,39 @@ import { Temporal } from '@js-temporal/polyfill';
 
 import type { DateBackend, DateCodec } from './date-backend';
 
+type TemporalTypeName =
+  | 'Instant'
+  | 'PlainDate'
+  | 'PlainTime'
+  | 'PlainDateTime'
+  | 'ZonedDateTime'
+  | 'Duration'
+  | 'PlainYearMonth'
+  | 'PlainMonthDay';
+
+/**
+ * Checks the Temporal brand instead of using `instanceof`, so values created by
+ * native Temporal or by another copy of the polyfill are recognized as well.
+ */
+function isTemporalValue(value: unknown, typeName: TemporalTypeName): boolean {
+  if (value instanceof Temporal[typeName]) {
+    return true;
+  }
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    (value as { [Symbol.toStringTag]?: unknown })[Symbol.toStringTag] ===
+      `Temporal.${typeName}` &&
+    typeof (value as { toString?: unknown }).toString === 'function'
+  );
+}
+
 function temporalCodec<T extends { toString(): string }>(
-  is: (value: unknown) => value is T,
+  typeName: TemporalTypeName,
   parse: (value: string) => T,
 ): DateCodec<T> {
   return {
-    is,
+    is: (value): value is T => isTemporalValue(value, typeName),
     parse,
     serialize: (value) => value.toString(),
   };
@@ -16,50 +43,28 @@ function temporalCodec<T extends { toString(): string }>(
 export const temporalDateBackend = {
   name: 'temporal',
   codecs: {
-    instant: temporalCodec(
-      (value): value is Temporal.Instant =>
-        value instanceof Temporal.Instant,
-      (value) => Temporal.Instant.from(value),
+    instant: temporalCodec('Instant', (value) => Temporal.Instant.from(value)),
+    'plain-date': temporalCodec('PlainDate', (value) =>
+      Temporal.PlainDate.from(value),
     ),
-    'plain-date': temporalCodec(
-      (value): value is Temporal.PlainDate =>
-        value instanceof Temporal.PlainDate,
-      (value) => Temporal.PlainDate.from(value),
+    'plain-time': temporalCodec('PlainTime', (value) =>
+      Temporal.PlainTime.from(value),
     ),
-    'plain-time': temporalCodec(
-      (value): value is Temporal.PlainTime =>
-        value instanceof Temporal.PlainTime,
-      (value) => Temporal.PlainTime.from(value),
+    'plain-date-time': temporalCodec('PlainDateTime', (value) =>
+      Temporal.PlainDateTime.from(value),
     ),
-    'plain-date-time': temporalCodec(
-      (value): value is Temporal.PlainDateTime =>
-        value instanceof Temporal.PlainDateTime,
-      (value) => Temporal.PlainDateTime.from(value),
+    'zoned-date-time': temporalCodec('ZonedDateTime', (value) =>
+      Temporal.ZonedDateTime.from(value),
     ),
-    'zoned-date-time': temporalCodec(
-      (value): value is Temporal.ZonedDateTime =>
-        value instanceof Temporal.ZonedDateTime,
-      (value) => Temporal.ZonedDateTime.from(value),
+    duration: temporalCodec('Duration', (value) =>
+      Temporal.Duration.from(value),
     ),
-    duration: temporalCodec(
-      (value): value is Temporal.Duration =>
-        value instanceof Temporal.Duration,
-      (value) => Temporal.Duration.from(value),
+    period: temporalCodec('Duration', (value) => Temporal.Duration.from(value)),
+    'plain-year-month': temporalCodec('PlainYearMonth', (value) =>
+      Temporal.PlainYearMonth.from(value),
     ),
-    period: temporalCodec(
-      (value): value is Temporal.Duration =>
-        value instanceof Temporal.Duration,
-      (value) => Temporal.Duration.from(value),
-    ),
-    'plain-year-month': temporalCodec(
-      (value): value is Temporal.PlainYearMonth =>
-        value instanceof Temporal.PlainYearMonth,
-      (value) => Temporal.PlainYearMonth.from(value),
-    ),
-    'plain-month-day': temporalCodec(
-      (value): value is Temporal.PlainMonthDay =>
-        value instanceof Temporal.PlainMonthDay,
-      (value) => Temporal.PlainMonthDay.from(value),
+    'plain-month-day': temporalCodec('PlainMonthDay', (value) =>
+      Temporal.PlainMonthDay.from(value),
     ),
   },
 } satisfies DateBackend;

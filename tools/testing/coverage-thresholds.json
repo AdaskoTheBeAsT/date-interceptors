@@ -1,0 +1,116 @@
+{
+  "angular-date-http-interceptor": {
+    "statements": 95,
+    "branches": 94,
+    "functions": 100,
+    "lines": 97
+  },
+  "angular-typed-http-client": {
+    "statements": 100,
+    "branches": 95,
+    "functions": 100,
+    "lines": 100
+  },
+  "axios-interceptor": {
+    "statements": 100,
+    "branches": 90,
+    "functions": 75,
+    "lines": 100
+  },
+  "hierarchical-convert-core": {
+    "statements": 100,
+    "branches": 97,
+    "functions": 100,
+    "lines": 100
+  },
+  "hierarchical-convert-to-date": {
+    "statements": 97,
+    "branches": 85,
+    "functions": 66,
+    "lines": 100
+  },
+  "hierarchical-convert-to-date-fns": {
+    "statements": 97,
+    "branches": 94,
+    "functions": 100,
+    "lines": 97
+  },
+  "hierarchical-convert-to-dayjs": {
+    "statements": 100,
+    "branches": 95,
+    "functions": 100,
+    "lines": 100
+  },
+  "hierarchical-convert-to-decimal": {
+    "statements": 100,
+    "branches": 100,
+    "functions": 100,
+    "lines": 100
+  },
+  "hierarchical-convert-to-js-joda": {
+    "statements": 100,
+    "branches": 100,
+    "functions": 100,
+    "lines": 100
+  },
+  "hierarchical-convert-to-luxon": {
+    "statements": 100,
+    "branches": 95,
+    "functions": 100,
+    "lines": 100
+  },
+  "hierarchical-convert-to-moment": {
+    "statements": 100,
+    "branches": 95,
+    "functions": 100,
+    "lines": 100
+  },
+  "hierarchical-convert-to-temporal": {
+    "statements": 100,
+    "branches": 100,
+    "functions": 100,
+    "lines": 100
+  },
+  "hierarchical-convert-to-uuid": {
+    "statements": 100,
+    "branches": 100,
+    "functions": 100,
+    "lines": 100
+  },
+  "react-redux-toolkit-hierarchical-date-hook": {
+    "statements": 92,
+    "branches": 88,
+    "functions": 100,
+    "lines": 94
+  },
+  "typewriter-http-angular": {
+    "statements": 100,
+    "branches": 96,
+    "functions": 100,
+    "lines": 100
+  },
+  "typewriter-http-axios": {
+    "statements": 100,
+    "branches": 92,
+    "functions": 100,
+    "lines": 100
+  },
+  "typewriter-http-fetch": {
+    "statements": 96,
+    "branches": 88,
+    "functions": 100,
+    "lines": 100
+  },
+  "typewriter-runtime": {
+    "statements": 98,
+    "branches": 78,
+    "functions": 100,
+    "lines": 98
+  },
+  "typewriter-schema": {
+    "statements": 100,
+    "branches": 100,
+    "functions": 100,
+    "lines": 100
+  }
+}

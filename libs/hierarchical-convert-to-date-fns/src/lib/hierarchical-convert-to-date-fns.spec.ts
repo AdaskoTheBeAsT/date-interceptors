@@ -1,6 +1,6 @@
 import { Duration } from 'date-fns';
 
-import { hierarchicalConvertToDateFns } from './hierarchical-convert-to-date-fns';
+import { hierarchicalConvertToDateFns } from '../index';
 
 describe('hierarchicalConvertToDateFns', () => {
   it.each`
@@ -30,5 +30,42 @@ describe('hierarchicalConvertToDateFns', () => {
     hierarchicalConvertToDateFns(input);
 
     expect(input).toEqual(expected);
+  });
+
+  it('parses fractional seconds with either separator and keeps negative or invalid values as strings', () => {
+    const input = {
+      point: 'PT1.5S',
+      comma: 'PT1,5S',
+      negative: '-PT1.5S',
+      invalidDate: '2023-02-30T00:00:00Z',
+      invalidDuration: 'P1DT',
+    };
+
+    hierarchicalConvertToDateFns(input);
+
+    expect((input.point as unknown as Duration).seconds).toBe(1.5);
+    expect((input.comma as unknown as Duration).seconds).toBe(1.5);
+    expect(input.negative).toBe('-PT1.5S');
+    expect(input.invalidDate).toBe('2023-02-30T00:00:00Z');
+    expect(input.invalidDuration).toBe('P1DT');
+  });
+
+  it('is a no-op when run twice and leaves non-plain objects untouched', () => {
+    const map = new Map([['date', '2023-07-17T23:06:00.000Z']]);
+    const input = {
+      date: '2023-07-17T23:06:00.000Z',
+      duration: 'PT1S',
+      map,
+    };
+
+    hierarchicalConvertToDateFns(input);
+    const { date, duration } = input;
+    const snapshot = JSON.stringify(input);
+    hierarchicalConvertToDateFns(input);
+
+    expect(input.date).toBe(date);
+    expect(input.duration).toBe(duration);
+    expect(JSON.stringify(input)).toBe(snapshot);
+    expect(map.get('date')).toBe('2023-07-17T23:06:00.000Z');
   });
 });

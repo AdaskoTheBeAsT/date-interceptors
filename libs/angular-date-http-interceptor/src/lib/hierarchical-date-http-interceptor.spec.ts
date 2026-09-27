@@ -7,7 +7,7 @@ import {
   HttpResponse,
   provideHttpClient,
   withInterceptorsFromDi,
-  withXhr
+  withXhr,
 } from '@angular/common/http';
 import {
   HttpTestingController,
@@ -214,7 +214,9 @@ describe('HierarchicalDateHttpInterceptor', () => {
         complete: () => {
           // allow an optional Sent event before progress
           const progress = events.find(
-            (e) => (e as {type: HttpEventType}).type === HttpEventType.DownloadProgress
+            (e) =>
+              (e as { type: HttpEventType }).type ===
+              HttpEventType.DownloadProgress,
           );
 
           expect(progress).toBeDefined();
@@ -223,15 +225,15 @@ describe('HierarchicalDateHttpInterceptor', () => {
               type: HttpEventType.DownloadProgress,
               loaded: 20,
               total: 100,
-            })
+            }),
           );
 
           // final HttpResponse should have converted body
           const final = events.find(
-            (e): e is HttpResponse<{ date: Date }> => e instanceof HttpResponse
+            (e): e is HttpResponse<{ date: Date }> => e instanceof HttpResponse,
           );
           expect(final?.body?.date).toEqual(
-            new Date(Date.UTC(2023, 6, 22, 16, 8, 0, 0))
+            new Date(Date.UTC(2023, 6, 22, 16, 8, 0, 0)),
           );
           done();
         },
@@ -273,26 +275,60 @@ describe('HierarchicalDateHttpInterceptor', () => {
     });
   });
 
-  it('should reject JSON API content types (application/vnd.api+json)', (done) => {
+  it.each([
+    'application/vnd.api+json',
+    'application/hal+json; charset=utf-8',
+    'APPLICATION/LD+JSON',
+  ])('should convert structured JSON content type %s', (contentType, done) => {
     const testData = { date: '2023-07-22T16:08:00.000Z', other: 'value' };
 
-    httpClient
-      .get('/json-api', { responseType: 'json' })
-      .subscribe((data) => {
-        // Data should NOT be converted (date remains string)
-        expect(data).toEqual(testData);
-        expect((data as { date: unknown }).date).toBe('2023-07-22T16:08:00.000Z');
-        expect((data as { date: unknown }).date instanceof Date).toBe(false);
-        done();
+    httpClient.get('/json-api', { responseType: 'json' }).subscribe((data) => {
+      expect(data).toEqual({
+        date: new Date(Date.UTC(2023, 6, 22, 16, 8, 0, 0)),
+        other: 'value',
       });
+      done();
+    });
 
-    const req = httpTestingController.expectOne('/json-api');
-    req.flush(testData, {
+    httpTestingController.expectOne('/json-api').flush(testData, {
       status: 200,
       statusText: 'OK',
-      headers: { 'Content-Type': 'application/vnd.api+json' },
+      headers: { 'Content-Type': contentType },
     });
   });
+
+  it.each(['text/plain+json', 'application/json-seq', 'application/jsonp'])(
+    'should not treat %s as JSON',
+    (contentType, done) => {
+      const testData = { date: '2023-07-22T16:08:00.000Z' };
+      httpClient.get('/not-json').subscribe((data) => {
+        expect(data).toEqual(testData);
+        done();
+      });
+      httpTestingController.expectOne('/not-json').flush(testData, {
+        headers: { 'Content-Type': contentType },
+      });
+    },
+  );
+
+  it.each(['arraybuffer', 'blob'] as const)(
+    'should skip %s responses labelled as JSON',
+    (responseType, done) => {
+      const body =
+        responseType === 'blob'
+          ? new Blob(['{"date":"2023-07-22T16:08:00.000Z"}'])
+          : new ArrayBuffer(8);
+      httpClient
+        .get('/binary', { responseType: responseType as 'json' })
+        .subscribe((data) => {
+          expect(data).toBe(body);
+          done();
+        });
+      httpTestingController.expectOne('/binary').flush(body, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    },
+  );
 
   it('should accept uppercase Content-Type (APPLICATION/JSON)', (done) => {
     const testData = { date: '2023-07-22T16:08:00.000Z' };
@@ -316,15 +352,13 @@ describe('HierarchicalDateHttpInterceptor', () => {
   it('should reject text/html even if it contains "application/json" in the string', (done) => {
     const testData = { date: '2023-07-22T16:08:00.000Z' };
 
-    httpClient
-      .get('/text-html', { responseType: 'json' })
-      .subscribe((data) => {
-        // Data should NOT be converted (date remains string)
-        expect(data).toEqual(testData);
-        expect((data as { date: unknown }).date).toBe('2023-07-22T16:08:00.000Z');
-        expect((data as { date: unknown }).date instanceof Date).toBe(false);
-        done();
-      });
+    httpClient.get('/text-html', { responseType: 'json' }).subscribe((data) => {
+      // Data should NOT be converted (date remains string)
+      expect(data).toEqual(testData);
+      expect((data as { date: unknown }).date).toBe('2023-07-22T16:08:00.000Z');
+      expect((data as { date: unknown }).date instanceof Date).toBe(false);
+      done();
+    });
 
     const req = httpTestingController.expectOne('/text-html');
     req.flush(testData, {

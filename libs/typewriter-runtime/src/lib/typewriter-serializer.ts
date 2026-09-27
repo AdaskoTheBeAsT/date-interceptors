@@ -1,16 +1,30 @@
+import Decimal from 'decimal.js';
+import {
+  stringify as stringifyUuid,
+  version as uuidVersion,
+  validate as validateUuid,
+} from 'uuid';
+
+import { normalizeMaxDepth, resolveStrict } from './conversion-options';
+import type { StrictnessOptions } from './conversion-options';
+import type { DateBackend, DateSchemaKind } from './date-backend';
+import {
+  DANGEROUS_KEYS,
+  isRecordValue,
+  lookupCustomCodec,
+  normalizeSchema,
+  resolveLazySchema,
+  resolveNamedSchema,
+} from './schema-descriptor';
+import type { NormalizedSchema, PropertyEntry } from './schema-descriptor';
+import { childPath, formatPath } from './schema-path';
+import type { SchemaPath } from './schema-path';
+import { SchemaRecursionGuard } from './schema-recursion';
+import { temporalDateBackend } from './temporal-date-backend';
 import type {
   JsonTransformerRegistry,
   SchemaDescriptor,
 } from './typewriter-runtime';
-import Decimal from 'decimal.js';
-import {
-  stringify as stringifyUuid,
-  validate as validateUuid,
-  version as uuidVersion,
-} from 'uuid';
-
-import type { DateBackend, DateSchemaKind } from './date-backend';
-import { temporalDateBackend } from './temporal-date-backend';
 
 export type RuntimeSerializerFunction = (
   value: unknown,
@@ -22,27 +36,39 @@ export interface RuntimeSerializer {
 }
 
 export type RuntimeSerializerEntry =
-  | RuntimeSerializer
-  | RuntimeSerializerFunction;
+  RuntimeSerializer | RuntimeSerializerFunction;
 
 export type RuntimeSerializerRegistry =
   | ReadonlyMap<string, RuntimeSerializerEntry>
   | Readonly<Record<string, RuntimeSerializerEntry>>;
 
 export interface RuntimeSerializerContext {
+  /** JSON path of the value being serialized, for example `$.items[0]`. */
   readonly path: string;
   readonly schema: SchemaDescriptor;
   readonly options: unknown;
-  serialize(value: unknown, schema: SchemaDescriptor): unknown;
+  /**
+   * Serializes a nested value one level deeper. Pass `segment` (a property
+   * name or array index) when the nested value lives below the current path.
+   */
+  serialize(
+    value: unknown,
+    schema: SchemaDescriptor,
+    segment?: string | number,
+  ): unknown;
 }
 
-export interface JsonSerializerOptions {
-  readonly mode?: 'strict' | 'tolerant';
-  readonly strict?: boolean;
+export interface JsonSerializerOptions extends StrictnessOptions {
   readonly maxDepth?: number;
   readonly dateBackend?: DateBackend;
+  /** Custom serializers looked up by the `name` of a custom schema. */
   readonly serializers?: RuntimeSerializerRegistry;
+  /** @deprecated Use `serializers`. */
   readonly customSerializers?: RuntimeSerializerRegistry;
+  /**
+   * @deprecated Use `serializers`. This option only holds custom serializers
+   * and is unrelated to the positional schema registry argument.
+   */
   readonly registry?: RuntimeSerializerRegistry;
 }
 
@@ -64,30 +90,12 @@ interface SerializationState {
   readonly strict: boolean;
   readonly maxDepth: number;
   readonly registry: JsonTransformerRegistry | undefined;
-  readonly options: JsonSerializerOptions;
+  readonly dateBackend: DateBackend;
+  readonly optionSerializers: readonly unknown[];
   readonly serializedPairs: WeakMap<object, WeakMap<object, unknown>>;
   readonly resolvedSchemas: Map<string, unknown>;
+  readonly recursion: SchemaRecursionGuard;
 }
-
-interface PropertyEntry {
-  readonly name: string;
-  readonly serializedName: string;
-  readonly schema: unknown;
-}
-
-const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
-const PASSTHROUGH_KINDS = new Set([
-  'any',
-  'bigint',
-  'boolean',
-  'never',
-  'number',
-  'objectprimitive',
-  'primitive',
-  'string',
-  'symbol',
-  'unknown',
-]);
 
 export function serializeJson<T>(
   value: T,
@@ -95,16 +103,27 @@ export function serializeJson<T>(
   registry?: JsonTransformerRegistry,
   options: JsonSerializerOptions = {},
 ): unknown {
+  // Keep the deprecated option names available to existing callers.
+  const legacyOptions = options as {
+    readonly customSerializers?: RuntimeSerializerRegistry;
+    readonly registry?: RuntimeSerializerRegistry;
+  };
   const state: SerializationState = {
-    strict: options.strict ?? options.mode === 'strict',
+    strict: resolveStrict(options),
     maxDepth: normalizeMaxDepth(options.maxDepth),
     registry,
-    options,
+    dateBackend: options.dateBackend ?? temporalDateBackend,
+    optionSerializers: [
+      options.serializers,
+      legacyOptions.customSerializers,
+      legacyOptions.registry,
+    ],
     serializedPairs: new WeakMap<object, WeakMap<object, unknown>>(),
     resolvedSchemas: new Map<string, unknown>(),
+    recursion: new SchemaRecursionGuard(),
   };
 
-  return serializeValue(value, schema, '$', 0, state);
+  return serializeValue(value, schema, undefined, 0, state);
 }
 
 export function createJsonSerializer<T>(
@@ -118,12 +137,12 @@ export function createJsonSerializer<T>(
 function serializeValue(
   value: unknown,
   unresolvedSchema: unknown,
-  path: string,
+  path: SchemaPath,
   depth: number,
   state: SerializationState,
 ): unknown {
   if (depth > state.maxDepth) {
-    return failOrPreserve(
+    return fail(
       `Maximum serialization depth of ${state.maxDepth} exceeded`,
       path,
       value,
@@ -135,195 +154,131 @@ function serializeValue(
   try {
     schema = resolveLazySchema(unresolvedSchema);
   } catch (error) {
-    return failOrPreserve(
-      'Unable to resolve schema',
-      path,
-      value,
-      state,
-      error,
-    );
+    return fail('Unable to resolve schema', path, value, state, error);
   }
 
-  const descriptor = asRecord(schema);
-  const kind =
-    descriptor === undefined
-      ? normalizeKind(typeof schema === 'string' ? schema : '')
-      : descriptorKind(descriptor);
-
-  if (PASSTHROUGH_KINDS.has(kind)) {
-    return serializePrimitive(value, descriptor, kind, path, state);
+  const normalized = normalizeSchema(schema);
+  if (!state.recursion.enter(schema, value, depth)) {
+    return fail('Circular schema reference', path, value, state);
   }
+  try {
+    return serializeNormalized(value, normalized, schema, path, depth, state);
+  } finally {
+    state.recursion.leave(schema, value, depth);
+  }
+}
 
-  switch (kind) {
-    case 'null':
-      return value === null
+function serializeNormalized(
+  value: unknown,
+  normalized: NormalizedSchema,
+  schema: unknown,
+  path: SchemaPath,
+  depth: number,
+  state: SerializationState,
+): unknown {
+  switch (normalized.type) {
+    case 'any':
+      return value;
+    case 'typeof':
+      return typeof value === normalized.expected
         ? value
-        : failOrPreserve('Expected null', path, value, state);
+        : fail(`Expected ${normalized.expected}`, path, value, state);
+    case 'null':
+      return value === null ? value : fail('Expected null', path, value, state);
     case 'undefined':
-    case 'void':
       return value === undefined
         ? value
-        : failOrPreserve('Expected undefined', path, value, state);
+        : fail('Expected undefined', path, value, state);
     case 'literal':
-      return serializeLiteral(value, descriptor, path, state);
+      return serializeLiteral(value, normalized, path, state);
     case 'decimal':
-    case 'decimaljs':
-      return serializeDecimal(value, descriptor, path, state);
+      return serializeDecimal(value, normalized.wireType, path, state);
     case 'uuid':
-    case 'uuidbytes':
-      return serializeUuid(value, descriptor, path, state);
-    case 'instant':
-    case 'temporalinstant':
-      return serializeDate(value, 'instant', path, state);
-    case 'plaindate':
-    case 'temporalplaindate':
-      return serializeDate(value, 'plain-date', path, state);
-    case 'plaindatetime':
-    case 'temporalplaindatetime':
-      return serializeDate(value, 'plain-date-time', path, state);
-    case 'plainmonthday':
-    case 'temporalplainmonthday':
-      return serializeDate(value, 'plain-month-day', path, state);
-    case 'plaintime':
-    case 'temporalplaintime':
-      return serializeDate(value, 'plain-time', path, state);
-    case 'plainyearmonth':
-    case 'temporalplainyearmonth':
-      return serializeDate(value, 'plain-year-month', path, state);
-    case 'zoneddatetime':
-    case 'temporalzoneddatetime':
-      return serializeDate(value, 'zoned-date-time', path, state);
-    case 'duration':
-    case 'temporalduration':
-      return serializeDate(value, 'duration', path, state);
-    case 'period':
-    case 'temporalperiod':
-      return serializeDate(value, 'period', path, state);
-    case 'temporal':
-      return serializeNamedDate(value, descriptor, path, state);
+      return serializeUuid(value, normalized.versions, path, state);
+    case 'date':
+      return normalized.dateKind === undefined
+        ? fail('Unknown Temporal type', path, value, state)
+        : serializeDate(value, normalized.dateKind, path, state);
     case 'nullable':
       return value === null
         ? value
-        : serializeValue(value, innerSchema(descriptor), path, depth, state);
+        : serializeValue(value, normalized.inner, path, depth, state);
     case 'optional':
       return value === undefined
         ? value
-        : serializeValue(value, innerSchema(descriptor), path, depth, state);
+        : serializeValue(value, normalized.inner, path, depth, state);
     case 'array':
-    case 'list':
-      return serializeArray(value, descriptor, path, depth, state);
-    case 'dictionary':
-    case 'record':
-      return serializeRecord(value, descriptor, path, depth, state);
-    case 'object':
-    case 'struct':
-      return serializeObject(value, descriptor, path, depth, state);
-    case 'ref':
-    case 'reference':
-      return serializeReference(value, descriptor, path, depth, state);
-    case 'adapter':
-    case 'custom':
-      return serializeCustom(value, descriptor, path, depth, state);
-    case 'discriminatedunion':
-    case 'taggedunion':
-      return serializeDiscriminatedUnion(
+      return serializeArray(
         value,
-        descriptor,
+        normalized.items,
+        schema,
         path,
         depth,
         state,
       );
-    default:
-      return failOrPreserve('Unknown schema descriptor', path, value, state);
+    case 'record':
+      return serializeRecord(
+        value,
+        normalized.values,
+        schema,
+        path,
+        depth,
+        state,
+      );
+    case 'object':
+      return serializeObject(value, normalized, schema, path, depth, state);
+    case 'reference':
+      return serializeReference(value, normalized, path, depth, state);
+    case 'custom':
+      return serializeCustom(value, normalized, schema, path, depth, state);
+    case 'union':
+      return serializeDiscriminatedUnion(value, normalized, path, depth, state);
+    case 'invalid':
+      return fail('Unknown schema descriptor', path, value, state);
   }
-}
-
-function serializePrimitive(
-  value: unknown,
-  descriptor: UnknownRecord | undefined,
-  kind: string,
-  path: string,
-  state: SerializationState,
-): unknown {
-  if (descriptor === undefined) {
-    return value;
-  }
-
-  const primitiveName =
-    firstString(
-      descriptor['primitive'],
-      descriptor['name'],
-      descriptor['valueType'],
-    ) ?? kind;
-  const normalized = normalizeKind(primitiveName);
-  if (
-    normalized === 'any' ||
-    normalized === 'unknown' ||
-    normalized === 'object'
-  ) {
-    return value;
-  }
-
-  return typeof value === normalized
-    ? value
-    : failOrPreserve(`Expected ${normalized}`, path, value, state);
 }
 
 function serializeLiteral(
   value: unknown,
-  descriptor: UnknownRecord | undefined,
-  path: string,
+  normalized: Extract<NormalizedSchema, { type: 'literal' }>,
+  path: SchemaPath,
   state: SerializationState,
 ): unknown {
-  if (descriptor === undefined || !Object.hasOwn(descriptor, 'value')) {
-    return failOrPreserve(
-      'Literal schema is missing a value',
-      path,
-      value,
-      state,
-    );
+  if (!normalized.hasValue) {
+    return fail('Literal schema is missing a value', path, value, state);
   }
-
-  return Object.is(value, descriptor['value'])
+  return Object.is(value, normalized.value)
     ? value
-    : failOrPreserve(
-        'Value does not match the literal schema',
-        path,
-        value,
-        state,
-      );
+    : fail('Value does not match the literal schema', path, value, state);
 }
 
 function serializeDecimal(
   value: unknown,
-  descriptor: UnknownRecord | undefined,
-  path: string,
+  wireType: 'number' | 'string',
+  path: SchemaPath,
   state: SerializationState,
 ): unknown {
-  const wireType = descriptor?.['wireType'];
   if (Decimal.isDecimal(value)) {
     return wireType === 'number' ? value.toNumber() : value.toString();
   }
 
-  if (wireType === 'number' && typeof value === 'number' && Number.isFinite(value)) {
+  if (
+    wireType === 'number' &&
+    typeof value === 'number' &&
+    Number.isFinite(value)
+  ) {
     return value;
   }
 
-  if (wireType !== 'number' && typeof value === 'string') {
+  if (wireType === 'string' && typeof value === 'string') {
     try {
       return new Decimal(value).toString();
     } catch (error) {
-      return failOrPreserve(
-        'Invalid decimal value',
-        path,
-        value,
-        state,
-        error,
-      );
+      return fail('Invalid decimal value', path, value, state, error);
     }
   }
 
-  return failOrPreserve(
+  return fail(
     wireType === 'number'
       ? 'Expected a Decimal or finite decimal number'
       : 'Expected a Decimal or decimal string',
@@ -335,48 +290,48 @@ function serializeDecimal(
 
 function serializeUuid(
   value: unknown,
-  descriptor: UnknownRecord | undefined,
-  path: string,
+  versions: ReadonlySet<number> | undefined,
+  path: SchemaPath,
   state: SerializationState,
 ): unknown {
-  let serialized: string;
-  try {
-    serialized =
-      value instanceof Uint8Array && value.byteLength === 16
-        ? stringifyUuid(value)
-        : typeof value === 'string' && validateUuid(value)
-          ? value
-          : '';
-  } catch (error) {
-    return failOrPreserve('Invalid UUID value', path, value, state, error);
+  let serialized: string | undefined;
+  if (value instanceof Uint8Array) {
+    try {
+      serialized = stringifyUuid(value);
+    } catch (error) {
+      return fail('Invalid UUID value', path, value, state, error);
+    }
+  } else if (typeof value === 'string' && validateUuid(value)) {
+    serialized = value;
   }
 
-  if (serialized === '') {
-    return failOrPreserve('Invalid UUID value', path, value, state);
+  if (serialized === undefined) {
+    return fail('Invalid UUID value', path, value, state);
   }
 
-  const versions = allowedUuidVersions(descriptor);
   const actualVersion = uuidVersion(serialized);
   return versions === undefined || versions.has(actualVersion)
     ? serialized
-    : failOrPreserve(
+    : fail(
         `UUID version ${actualVersion} is not allowed`,
         path,
         value,
         state,
+        undefined,
+        serialized,
       );
 }
 
 function serializeDate(
   value: unknown,
   kind: DateSchemaKind,
-  path: string,
+  path: SchemaPath,
   state: SerializationState,
 ): unknown {
-  const backend = state.options.dateBackend ?? temporalDateBackend;
+  const backend = state.dateBackend;
   const codec = backend.codecs[kind];
   if (codec === undefined) {
-    return failOrPreserve(
+    return fail(
       `Date backend "${backend.name}" does not support ${kind}`,
       path,
       value,
@@ -388,13 +343,7 @@ function serializeDate(
     try {
       return codec.serialize(value);
     } catch (error) {
-      return failOrPreserve(
-        `Invalid ${kind} value`,
-        path,
-        value,
-        state,
-        error,
-      );
+      return fail(`Invalid ${kind} value`, path, value, state, error);
     }
   }
 
@@ -403,85 +352,27 @@ function serializeDate(
       codec.parse(value);
       return value;
     } catch (error) {
-      return failOrPreserve(
-        `Invalid ${kind} value`,
-        path,
-        value,
-        state,
-        error,
-      );
+      return fail(`Invalid ${kind} value`, path, value, state, error);
     }
   }
 
-  return failOrPreserve(`Expected a ${kind} value`, path, value, state);
-}
-
-function serializeNamedDate(
-  value: unknown,
-  descriptor: UnknownRecord | undefined,
-  path: string,
-  state: SerializationState,
-): unknown {
-  const dateName = normalizeKind(
-    firstString(
-      descriptor?.['temporalType'],
-      descriptor?.['type'],
-      descriptor?.['name'],
-      descriptor?.['valueType'],
-    ) ?? '',
-  );
-
-  const kind = namedDateKind(dateName);
-  return kind === undefined
-    ? failOrPreserve('Unknown date type', path, value, state)
-    : serializeDate(value, kind, path, state);
-}
-
-function namedDateKind(value: string): DateSchemaKind | undefined {
-  switch (value) {
-    case 'instant':
-      return 'instant';
-    case 'plaindate':
-      return 'plain-date';
-    case 'plaintime':
-      return 'plain-time';
-    case 'plaindatetime':
-      return 'plain-date-time';
-    case 'zoneddatetime':
-      return 'zoned-date-time';
-    case 'duration':
-      return 'duration';
-    case 'period':
-      return 'period';
-    case 'plainyearmonth':
-      return 'plain-year-month';
-    case 'plainmonthday':
-      return 'plain-month-day';
-    default:
-      return undefined;
-  }
+  return fail(`Expected a ${kind} value`, path, value, state);
 }
 
 function serializeArray(
   value: unknown,
-  descriptor: UnknownRecord | undefined,
-  path: string,
+  itemSchema: unknown,
+  schema: unknown,
+  path: SchemaPath,
   depth: number,
   state: SerializationState,
 ): unknown {
   if (!Array.isArray(value)) {
-    return failOrPreserve('Expected an array', path, value, state);
+    return fail('Expected an array', path, value, state);
   }
 
-  const itemSchema = firstDefined(
-    descriptor?.['element'],
-    descriptor?.['elementType'],
-    descriptor?.['items'],
-    descriptor?.['item'],
-    descriptor?.['of'],
-  );
   if (itemSchema === undefined) {
-    return failOrPreserve(
+    return fail(
       'Array schema is missing its element schema',
       path,
       value,
@@ -489,19 +380,19 @@ function serializeArray(
     );
   }
 
-  const cached = getSerializedPair(value, descriptor, state);
+  const cached = getSerializedPair(value, schema, state);
   if (cached !== undefined) {
     return cached;
   }
 
   const result: unknown[] = [];
-  setSerializedPair(value, descriptor, result, state);
+  setSerializedPair(value, schema, result, state);
   for (let index = 0; index < value.length; index += 1) {
     result.push(
       serializeValue(
         value[index],
         itemSchema,
-        `${path}[${index}]`,
+        childPath(path, index),
         depth + 1,
         state,
       ),
@@ -512,24 +403,18 @@ function serializeArray(
 
 function serializeRecord(
   value: unknown,
-  descriptor: UnknownRecord | undefined,
-  path: string,
+  valueSchema: unknown,
+  schema: unknown,
+  path: SchemaPath,
   depth: number,
   state: SerializationState,
 ): unknown {
   if (!isRecordValue(value)) {
-    return failOrPreserve('Expected an object record', path, value, state);
+    return fail('Expected an object record', path, value, state);
   }
 
-  const valueSchema = firstDefined(
-    descriptor?.['value'],
-    descriptor?.['valueType'],
-    descriptor?.['values'],
-    descriptor?.['element'],
-    descriptor?.['of'],
-  );
   if (valueSchema === undefined) {
-    return failOrPreserve(
+    return fail(
       'Record schema is missing its value schema',
       path,
       value,
@@ -537,19 +422,19 @@ function serializeRecord(
     );
   }
 
-  const cached = getSerializedPair(value, descriptor, state);
+  const cached = getSerializedPair(value, schema, state);
   if (cached !== undefined) {
     return cached;
   }
 
   const result: UnknownRecord = {};
-  setSerializedPair(value, descriptor, result, state);
+  setSerializedPair(value, schema, result, state);
   for (const [key, item] of Object.entries(value)) {
     if (!DANGEROUS_KEYS.has(key)) {
       result[key] = serializeValue(
         item,
         valueSchema,
-        appendProperty(path, key),
+        childPath(path, key),
         depth + 1,
         state,
       );
@@ -560,145 +445,164 @@ function serializeRecord(
 
 function serializeObject(
   value: unknown,
-  descriptor: UnknownRecord | undefined,
-  path: string,
+  normalized: Extract<NormalizedSchema, { type: 'object' }>,
+  schema: unknown,
+  path: SchemaPath,
   depth: number,
   state: SerializationState,
 ): unknown {
   if (!isRecordValue(value)) {
-    return failOrPreserve('Expected an object', path, value, state);
+    return fail('Expected an object', path, value, state);
   }
 
-  const properties = objectProperties(descriptor);
+  const properties = normalized.properties;
   if (properties === undefined) {
-    return failOrPreserve(
-      'Object schema is missing its properties',
-      path,
-      value,
-      state,
-    );
+    return fail('Object schema is missing its properties', path, value, state);
   }
 
-  const cached = getSerializedPair(value, descriptor, state);
+  const cached = getSerializedPair(value, schema, state);
   if (cached !== undefined) {
     return cached;
   }
 
   const result: UnknownRecord = {};
-  setSerializedPair(value, descriptor, result, state);
+  setSerializedPair(value, schema, result, state);
   for (const [key, item] of Object.entries(value)) {
     if (!DANGEROUS_KEYS.has(key)) {
       result[key] = item;
     }
   }
 
-  for (const property of properties) {
-    if (
-      DANGEROUS_KEYS.has(property.name) ||
-      DANGEROUS_KEYS.has(property.serializedName)
-    ) {
-      continue;
-    }
+  const { updates, removals } = serializePropertyUpdates(
+    value,
+    properties,
+    normalized.modelNames,
+    path,
+    depth,
+    state,
+  );
 
-    const sourceName = Object.hasOwn(value, property.name)
-      ? property.name
-      : Object.hasOwn(value, property.serializedName)
-        ? property.serializedName
-        : undefined;
-    if (sourceName === undefined) {
-      continue;
-    }
-
-    result[property.serializedName] = serializeValue(
-      value[sourceName],
-      property.schema,
-      appendProperty(path, property.name),
-      depth + 1,
-      state,
-    );
-    if (property.name !== property.serializedName) {
-      delete result[property.name];
-    }
+  for (const name of removals) {
+    delete result[name];
+  }
+  for (const [name, serialized] of updates) {
+    result[name] = serialized;
   }
 
   return result;
 }
 
+function serializePropertyUpdates(
+  value: UnknownRecord,
+  properties: readonly PropertyEntry[],
+  modelNames: ReadonlySet<string>,
+  path: SchemaPath,
+  depth: number,
+  state: SerializationState,
+): { updates: [string, unknown][]; removals: string[] } {
+  const updates: [string, unknown][] = [];
+  const removals: string[] = [];
+  for (const property of properties) {
+    const sourceName = sourcePropertyName(
+      value,
+      property,
+      modelNames,
+      state.strict,
+    );
+    if (sourceName === undefined) {
+      if (state.strict) {
+        serializeValue(
+          undefined,
+          property.schema,
+          childPath(path, property.name),
+          depth + 1,
+          state,
+        );
+      }
+      continue;
+    }
+
+    updates.push([
+      property.serializedName,
+      serializeValue(
+        value[sourceName],
+        property.schema,
+        childPath(path, property.name),
+        depth + 1,
+        state,
+      ),
+    ]);
+    if (property.name !== property.serializedName) {
+      removals.push(property.name);
+    }
+  }
+  return { updates, removals };
+}
+
+function sourcePropertyName(
+  value: UnknownRecord,
+  property: PropertyEntry,
+  modelNames: ReadonlySet<string>,
+  strict: boolean,
+): string | undefined {
+  if (Object.hasOwn(value, property.name)) return property.name;
+  if (
+    !strict &&
+    !modelNames.has(property.serializedName) &&
+    Object.hasOwn(value, property.serializedName)
+  ) {
+    return property.serializedName;
+  }
+  return undefined;
+}
+
 function serializeReference(
   value: unknown,
-  descriptor: UnknownRecord | undefined,
-  path: string,
+  normalized: Extract<NormalizedSchema, { type: 'reference' }>,
+  path: SchemaPath,
   depth: number,
   state: SerializationState,
 ): unknown {
-  const directTarget = firstDefined(
-    descriptor?.['schema'],
-    descriptor?.['target'],
-    descriptor?.['descriptor'],
-  );
-  if (directTarget !== undefined && typeof directTarget !== 'string') {
-    return serializeValue(value, directTarget, path, depth, state);
+  if (normalized.target !== undefined) {
+    return serializeValue(value, normalized.target, path, depth, state);
   }
 
-  const name = firstString(
-    descriptor?.['name'],
-    descriptor?.['typeName'],
-    descriptor?.['ref'],
-    descriptor?.['key'],
-    descriptor?.['id'],
-    directTarget,
-  );
+  const name = normalized.name;
   if (name === undefined) {
-    return failOrPreserve(
-      'Reference schema is missing its name',
-      path,
-      value,
-      state,
-    );
+    return fail('Reference schema is missing its name', path, value, state);
   }
 
-  let referencedSchema = state.resolvedSchemas.get(name);
-  if (referencedSchema === undefined) {
-    referencedSchema = registryLookup(state.registry, name, 'schema');
-    if (referencedSchema !== undefined) {
-      state.resolvedSchemas.set(name, referencedSchema);
-    }
-  }
-
+  const referencedSchema = resolveNamedSchema(
+    state.resolvedSchemas,
+    state.registry,
+    name,
+  );
   return referencedSchema === undefined
-    ? failOrPreserve(
-        `Schema reference "${name}" was not found`,
-        path,
-        value,
-        state,
-      )
+    ? fail(`Schema reference "${name}" was not found`, path, value, state)
     : serializeValue(value, referencedSchema, path, depth, state);
 }
 
 function serializeCustom(
   value: unknown,
-  descriptor: UnknownRecord | undefined,
-  path: string,
+  normalized: Extract<NormalizedSchema, { type: 'custom' }>,
+  schema: unknown,
+  path: SchemaPath,
   depth: number,
   state: SerializationState,
 ): unknown {
-  const inlineSerializer = firstDefined(
-    descriptor?.['serialize'],
-    descriptor?.['serializer'],
-  );
-  const name = firstString(
-    descriptor?.['name'],
-    descriptor?.['key'],
-    descriptor?.['id'],
-  );
-  const serializer =
-    typeof inlineSerializer === 'function' ||
-    isRuntimeSerializer(inlineSerializer)
-      ? inlineSerializer
-      : lookupCustomSerializer(name, state);
+  const name = normalized.name;
+  const serializer = (normalized.serializer ??
+    (name === undefined
+      ? undefined
+      : lookupCustomCodec(
+          name,
+          state.optionSerializers,
+          state.registry,
+          'serialize',
+        ))) as RuntimeSerializerEntry | undefined;
 
   if (serializer === undefined) {
-    return failOrPreserve(
+    return fail(
       name === undefined
         ? 'Custom schema is missing its serializer'
         : `Custom serializer "${name}" was not found`,
@@ -709,11 +613,23 @@ function serializeCustom(
   }
 
   const context: RuntimeSerializerContext = {
-    path,
-    schema: descriptor as SchemaDescriptor,
-    options: descriptor?.['options'],
-    serialize: (nestedValue: unknown, nestedSchema: SchemaDescriptor) =>
-      serializeValue(nestedValue, nestedSchema, path, depth, state),
+    get path(): string {
+      return formatPath(path);
+    },
+    schema: schema as SchemaDescriptor,
+    options: normalized.options,
+    serialize: (
+      nestedValue: unknown,
+      nestedSchema: SchemaDescriptor,
+      segment?: string | number,
+    ): unknown =>
+      serializeValue(
+        nestedValue,
+        nestedSchema,
+        segment === undefined ? path : childPath(path, segment),
+        depth + 1,
+        state,
+      ),
   };
 
   try {
@@ -724,7 +640,7 @@ function serializeCustom(
     if (error instanceof JsonSerializationError) {
       throw error;
     }
-    return failOrPreserve(
+    return fail(
       name === undefined
         ? 'Custom serializer failed'
         : `Custom serializer "${name}" failed`,
@@ -738,13 +654,13 @@ function serializeCustom(
 
 function serializeDiscriminatedUnion(
   value: unknown,
-  descriptor: UnknownRecord | undefined,
-  path: string,
+  normalized: Extract<NormalizedSchema, { type: 'union' }>,
+  path: SchemaPath,
   depth: number,
   state: SerializationState,
 ): unknown {
   if (!isRecordValue(value)) {
-    return failOrPreserve(
+    return fail(
       'Expected an object for a discriminated union',
       path,
       value,
@@ -752,13 +668,9 @@ function serializeDiscriminatedUnion(
     );
   }
 
-  const discriminator = discriminatorName(descriptor);
-  if (
-    discriminator === undefined ||
-    DANGEROUS_KEYS.has(discriminator) ||
-    !Object.hasOwn(value, discriminator)
-  ) {
-    return failOrPreserve(
+  const discriminator = normalized.modelDiscriminator;
+  if (discriminator === undefined || !Object.hasOwn(value, discriminator)) {
+    return fail(
       'Discriminated union value is missing its discriminator',
       path,
       value,
@@ -771,325 +683,65 @@ function serializeDiscriminatedUnion(
     typeof discriminatorValue !== 'string' &&
     typeof discriminatorValue !== 'number'
   ) {
-    return failOrPreserve(
+    return fail(
       'Discriminator must be a string or number',
-      appendProperty(path, discriminator),
+      childPath(path, discriminator),
       discriminatorValue,
       state,
+      undefined,
+      value,
     );
   }
 
-  const variants = firstDefined(
-    descriptor?.['variants'],
-    descriptor?.['mapping'],
-    descriptor?.['members'],
-    descriptor?.['options'],
-  );
-  const variant = variantLookup(variants, discriminatorValue);
+  const variant = normalized.variant(discriminatorValue);
   return variant === undefined
-    ? failOrPreserve(
+    ? fail(
         `No discriminated union variant for "${String(discriminatorValue)}"`,
-        appendProperty(path, discriminator),
+        childPath(path, discriminator),
         discriminatorValue,
         state,
+        undefined,
+        value,
       )
     : serializeValue(value, variant, path, depth, state);
 }
 
-function descriptorKind(descriptor: UnknownRecord): string {
-  const explicitKind = firstString(
-    descriptor['kind'],
-    descriptor['typeName'],
-    descriptor['descriptorType'],
-  );
-  if (explicitKind !== undefined) {
-    return normalizeKind(explicitKind);
-  }
-  return typeof descriptor['type'] === 'string'
-    ? normalizeKind(descriptor['type'])
-    : '';
-}
-
-function innerSchema(descriptor: UnknownRecord | undefined): unknown {
-  return firstDefined(
-    descriptor?.['inner'],
-    descriptor?.['schema'],
-    descriptor?.['value'],
-    descriptor?.['of'],
-    descriptor?.['wrapped'],
-  );
-}
-
-function objectProperties(
-  descriptor: UnknownRecord | undefined,
-): readonly PropertyEntry[] | undefined {
-  const rawProperties = firstDefined(
-    descriptor?.['properties'],
-    descriptor?.['fields'],
-    descriptor?.['shape'],
-  );
-  const propertyRecord = asRecord(rawProperties);
-  if (propertyRecord === undefined) {
-    return undefined;
-  }
-
-  return Object.entries(propertyRecord).flatMap(([name, rawProperty]) => {
-    const property = asRecord(rawProperty);
-    const hasMetadata =
-      property !== undefined &&
-      (Object.hasOwn(property, 'schema') ||
-        Object.hasOwn(property, 'descriptor') ||
-        Object.hasOwn(property, 'serializedName') ||
-        Object.hasOwn(property, 'jsonName') ||
-        Object.hasOwn(property, 'wireName'));
-    const propertySchema = hasMetadata
-      ? firstDefined(
-          property?.['schema'],
-          property?.['descriptor'],
-          property?.['valueType'],
-          property?.['type'],
-        )
-      : rawProperty;
-    return propertySchema === undefined
-      ? []
-      : [
-          {
-            name,
-            serializedName:
-              firstString(
-                property?.['serializedName'],
-                property?.['jsonName'],
-                property?.['wireName'],
-              ) ?? name,
-            schema: propertySchema,
-          },
-        ];
-  });
-}
-
-function discriminatorName(
-  descriptor: UnknownRecord | undefined,
-): string | undefined {
-  const discriminator = firstDefined(
-    descriptor?.['discriminator'],
-    descriptor?.['tag'],
-    descriptor?.['discriminatorProperty'],
-  );
-  if (typeof discriminator === 'string') {
-    return discriminator;
-  }
-  const discriminatorDescriptor = asRecord(discriminator);
-  return firstString(
-    discriminatorDescriptor?.['name'],
-    discriminatorDescriptor?.['property'],
-    discriminatorDescriptor?.['serializedName'],
-    discriminatorDescriptor?.['jsonName'],
-  );
-}
-
-function variantLookup(variants: unknown, key: string | number): unknown {
-  if (variants instanceof Map) {
-    return variants.get(key) ?? variants.get(String(key));
-  }
-  return asRecord(variants)?.[String(key)];
-}
-
-function resolveLazySchema(schema: unknown): unknown {
-  let result = schema;
-  const seen = new Set<unknown>();
-  while (typeof result === 'function') {
-    if (seen.has(result)) {
-      throw new Error('Circular lazy schema');
-    }
-    seen.add(result);
-    result = (result as () => unknown)();
-  }
-  return result;
-}
-
-function registryLookup(
-  registry: unknown,
-  key: string,
-  kind: 'schema' | 'serializer',
-): unknown {
-  if (registry instanceof Map) {
-    return registry.get(key);
-  }
-
-  const registryRecord = asRecord(registry);
-  if (registryRecord === undefined) {
-    return undefined;
-  }
-
-  const methodNames =
-    kind === 'schema'
-      ? ['resolve', 'resolveSchema', 'getSchema', 'get']
-      : ['resolveSerializer', 'getSerializer', 'get'];
-  for (const methodName of methodNames) {
-    const method = registryRecord[methodName];
-    if (typeof method === 'function') {
-      const resolved = method.call(registry, key);
-      if (resolved !== undefined) {
-        return resolved;
-      }
-    }
-  }
-
-  const collectionNames =
-    kind === 'schema'
-      ? ['schemas', 'references', 'types']
-      : ['serializers', 'adapters'];
-  for (const collectionName of collectionNames) {
-    const resolved = lookupCollection(registryRecord[collectionName], key);
-    if (resolved !== undefined) {
-      return resolved;
-    }
-  }
-  return registryRecord[key];
-}
-
-function lookupCustomSerializer(
-  name: string | undefined,
-  state: SerializationState,
-): RuntimeSerializerEntry | undefined {
-  if (name === undefined) {
-    return undefined;
-  }
-
-  for (const registry of [
-    state.options.serializers,
-    state.options.customSerializers,
-    state.options.registry,
-  ]) {
-    const serializer = lookupCollection(registry, name);
-    if (isRuntimeSerializerFunction(serializer) || isRuntimeSerializer(serializer)) {
-      return serializer;
-    }
-  }
-
-  const serializer = registryLookup(state.registry, name, 'serializer');
-  return isRuntimeSerializerFunction(serializer) || isRuntimeSerializer(serializer)
-    ? serializer
-    : undefined;
-}
-
-function lookupCollection(collection: unknown, key: string): unknown {
-  return collection instanceof Map
-    ? collection.get(key)
-    : asRecord(collection)?.[key];
-}
-
-function isRuntimeSerializer(value: unknown): value is RuntimeSerializer {
-  return (
-    isObjectLike(value) &&
-    typeof (value as { serialize?: unknown }).serialize === 'function'
-  );
-}
-
-function isRuntimeSerializerFunction(
-  value: unknown,
-): value is RuntimeSerializerFunction {
-  return typeof value === 'function';
-}
-
-function allowedUuidVersions(
-  descriptor: UnknownRecord | undefined,
-): ReadonlySet<number> | undefined {
-  const rawVersions = firstDefined(
-    descriptor?.['versions'],
-    descriptor?.['allowedVersions'],
-    descriptor?.['version'],
-  );
-  if (rawVersions === undefined) {
-    return undefined;
-  }
-
-  const values = Array.isArray(rawVersions) ? rawVersions : [rawVersions];
-  return new Set(
-    values
-      .map((value) =>
-        typeof value === 'number'
-          ? value
-          : Number(String(value).replace(/^v/i, '')),
-      )
-      .filter(Number.isInteger),
-  );
-}
-
+// Container schemas always come from descriptor objects: string shorthands
+// have no element, value, or property schemas and fail before caching.
 function getSerializedPair(
   value: object,
-  schema: object | undefined,
+  schema: unknown,
   state: SerializationState,
 ): unknown {
-  return schema === undefined
-    ? undefined
-    : state.serializedPairs.get(value)?.get(schema);
+  return state.serializedPairs.get(value)?.get(schema as object);
 }
 
 function setSerializedPair(
   value: object,
-  schema: object | undefined,
+  schema: unknown,
   result: unknown,
   state: SerializationState,
 ): void {
-  if (schema === undefined) {
-    return;
-  }
   let schemas = state.serializedPairs.get(value);
   if (schemas === undefined) {
     schemas = new WeakMap<object, unknown>();
     state.serializedPairs.set(value, schemas);
   }
-  schemas.set(schema, result);
+  schemas.set(schema as object, result);
 }
 
-function failOrPreserve(
+function fail(
   message: string,
-  path: string,
+  path: SchemaPath,
   value: unknown,
   state: SerializationState,
   cause?: unknown,
+  preserved: unknown = value,
 ): unknown {
-  if (state.strict) {
-    throw new JsonSerializationError(message, path, value, cause);
+  // Binary views would be emitted as {"0":...} by JSON.stringify, so they are
+  // never preserved, even in tolerant mode.
+  if (state.strict || ArrayBuffer.isView(preserved)) {
+    throw new JsonSerializationError(message, formatPath(path), value, cause);
   }
-  return value;
-}
-
-function normalizeMaxDepth(value: number | undefined): number {
-  return value === undefined || !Number.isInteger(value) || value < 0
-    ? 100
-    : value;
-}
-
-function normalizeKind(value: string): string {
-  return value.replace(/[^a-z0-9]/giu, '').toLowerCase();
-}
-
-function asRecord(value: unknown): UnknownRecord | undefined {
-  return isObjectLike(value) ? (value as UnknownRecord) : undefined;
-}
-
-function isObjectLike(value: unknown): value is object {
-  return (
-    (typeof value === 'object' && value !== null) || typeof value === 'function'
-  );
-}
-
-function isRecordValue(value: unknown): value is UnknownRecord {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function firstDefined(...values: readonly unknown[]): unknown {
-  return values.find((value) => value !== undefined);
-}
-
-function firstString(...values: readonly unknown[]): string | undefined {
-  return values.find((value): value is string => typeof value === 'string');
-}
-
-function appendProperty(path: string, key: string): string {
-  return /^[A-Za-z_$][\w$]*$/u.test(key)
-    ? `${path}.${key}`
-    : `${path}[${JSON.stringify(key)}]`;
+  return preserved;
 }

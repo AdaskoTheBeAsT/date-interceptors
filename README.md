@@ -87,7 +87,7 @@ const postDates = user.posts.map(p => p.publishedAt);  // Arrays? Handled!
 
 | Metric                  | Value                                |
 | ----------------------- | ------------------------------------ |
-| **Security Review**     | ✅ OWASP Top 10 compliant             |
+| **Security Review**     | Prototype-key and depth-limit safeguards             |
 | **Performance**         | 10-100x faster than naive regex      |
 | **Test Coverage**       | 130+ tests, all passing              |
 | **Type Safety**         | Full TypeScript support              |
@@ -874,14 +874,18 @@ Client with class-transformer integration!
 
 ### Why Use It?
 
-- 🎯 **Full Type Safety** — Compile-time + runtime type checking with class constructors
+- 🎯 **Full Type Safety** — Compile-time types and response class instances
 - 🔄 **Bidirectional Transform** — Serialize requests AND deserialize responses automatically  
 - 🏷️ **Decorator-Based** — Use `@Transform`, `@Type`, `@Expose`, `@Exclude` for custom logic
 - 📦 **DTO Pattern** — Clean separation of API models from domain models
-- ✅ **Validation Ready** — Seamless integration with `class-validator`
+- ✅ **Validation Ready** — Call `class-validator` explicitly after hydration
 - 💎 **Computed Properties** — Add getters and methods to your response objects
 - 🔥 **.NET Integration** — Perfect for Newtonsoft.Json/System.Text.Json polymorphic types
 - 📝 **Typewriter Support** — Auto-generate TypeScript classes from C# models
+
+Hydration creates class instances; it does not validate field types or execute
+`class-validator` decorators. Call `validate` or `validateOrReject` explicitly.
+See the [validated response example](https://github.com/AdaskoTheBeAsT/date-interceptors/blob/main/libs/angular-typed-http-client/README.md#explicit-runtime-validation).
 
 ### Quick Example
 
@@ -974,12 +978,12 @@ const options: RequestOptions = {
 | Feature               | Interceptor    | Typed HTTP Client             |
 | --------------------- | -------------- | ----------------------------- |
 | Date conversion       | ✅ Automatic    | ✅ Automatic + custom          |
-| Type safety           | ⚠️ Runtime only | ✅ Compile-time + Runtime      |
+| Type safety           | ⚠️ Runtime only | Compile-time types; explicit runtime validation      |
 | Request serialization | ❌ No           | ✅ Yes                         |
 | Nested objects        | ✅ Yes          | ✅ Yes + validation            |
 | Custom transforms     | ❌ No           | ✅ Full decorator support      |
 | Class methods         | ❌ No           | ✅ Yes (computed props, etc.)  |
-| Validation            | ❌ No           | ✅ class-validator integration |
+| Validation            | ❌ No           | Explicit `class-validator` calls |
 
 **Use Typed HTTP Client when:**
 - ✅ You want compile-time type safety
@@ -1309,7 +1313,7 @@ this.typedHttp.post('/api/notifications', emailNotif, EmailNotification)
 | **Type Safety**            | ⚠️ `as` casts everywhere   | ✅ True instanceof checks       |
 | **Date Conversion**        | ❌ Manual parsing          | ✅ Automatic with @Transform    |
 | **Typewriter Integration** | ⚠️ Manual class creation   | ✅ Auto-generated from C#       |
-| **Validation**             | ❌ Runtime only            | ✅ Compile-time + Runtime       |
+| **Validation**             | ❌ Runtime only            | Compile-time types; explicit runtime validation       |
 | **Serialization**          | ❌ Manual JSON.stringify   | ✅ Automatic with decorators    |
 | **Nested Types**           | ⚠️ Complex manual handling | ✅ @Type decorator handles it   |
 | **Discriminator**          | ❌ Manual switch/case      | ✅ class-transformer handles it |
@@ -1464,7 +1468,7 @@ We take security seriously and will respond promptly.
 
 ### Security Audits
 
-- ✅ OWASP Top 10 reviewed
+- Prototype-key filtering and depth limits are covered by regression tests.
 - ✅ CWE-1321 (Prototype Pollution) mitigated
 - ✅ DoS protection (depth limiting)
 - ✅ Input validation hardened
@@ -1511,3 +1515,10 @@ Special thanks to:
 [⬆ Back to Top](#-date-interceptors)
 
 </div>
+
+## Conversion contracts and validation
+
+Upgrading to v11? See the [11.0.0 migration guide](docs/migration-v11.md) for
+breaking changes, dual ESM/CommonJS imports, and the release checklist.
+
+See [conversion contracts](docs/conversion-contract.md) for date precision/timezone rules, strict schema validation, empty Fetch responses, React memoization, and migration notes. After building, run `yarn test:packages` to validate packed artifacts in a clean consumer.

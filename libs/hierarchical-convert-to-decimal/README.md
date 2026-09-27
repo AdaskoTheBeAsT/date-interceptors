@@ -5,7 +5,7 @@
 [![npm](https://img.shields.io/npm/v/%40adaskothebeast%2Fhierarchical-convert-to-decimal?color=cb3837&logo=npm)](https://www.npmjs.com/package/@adaskothebeast/hierarchical-convert-to-decimal)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-Single peer dependency: `decimal.js ^10.6.0` (types ship with the package, no companion `@types` needed). ESM build, version `10.0.0`.
+Peer dependency: `decimal.js` (types ship with it, no companion `@types` needed). Runtime dependency: the dependency-free `@adaskothebeast/hierarchical-convert-core`.
 
 ---
 
@@ -26,7 +26,7 @@ Money and quantities are transported as JSON strings precisely because `JSON.par
   -> total.toString() === '12345678901234567890.1234567890123456789'
 ```
 
-The traversal is the same hardened walk used by the sibling date converters: own enumerable properties only, arrays included, `__proto__` / `constructor` / `prototype` skipped, depth capped at 100, circular references tracked with a `WeakSet`. Conversion happens in place and the function returns `void`.
+The traversal is the same hardened walk used by the sibling date converters (shared through `hierarchical-convert-core`): arrays and plain objects only, own enumerable properties only, `__proto__` / `constructor` / `prototype` skipped, the root plus 100 nested levels, cycles visited once, frozen or read-only properties left alone. Conversion happens in place and the function returns `void`. The full traversal rules are in the repository [conversion contract](https://github.com/AdaskoTheBeAsT/date-interceptors/blob/main/docs/conversion-contract.md#heuristic-date-conversion).
 
 Recognition is **content driven, not key driven**. There is no allow-list of field names and no path list, so any string that looks like a number becomes a `Decimal`. That is fast and zero-config, and it is also the reason the schema-driven [`@adaskothebeast/typewriter-runtime`](https://www.npmjs.com/package/@adaskothebeast/typewriter-runtime) path exists: only a schema can tell you that `"42"` is a quantity while `"007"` is a jersey number.
 
@@ -34,13 +34,11 @@ Recognition is **content driven, not key driven**. There is no allow-list of fie
 
 ## 🧰 API
 
-| Export                         | Signature                                                          | Notes                                                                                                    |
-| ------------------------------ | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| `hierarchicalConvertToDecimal` | `(obj: unknown, depth?: number, visited?: WeakSet<object>) => void` | Mutates `obj` in place, returns `void`. `depth` defaults to `0`, `visited` defaults to a fresh `WeakSet`. |
+| Export                         | Signature                | Notes                                   |
+| ------------------------------ | ------------------------ | --------------------------------------- |
+| `hierarchicalConvertToDecimal` | `(obj: unknown) => void` | Mutates `obj` in place, returns `void`. |
 
-Non-object inputs (`null`, numbers, strings, `undefined`) are accepted and ignored, so you can call it on any deserialized body without a guard.
-
-`depth` and `visited` are recursion plumbing. Passing a non-zero `depth` shrinks the remaining budget (the walk stops once `depth > 100`); passing a pre-populated `visited` set makes those objects be skipped.
+Non-object inputs (`null`, numbers, strings, `undefined`) are accepted and ignored, so you can call it on any deserialized body without a guard. (Before 11.0.0 the signature also exposed internal `depth` and `visited` parameters.)
 
 ---
 
@@ -94,9 +92,8 @@ hierarchicalConvertToDecimal(payload);
 
 None. The only knob is which strings match, and that is fixed:
 
-1. **Fast rejection.** The first character must be `+`, `-`, `.` or a digit. Everything else is rejected before any regex runs.
-2. **Full match** against `^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$`.
-3. **Construction** via `new Decimal(value)`, wrapped in a `try` / `catch` that logs `Failed to parse decimal string: <value>` through `console.warn` and leaves the string in place.
+1. **Full match** against `^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$`.
+2. **Construction** via `new Decimal(value)`, wrapped in a `try` / `catch` that silently leaves the string in place if construction throws.
 
 | Accepted        | Rejected     |
 | --------------- | ------------ |
@@ -154,12 +151,13 @@ Top-level arrays work as well: `['123.45', '-0.001']` becomes `[new Decimal('123
 - **Leading zeros and trailing dots are normalised away.** `"007"` becomes `Decimal 7` and `"7."` becomes `Decimal 7`. If the original literal has to round-trip byte for byte, keep the string.
 - **Numbers already parsed by `JSON.parse` are not touched.** Only strings are candidates, so precision lost before this function runs (an unquoted `1.005` in the JSON text) cannot be recovered here. Ask the server to quote the field.
 - **Construction is lossless, arithmetic is not.** `new Decimal(...)` keeps every digit you pass, but `decimal.js` operations round to `Decimal.precision` (default 20 significant digits). Call `Decimal.set({ precision: 40 })` once at startup when you compute on 39-digit values.
-- **Invalid input never throws out of the walk.** `new Decimal` throwing is caught, logged via `console.warn` and the string is preserved. In practice the regex pre-filter makes this unreachable, since `decimal.js` accepts everything the regex accepts.
+- **Invalid input never throws out of the walk.** `new Decimal` throwing is caught silently and the string is preserved. In practice the regex makes this unreachable, since `decimal.js` accepts everything the regex accepts.
 - **`NaN`, `Infinity` and `-Infinity` strings are rejected on purpose.** `decimal.js` would happily construct them; converting them silently would turn a data error into a poisoned computation.
-- **Prototype pollution is blocked.** The keys `__proto__`, `constructor` and `prototype` are skipped, so a hostile payload cannot reach `Object.prototype`. The side effect is that a nested object stored under a key literally named `constructor` or `prototype` is never traversed either.
-- **Inherited properties are ignored,** every key passes an `Object.hasOwn` check.
-- **Depth is capped at 100.** Once `depth > 100` the walk returns and deeper strings stay strings; this is DoS protection against adversarially nested JSON.
-- **Circular graphs are safe.** A `WeakSet` records visited objects, so `input.self = input` converts once and does not loop.
+- **Prototype pollution is blocked.** Own `__proto__`, `constructor` and `prototype` keys are skipped, so a hostile payload cannot reach `Object.prototype`. The side effect is that a nested object stored under a key literally named `constructor` or `prototype` is never traversed either.
+- **Only arrays and plain objects are entered (11.0.0).** Class instances, `Map`, `Set`, Buffers, and existing `Decimal` values are left untouched, so running the converter twice is a no-op. Before 11.0.0 every non-null object was entered.
+- **Frozen or read-only values stay strings.** Frozen objects, non-writable properties, and getter-only properties are skipped instead of throwing mid-walk.
+- **Depth is capped.** The root plus 100 nested levels are walked; deeper strings stay strings. This is DoS protection against adversarially nested JSON.
+- **Circular graphs are safe.** Visited objects are recorded, so `input.self = input` converts once and does not loop.
 - **A converted value is no longer JSON-serializable as a number.** `JSON.stringify` on a `Decimal` yields a quoted string (`decimal.js` defines `toJSON`), so a round trip produces `"12.5"`, not `12.5`. Serialize explicitly (`value.toString()`, `value.toFixed(2)`) when the wire format matters.
 - **Strings are terminal.** When a value is a string the walker does not recurse (a string has no children), so a non-matching string simply stays as it is.
 

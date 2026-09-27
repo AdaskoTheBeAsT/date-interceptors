@@ -1,75 +1,25 @@
-/**
- * Represents a value that can be a date string or an already converted Date,
- * or a nested structure containing such values.
- */
-type DateValue = Date | string | number | boolean | null;
-type DateObject = { [key: string]: DateValue | DateObject | DateArray };
-type DateArray = Array<DateValue | DateObject | DateArray>;
-type RecordWithDate = DateObject;
-
-// Regular expression that matches ISO 8601 date strings
-const dateRegex =
-  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|([+-]\d{2}:\d{2}))?$/;
-
-const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+import {
+  isIsoDateTime,
+  millisecondDateTime,
+  visitStrings,
+} from '@adaskothebeast/hierarchical-convert-core';
 
 /**
- * Function to recursively traverse the object and convert date strings to Date objects in place.
- * @param obj Object to traverse
- * @param depth Current recursion depth (defaults to 0)
- * @param visited WeakSet to track visited objects and prevent circular references
- * @returns Void.
+ * Replaces ISO timestamp strings with `Date` objects in place, walking arrays
+ * and plain objects only; cycles and levels deeper than 100 are skipped.
  */
-export function hierarchicalConvertToDate(
-  obj: unknown,
-  depth = 0,
-  visited = new WeakSet(),
-): void {
-  if (typeof obj !== 'object' || obj === null) {
-    return;
-  }
+export function hierarchicalConvertToDate(obj: unknown): void {
+  visitStrings(obj, convert);
+}
 
-  if (depth > 100) {
-    return;
-  }
-
-  if (visited.has(obj)) {
-    return;
-  }
-  visited.add(obj);
-
-  const o = obj as RecordWithDate;
-
-  for (const key in o) {
-    if (DANGEROUS_KEYS.has(key) || !Object.hasOwn(o, key)) {
-      continue;
+function convert(value: string): unknown {
+  try {
+    if (isIsoDateTime(value)) {
+      const date = new Date(millisecondDateTime(value));
+      if (!Number.isNaN(date.getTime())) return date;
     }
-
-    const v = o[key];
-    // Fast rejection for non-date strings
-    // ISO 8601 dates are at least 20 chars: "2023-01-01T00:00:00Z"
-    if (
-      typeof v === 'string' &&
-      v.length >= 20 &&
-      v[4] === '-' &&
-      v[7] === '-' &&
-      v[10] === 'T' &&
-      dateRegex.test(v)
-    ) {
-      try {
-        // Convert string to Date object if it matches the date regex
-        const date = new Date(v);
-        // Check if date is valid (not NaN)
-        if (!Number.isNaN(date.getTime())) {
-          o[key] = date;
-        }
-      } catch (e) {
-        // Leave as string if parsing fails
-        console.warn(`Failed to parse date string: ${v}`, e);
-      }
-    } else if (typeof v === 'object' && v !== null) {
-      // Recurse into the object if it's not a string (could be an array or object)
-      hierarchicalConvertToDate(v, depth + 1, visited);
-    }
+  } catch {
+    // Unsupported or invalid backend values remain strings.
   }
+  return value;
 }

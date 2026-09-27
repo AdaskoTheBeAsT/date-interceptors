@@ -3,6 +3,7 @@ import type { BaseQueryFn } from '@reduxjs/toolkit/query';
 
 import {
   createHierarchicalDateTransformResponse,
+  hierarchicalDateSerializableCheck,
   withHierarchicalDateConversion,
 } from './rtk-query-date-conversion';
 
@@ -39,8 +40,49 @@ describe('RTK Query date conversion', () => {
       {},
     );
 
-    expect('data' in result && result.data.createdAt).toBeInstanceOf(Date);
-    expect(raw.createdAt).toBe('2026-07-21T12:34:56.000Z');
+    // Freshly parsed base query data is not shared or frozen yet, so it is
+    // converted in place instead of being cloned.
+    expect('data' in result && result.data).toBe(raw);
+    expect(raw.createdAt).toBeInstanceOf(Date);
+  });
+
+  it('leaves primitive base query data untouched', async () => {
+    const baseQuery: BaseQueryFn<string, string, string> = jest.fn(
+      async () => ({
+        data: 'plain',
+      }),
+    );
+    const convert = jest.fn();
+    const result = await withHierarchicalDateConversion(baseQuery, convert)(
+      '/text',
+      {} as Parameters<BaseQueryFn>[1],
+      {},
+    );
+    expect(result).toEqual({ data: 'plain' });
+    expect(convert).not.toHaveBeenCalled();
+  });
+
+  it('returns primitive transformResponse values without cloning', () => {
+    const convert = jest.fn();
+    expect(createHierarchicalDateTransformResponse<string>(convert)('x')).toBe(
+      'x',
+    );
+    expect(convert).not.toHaveBeenCalled();
+  });
+
+  it('defaults hierarchicalDateSerializableCheck to the "api" reducer path and accepts several', () => {
+    expect(hierarchicalDateSerializableCheck().ignoredPaths).toEqual([
+      'api.queries',
+      'api.mutations',
+    ]);
+    const check = hierarchicalDateSerializableCheck(['a', 'b']);
+    expect(check.ignoredPaths).toEqual([
+      'a.queries',
+      'a.mutations',
+      'b.queries',
+      'b.mutations',
+    ]);
+    expect(check.ignoredActions).toContain('b/executeQuery/fulfilled');
   });
 
   it('preserves base query errors', async () => {

@@ -3,50 +3,33 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/hierarchical-convert-to-temporal/src",
   "projectType": "library",
-  "release": {
-    "version": {
-      "manifestRootsToUpdate": ["dist/{projectRoot}"],
-      "currentVersionResolver": "git-tag",
-      "fallbackCurrentVersionResolver": "disk"
-    }
-  },
   "tags": [],
+  "implicitDependencies": ["typewriter-schema"],
   "targets": {
-    "nx-release-publish": {
-      "options": {
-        "packageRoot": "dist/{projectRoot}"
-      }
-    },
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
-      "options": {
-        "outputPath": "dist/libs/hierarchical-convert-to-temporal",
-        "tsConfig": "libs/hierarchical-convert-to-temporal/tsconfig.lib.json",
-        "packageJson": "libs/hierarchical-convert-to-temporal/package.json",
-        "main": "libs/hierarchical-convert-to-temporal/src/index.ts",
-        "assets": ["libs/hierarchical-convert-to-temporal/*.md"]
-      }
-    },
-    "lint": {
+    "test": {
       "inputs": [
         "default",
-        "^default",
-        "{workspaceRoot}/.eslintrc.json",
-        "{workspaceRoot}/.eslintignore",
-        "{workspaceRoot}/eslint.config.cjs",
-        "{workspaceRoot}/tools/eslint-rules/**/*",
+        "^production",
+        "{workspaceRoot}/jest.preset.js",
+        "{workspaceRoot}/tools/testing/jest-reporters.cjs",
+        "{workspaceRoot}/tools/testing/swc-transform.cjs",
+        "{workspaceRoot}/tools/testing/jsdom-environment.cjs",
+        "{workspaceRoot}/tools/testing/coverage-thresholds.json",
         {
-          "externalDependencies": ["eslint"]
+          "externalDependencies": [
+            "jest",
+            "@nx/jest",
+            "ts-jest",
+            "@swc/jest",
+            "jest-junit",
+            "jest-sonar"
+          ]
         }
+      ],
+      "outputs": [
+        "{workspaceRoot}/.reports/{projectRoot}",
+        "{workspaceRoot}\\.reports\\libs\\hierarchical-convert-to-temporal\\coverage"
       ]
-    },
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
-      "options": {
-        "jestConfig": "libs/hierarchical-convert-to-temporal/jest.config.cts"
-      }
     }
   }
 }

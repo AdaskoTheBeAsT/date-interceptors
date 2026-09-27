@@ -1,17 +1,20 @@
-import { CommonModule } from '@angular/common';
 import {
   HTTP_INTERCEPTORS,
   provideHttpClient,
   withInterceptorsFromDi,
-  withXhr
+  withXhr,
 } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 
 import { ClassTransformerHttpInterceptor } from './class-transformer-http.interceptor';
 import { ClassTransformerSerializeInterceptor } from './class-transformer-serialize.interceptor';
 
+/**
+ * @deprecated Use `provideHttpClient(withTypedHttpClient())`. This module
+ * calls `provideHttpClient(withXhr(), withInterceptorsFromDi())` itself, which
+ * forces the XHR backend and replaces the application's own HttpClient setup.
+ */
 @NgModule({
-  imports: [CommonModule],
   providers: [
     provideHttpClient(withXhr(), withInterceptorsFromDi()),
     {

@@ -1,6 +1,15 @@
 {
   "name": "@adaskothebeast/typewriter-http-angular",
-  "version": "10.0.2",
+  "version": "11.0.0",
+  "description": "Angular HttpClient interceptor that hydrates and serializes JSON with Typewriter runtime schemas.",
+  "keywords": [
+    "typewriter",
+    "angular",
+    "http-client",
+    "typescript",
+    "hydration",
+    "json"
+  ],
   "license": "MIT",
   "author": "Adam Pluciński <adaskothebeast@gmail.com> (https://github.com/adaskothebeast)",
   "repository": {
@@ -11,19 +20,21 @@
   "bugs": {
     "url": "https://github.com/AdaskoTheBeAsT/date-interceptors/issues"
   },
-  "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors#readme",
-  "keywords": [
-    "typewriter",
-    "angular",
-    "http-client",
-    "typescript",
-    "hydration"
-  ],
-  "peerDependencies": {
-    "@angular/common": "^22.0.8",
-    "@adaskothebeast/typewriter-runtime": "^10.0.0",
-    "@adaskothebeast/typewriter-schema": "^10.0.0",
-    "rxjs": "^7.8.2"
+  "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors/tree/main/libs/typewriter-http-angular#readme",
+  "sideEffects": false,
+  "engines": {
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
   },
-  "sideEffects": false
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@adaskothebeast/hierarchical-convert-core": "^11.0.0",
+    "tslib": "^2.3.0"
+  },
+  "peerDependencies": {
+    "@adaskothebeast/typewriter-runtime": "^11.0.0",
+    "@angular/common": "^22.0.0",
+    "rxjs": "^7.8.0"
+  }
 }

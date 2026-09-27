@@ -6,7 +6,7 @@ import {
   HttpContext,
   provideHttpClient,
   withInterceptorsFromDi,
-  withXhr
+  withXhr,
 } from '@angular/common/http';
 // class-transformer-http-interceptor.spec.ts
 import {
@@ -58,9 +58,29 @@ describe('ClassTransformerHttpInterceptor', () => {
 
   afterEach(() => httpMock.verify());
 
+  it('passes responses through when no response class is requested', (done) => {
+    http.get('/plain').subscribe((value) => {
+      expect(value).toEqual({ name: 'plain' });
+      expect(value).not.toBeInstanceOf(UserDto);
+      done();
+    });
+    httpMock.expectOne('/plain').flush({ name: 'plain' });
+  });
+
+  it('preserves an empty response with a response class', (done) => {
+    const context = new HttpContext().set(RESPONSE_TYPE_CLASS, UserDto);
+    http.get('/empty', { context }).subscribe((value) => {
+      expect(value).toBeNull();
+      done();
+    });
+    httpMock
+      .expectOne('/empty')
+      .flush(null, { status: 204, statusText: 'No Content' });
+  });
+
   it('transforms body into the provided class via TypedHttpClient', (done) => {
     typed.get('/api/user/1', UserDto).subscribe((user) => {
-      expect(user instanceof UserDto).toBe(true);
+      expect(user).toBeInstanceOf(UserDto);
       expect(user.upper()).toBe('ALICE');
       done();
     });
@@ -72,11 +92,13 @@ describe('ClassTransformerHttpInterceptor', () => {
   it('transforms body when using raw HttpClient + context token', (done) => {
     const ctx = new HttpContext().set(RESPONSE_TYPE_CLASS, UserDto);
 
-    http.get<UserDto>('/api/user/2', { context: ctx }).subscribe((user: UserDto) => {
-      expect(user instanceof UserDto).toBe(true);
-      expect(user.upper()).toBe('BOB');
-      done();
-    });
+    http
+      .get<UserDto>('/api/user/2', { context: ctx })
+      .subscribe((user: UserDto) => {
+        expect(user).toBeInstanceOf(UserDto);
+        expect(user.upper()).toBe('BOB');
+        done();
+      });
 
     const req = httpMock.expectOne('/api/user/2');
     req.flush({ name: 'Bob' });

@@ -12,6 +12,8 @@ module.exports = [
   {
     ignores: [
       '**/dist',
+      '**/.reports/**',
+      '**/coverage/**',
       '**/vite.config.*.timestamp*',
       '**/vitest.config.*.timestamp*',
     ],
@@ -26,7 +28,10 @@ module.exports = [
         'error',
         {
           enforceBuildableLibDependency: true,
-          allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?js$'],
+          allow: [
+            '^.*/eslint(\\.base)?\\.config\\.[cm]?js$',
+            '^.*/tools/testing/(coverage-thresholds\\.json|jest-reporters\\.cjs)$',
+          ],
           depConstraints: [
             {
               sourceTag: '*',

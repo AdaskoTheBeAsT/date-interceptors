@@ -1,21 +1,21 @@
 import { NIL, parse } from 'uuid';
 
-import { hierarchicalConvertToUuid } from './hierarchical-convert-to-uuid';
+import { hierarchicalConvertToUuid } from '../index';
 
 describe('hierarchicalConvertToUuid', () => {
   const uuidV1 = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
   const uuidV4 = '550e8400-e29b-41d4-a716-446655440000';
 
   it.each`
-    input                                               | expected
-    ${{}}                                               | ${{}}
-    ${{ text: 'adam' }}                                 | ${{ text: 'adam' }}
-    ${{ id: uuidV4 }}                                   | ${{ id: parse(uuidV4) }}
-    ${{ id: uuidV1 }}                                   | ${{ id: parse(uuidV1) }}
-    ${{ id: NIL }}                                      | ${{ id: parse(NIL) }}
-    ${{ nested: { id: uuidV4 } }}                       | ${{ nested: { id: parse(uuidV4) } }}
-    ${[{ id: uuidV4 }, { id: uuidV1 }]}                 | ${[{ id: parse(uuidV4) }, { id: parse(uuidV1) }]}
-    ${[uuidV4, uuidV1, NIL]}                            | ${[parse(uuidV4), parse(uuidV1), parse(NIL)]}
+    input                               | expected
+    ${{}}                               | ${{}}
+    ${{ text: 'adam' }}                 | ${{ text: 'adam' }}
+    ${{ id: uuidV4 }}                   | ${{ id: parse(uuidV4) }}
+    ${{ id: uuidV1 }}                   | ${{ id: parse(uuidV1) }}
+    ${{ id: NIL }}                      | ${{ id: parse(NIL) }}
+    ${{ nested: { id: uuidV4 } }}       | ${{ nested: { id: parse(uuidV4) } }}
+    ${[{ id: uuidV4 }, { id: uuidV1 }]} | ${[{ id: parse(uuidV4) }, { id: parse(uuidV1) }]}
+    ${[uuidV4, uuidV1, NIL]}            | ${[parse(uuidV4), parse(uuidV1), parse(NIL)]}
   `('converts $input expecting $expected', ({ input, expected }) => {
     hierarchicalConvertToUuid(input);
 
@@ -97,5 +97,21 @@ describe('hierarchicalConvertToUuid', () => {
     hierarchicalConvertToUuid(input);
 
     expect(current['id']).toBe(uuidV4);
+  });
+
+  it('is a no-op when run twice and leaves non-plain objects untouched', () => {
+    const map = new Map([['id', uuidV4]]);
+    const input = { id: uuidV4, list: [uuidV1], map };
+
+    hierarchicalConvertToUuid(input);
+    const id = input.id as unknown as Uint8Array;
+    const bytes = [...id];
+    const [listItem] = input.list;
+    hierarchicalConvertToUuid(input);
+
+    expect(input.id).toBe(id);
+    expect([...id]).toEqual(bytes);
+    expect(input.list[0]).toBe(listItem);
+    expect(map.get('id')).toBe(uuidV4);
   });
 });

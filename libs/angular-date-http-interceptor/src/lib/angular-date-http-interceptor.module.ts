@@ -1,11 +1,11 @@
-import { CommonModule } from '@angular/common';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
-import { NgModule } from '@angular/core';
+import { ModuleWithProviders, NgModule } from '@angular/core';
 
 import { HierarchicalDateHttpInterceptor } from './hierarchical-date-http-interceptor';
+import { provideHierarchicalDateConverter } from './with-hierarchical-date-http-interceptor';
 
+/** Requires `provideHttpClient(withInterceptorsFromDi())` in the application. */
 @NgModule({
-  imports: [CommonModule],
   providers: [
     {
       provide: HTTP_INTERCEPTORS,
@@ -14,4 +14,14 @@ import { HierarchicalDateHttpInterceptor } from './hierarchical-date-http-interc
     },
   ],
 })
-export class AngularDateHttpInterceptorModule {}
+export class AngularDateHttpInterceptorModule {
+  /** Registers the interceptor together with its converter. */
+  static forRoot(
+    converter: (obj: unknown) => void,
+  ): ModuleWithProviders<AngularDateHttpInterceptorModule> {
+    return {
+      ngModule: AngularDateHttpInterceptorModule,
+      providers: [provideHierarchicalDateConverter(converter)],
+    };
+  }
+}

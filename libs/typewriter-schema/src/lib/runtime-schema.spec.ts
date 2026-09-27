@@ -15,14 +15,43 @@ import {
   referenceSchema,
   schema,
   uuidSchema,
-} from './runtime-schema';
+} from '../index';
+import * as publicApi from '../index';
 
 interface User {
-  id: string;
+  id: Uint8Array;
   displayName: string;
 }
 
 describe('runtime schema builders', () => {
+  it.each([
+    'unknown',
+    'string',
+    'number',
+    'boolean',
+    'instant',
+    'plainDate',
+    'plainTime',
+    'plainDateTime',
+    'zonedDateTime',
+    'duration',
+    'period',
+    'plainYearMonth',
+    'plainMonthDay',
+    'literal',
+    'optional',
+    'record',
+  ] as const)('exposes the %s builder through both public APIs', (name) => {
+    expect(publicApi[`${name}Schema`]).toBe(schema[name]);
+  });
+
+  it('registers additional definitions through the public registry', () => {
+    const registry = defineTypeRegistry({});
+    const registered = registry.register('Text', schema.string());
+    expect(registered).toBe(registry);
+    expect(registered.get('Text')).toEqual(schema.string());
+    expect(customSchema('custom')).toEqual({ kind: 'custom', name: 'custom' });
+  });
   it('constructs primitive, decimal, uuid, and literal descriptors', () => {
     expect(schema.unknown()).toEqual({ kind: 'unknown' });
     expect(schema.string()).toEqual({ kind: 'string' });
@@ -131,9 +160,7 @@ describe('runtime schema builders', () => {
       good: schema.property(schema.boolean()),
     });
 
-    expect(
-      discriminatedUnionSchema<Pet>('kind', { cat, dog }),
-    ).toEqual({
+    expect(discriminatedUnionSchema<Pet>('kind', { cat, dog })).toEqual({
       kind: 'discriminated-union',
       discriminator: 'kind',
       variants: { cat, dog },
@@ -167,6 +194,19 @@ describe('type registry', () => {
 
     expect(registry.has('User')).toBe(true);
     expect(registry.get('User')).toBe(userSchema);
+  });
+
+  it('calls schema factories lazily and only once', () => {
+    const factory = jest.fn(() => userSchema);
+    const registry = defineTypeRegistry({ User: factory });
+
+    expect(factory).not.toHaveBeenCalled();
+    const first = registry.get('User');
+    const second = registry.get('User');
+
+    expect(first).toBe(userSchema);
+    expect(second).toBe(first);
+    expect(factory).toHaveBeenCalledTimes(1);
   });
 
   it('returns undefined for unknown type names', () => {

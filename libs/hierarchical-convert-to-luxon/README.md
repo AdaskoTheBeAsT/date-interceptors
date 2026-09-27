@@ -5,7 +5,7 @@
 [![npm](https://img.shields.io/npm/v/%40adaskothebeast%2Fhierarchical-convert-to-luxon?color=cb3837&logo=npm)](https://www.npmjs.com/package/@adaskothebeast/hierarchical-convert-to-luxon)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-Peer dependencies: `@adaskothebeast/typewriter-runtime` (`10.0.0`), `luxon` (`^3.7.2`), `tslib` (`^2.8.1`). Published as CommonJS with `.d.ts` declarations, target ES2022.
+Peer dependencies: `luxon` and, for the backend export, `@adaskothebeast/typewriter-runtime`. Runtime dependency: the dependency-free `@adaskothebeast/hierarchical-convert-core`.
 
 ---
 
@@ -31,7 +31,7 @@ The runtime peer is only needed for `luxonDateBackend`. If you use nothing but `
 
 The package ships two independent pieces.
 
-`hierarchicalConvertToLuxon` is the **schema-less** path. It walks an already-parsed JSON value depth first and replaces every string that looks like an ISO 8601 date-time or an ISO 8601 duration with a Luxon object, **mutating the input in place** and returning `void`. Nothing is cloned, so the object identity your caller holds stays the same. Traversal skips `__proto__`, `constructor` and `prototype` keys so a hostile payload cannot reach `Object.prototype`, uses `Object.hasOwn` so inherited enumerable properties are ignored, tracks visited objects in a `WeakSet` so circular graphs terminate, and gives up below a depth of 100.
+`hierarchicalConvertToLuxon` is the **schema-less** path. It walks the arrays and plain objects of an already-parsed JSON value depth first and replaces every ISO 8601 date-time or duration string with a Luxon object, **mutating the input in place** and returning `void`. Nothing is cloned, so the object identity your caller holds stays the same. Traversal is shared with the other converters through `hierarchical-convert-core`: own `__proto__`, `constructor` and `prototype` keys are skipped so a hostile payload cannot reach `Object.prototype`, class instances (including existing Luxon values) are not entered, cycles are visited once, and the root plus 100 nested levels are walked. The full rules and a per-backend duration precision table are in the repository [conversion contract](https://github.com/AdaskoTheBeAsT/date-interceptors/blob/main/docs/conversion-contract.md#heuristic-date-conversion).
 
 `luxonDateBackend` is the **schema-driven** path. It is a plain object (`{ name: 'luxon', codecs }`) that satisfies the `DateBackend` contract from `@adaskothebeast/typewriter-runtime`, so you can hand it to `transformJson`, `createJsonTransformer`, `serializeJson` or `createJsonSerializer` as `options.dateBackend` and every date-ish schema node hydrates into Luxon instead of the default `Temporal` types.
 
@@ -39,24 +39,24 @@ The package ships two independent pieces.
 
 ## 🧰 API
 
-| Export                                                                              | Signature / shape                                                                                                                                  | Notes                                                                                            |
-| ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `hierarchicalConvertToLuxon(obj: unknown, depth?: number, visited?: WeakSet): void`  | Mutates `obj` in place. `depth` defaults to `0`, `visited` to a fresh `WeakSet`; both are recursion bookkeeping and you normally pass only `obj`.    | Returns `undefined`. Non-objects and `null` are ignored.                                         |
-| `luxonDateBackend`                                                                  | `{ readonly name: 'luxon'; readonly codecs: Record<DateSchemaKind, DateCodec> }`                                                                    | Declared with `satisfies DateBackend`, so it is a value, not a class. Nothing to instantiate.     |
+| Export                                           | Signature / shape                                                                                             | Notes                                                                                         |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `hierarchicalConvertToLuxon(obj: unknown): void` | Mutates `obj` in place. (Before 11.0.0 the signature also exposed internal `depth` and `visited` parameters.) | Returns `undefined`. Non-objects and `null` are ignored.                                      |
+| `luxonDateBackend`                               | `{ readonly name: 'luxon'; readonly codecs: Record<DateSchemaKind, DateCodec> }`                              | Declared with `satisfies DateBackend`, so it is a value, not a class. Nothing to instantiate. |
 
 `luxonDateBackend.codecs` covers every `DateSchemaKind`:
 
-| Kind               | Luxon type | Wire form accepted by `parse`                                | `serialize` output                |
-| ------------------ | ---------- | ------------------------------------------------------------ | --------------------------------- |
-| `instant`          | `DateTime` | `2024-02-29T12:34:56.789+01:00`, offset or `Z` **required**   | `value.toUTC().toISO()`           |
-| `plain-date`       | `DateTime` | `2024-02-29`                                                 | `value.toISODate()`               |
-| `plain-time`       | `DateTime` | `12:34`, `12:34:56`, `12:34:56.789`                          | `toISOTime({ includeOffset: false })` |
-| `plain-date-time`  | `DateTime` | `2024-02-29T12:34:56.789` (no offset)                        | `toISO({ includeOffset: false })` |
-| `zoned-date-time`  | `DateTime` | `2024-07-01T12:34:56.789+02:00[Europe/Paris]`                | same bracketed form               |
-| `duration`         | `Duration` | any ISO duration Luxon accepts, including `-P1Y2M3DT4H5M6.789S` | `value.toISO()`                |
-| `period`           | `Duration` | identical to `duration` (the same codec object is reused)     | `value.toISO()`                   |
-| `plain-year-month` | `DateTime` | `2024-02`                                                    | `toFormat('yyyy-MM')`             |
-| `plain-month-day`  | `DateTime` | `--02-29`                                                    | `toFormat("'--'MM-dd")`           |
+| Kind               | Luxon type | Wire form accepted by `parse`                                   | `serialize` output                    |
+| ------------------ | ---------- | --------------------------------------------------------------- | ------------------------------------- |
+| `instant`          | `DateTime` | `2024-02-29T12:34:56.789+01:00`, offset or `Z` **required**     | `value.toUTC().toISO()`               |
+| `plain-date`       | `DateTime` | `2024-02-29`                                                    | `value.toISODate()`                   |
+| `plain-time`       | `DateTime` | `12:34`, `12:34:56`, `12:34:56.789`                             | `toISOTime({ includeOffset: false })` |
+| `plain-date-time`  | `DateTime` | `2024-02-29T12:34:56.789` (no offset)                           | `toISO({ includeOffset: false })`     |
+| `zoned-date-time`  | `DateTime` | `2024-07-01T12:34:56.789+02:00[Europe/Paris]`                   | same bracketed form                   |
+| `duration`         | `Duration` | any ISO duration Luxon accepts, including `-P1Y2M3DT4H5M6.789S` | `value.toISO()`                       |
+| `period`           | `Duration` | identical to `duration` (the same codec object is reused)       | `value.toISO()`                       |
+| `plain-year-month` | `DateTime` | `2024-02`                                                       | `toFormat('yyyy-MM')`                 |
+| `plain-month-day`  | `DateTime` | `--02-29`                                                       | `toFormat("'--'MM-dd")`               |
 
 Every codec exposes `is`, `parse` and `serialize`. `parse` throws `RangeError` on anything it cannot represent; `is` returns `true` only for a Luxon value whose `isValid` is `true`.
 
@@ -82,9 +82,7 @@ Schema-less, over an Angular `HttpClient` response:
 import { HIERARCHICAL_DATE_ADJUST_FUNCTION } from '@adaskothebeast/angular-date-http-interceptor';
 import { hierarchicalConvertToLuxon } from '@adaskothebeast/hierarchical-convert-to-luxon';
 
-providers: [
-  { provide: HIERARCHICAL_DATE_ADJUST_FUNCTION, useValue: hierarchicalConvertToLuxon },
-];
+providers: [{ provide: HIERARCHICAL_DATE_ADJUST_FUNCTION, useValue: hierarchicalConvertToLuxon }];
 ```
 
 Direct call on any parsed payload:
@@ -100,8 +98,8 @@ Schema-driven, through the typewriter runtime:
 
 ```ts
 import { luxonDateBackend } from '@adaskothebeast/hierarchical-convert-to-luxon';
-import { schema } from '@adaskothebeast/typewriter-schema';
 import { createJsonTransformer } from '@adaskothebeast/typewriter-runtime';
+import { schema } from '@adaskothebeast/typewriter-schema';
 import type { DateTime, Duration } from 'luxon';
 
 const orderSchema = schema.object<{ createdAt: DateTime; slaWindow: Duration }>({
@@ -122,7 +120,7 @@ const order = toOrder({ createdAt: '2024-02-29T12:34:56.789+01:00', slaWindow: '
 
 ## 🎛️ Options and configuration
 
-`hierarchicalConvertToLuxon` has no options. The `depth` and `visited` parameters exist for the recursive calls; passing your own `visited` set lets you share cycle tracking across several payloads, and passing a `depth` above `100` makes the call a no-op.
+`hierarchicalConvertToLuxon` has no options.
 
 `luxonDateBackend` has no options either. It is a stateless singleton value and is safe to share between transformers. Everything else is decided by the runtime:
 
@@ -136,15 +134,17 @@ const order = toOrder({ createdAt: '2024-02-29T12:34:56.789+01:00', slaWindow: '
 
 `hierarchicalConvertToLuxon`:
 
-| Input value                    | Result                                                      |
-| ------------------------------ | ----------------------------------------------------------- |
-| `'2023-07-17T23:06:00.000Z'`   | `DateTime.fromISO('2023-07-17T23:06:00.000Z')` (local zone)  |
-| `'2023-07-17T23:06:00.000+01:00'` | `DateTime.fromISO('2023-07-17T23:06:00.000+01:00')`       |
-| `'2023-07-17T23:06:00'`        | unchanged string (19 characters, below the length gate)      |
-| `'P0D'`                        | `Duration.fromObject({ days: 0 })`                          |
-| `'P4W'`                        | `Duration.fromObject({ weeks: 4 })`                         |
-| `'P1Y2M4DT2H3M2S'`             | `Duration.fromObject({ years: 1, months: 2, days: 4, hours: 2, minutes: 3, seconds: 2 })` |
-| `'adam'`                       | unchanged                                                   |
+| Input value                       | Result                                                                                    |
+| --------------------------------- | ----------------------------------------------------------------------------------------- |
+| `'2023-07-17T23:06:00.000Z'`      | `DateTime.fromISO('2023-07-17T23:06:00.000Z')` (local zone)                               |
+| `'2023-07-17T23:06:00.000+01:00'` | `DateTime.fromISO('2023-07-17T23:06:00.000+01:00')`                                       |
+| `'2023-07-17T23:06:00'`           | `DateTime` in the local zone                                                              |
+| `'2023-02-30T00:00:00Z'`          | unchanged string (impossible calendar date)                                               |
+| `'PT1,5S'`                        | `Duration` of 1.5 seconds (Luxon accepts the comma natively)                              |
+| `'P0D'`                           | `Duration.fromObject({ days: 0 })`                                                        |
+| `'P4W'`                           | `Duration.fromObject({ weeks: 4 })`                                                       |
+| `'P1Y2M4DT2H3M2S'`                | `Duration.fromObject({ years: 1, months: 2, days: 4, hours: 2, minutes: 3, seconds: 2 })` |
+| `'adam'`                          | unchanged                                                                                 |
 
 ```text
 in : { someNewObj: { text: 'adam', date: '2023-07-17T23:06:00.000Z' } }
@@ -165,13 +165,13 @@ duration         'P1DT2H' -> Duration { days: 1, hours: 2 }
 ## ⚠️ Edge cases
 
 - **In-place mutation.** The traversal rewrites your object graph and returns nothing. Clone first (`structuredClone`, but note it cannot clone the Luxon objects afterwards) if the caller must keep the raw strings.
-- **Prototype-pollution keys are skipped.** `__proto__`, `constructor` and `prototype` are never read or written, and only own properties (`Object.hasOwn`) are visited.
-- **Depth cap of 100.** Once `depth > 100`, the branch is returned untouched with no error, so extremely deep payloads are silently left partly unconverted.
-- **Cycles are visited once.** The shared `WeakSet` means a repeated object reference is skipped on the second encounter, so a node reachable through two paths is converted exactly once (which is fine, since conversion is idempotent per node).
-- **Date strings must be at least 20 characters** and have `-`, `-`, `T` at indices 4, 7, 10. `2023-07-17T23:06:00` (no offset, 19 characters) therefore stays a string even though the regex would allow it, and so does `2023-07-17T23:06`.
-- **Fractional seconds must be exactly three digits.** `2024-01-01T00:00:00.1Z` and `...000000Z` do not match, so they are left as strings.
-- **The traversal duration regex is stricter than Luxon.** It accepts only unsigned integer components (`P…Y M W D T H M S`), so `PT1.5S`, `-P1D` and `PT1,5S` are not converted by `hierarchicalConvertToLuxon`, while `luxonDateBackend.codecs.duration` happily parses all of them.
-- **Invalid values stay strings.** A matched date is assigned only when `DateTime.isValid`, a matched duration only when `Duration.isValid`. A string that matched the date shape returns early, so it is never retried as a duration.
+- **Prototype-pollution keys are skipped.** Own `__proto__`, `constructor` and `prototype` keys are never entered or written, and only own enumerable properties are visited.
+- **Only arrays and plain objects are entered (11.0.0).** Class instances, `Map`, `Set`, and existing Luxon values are left untouched, so running the converter twice is a no-op. Frozen objects and read-only properties keep their strings instead of throwing.
+- **Depth cap.** The root plus 100 nested levels are walked; deeper branches are left untouched with no error.
+- **Cycles are visited once.** A node reachable through two paths is converted exactly once.
+- **Seconds are required and fractions are truncated.** `2023-07-17T23:06` stays a string. One to nine fraction digits are accepted and truncated (never rounded) to milliseconds.
+- **The traversal duration syntax is narrower than Luxon's.** Signed durations (`-PT1.5S`) and fractional seconds with `.` or `,` convert, but fractions on larger units such as `P1.5D` stay strings, while `luxonDateBackend.codecs.duration` parses them. Sub-millisecond seconds are truncated to milliseconds (`PT0.123456789S` becomes `PT0.123S`); weeks are kept.
+- **Invalid values stay strings.** Impossible calendar or clock values are rejected before Luxon sees them, and a date or duration is assigned only when Luxon reports `isValid`.
 - **Zones collapse to the system zone.** The traversal calls `DateTime.fromISO(v)` with no options, so an offset in the payload is honoured for the instant but the resulting `DateTime` is in the local zone. Call `.setZone('utc')` yourself if you need UTC, or use `luxonDateBackend.codecs.instant`, which parses with `setZone: true` and then normalizes with `toUTC()`.
 - **`zoned-date-time` is strict about the zone.** `parse` requires the bracketed `…±HH:MM[Zone]` form, rejects a zone that `IANAZone.isValidZone` does not know, and rejects a payload whose offset disagrees with the zone at that instant (`2024-07-01T12:34:56+01:00[Europe/Paris]` throws `RangeError`). `serialize` throws when the `DateTime` carries a fixed offset or a local zone instead of a named IANA zone.
 - **Codec `is` cannot tell one `DateTime` kind from another.** All eight `DateTime`-based codecs share the same `DateTime.isDateTime && isValid` guard, so an already-hydrated value passes through whichever kind the schema declares, and a `plain-date` node will accept a `DateTime` that also carries a time.

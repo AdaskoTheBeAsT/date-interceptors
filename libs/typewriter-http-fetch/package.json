@@ -1,6 +1,14 @@
 {
   "name": "@adaskothebeast/typewriter-http-fetch",
-  "version": "10.0.2",
+  "version": "11.0.0",
+  "description": "fetch helpers that hydrate and serialize JSON with Typewriter runtime schemas.",
+  "keywords": [
+    "typewriter",
+    "fetch",
+    "typescript",
+    "json",
+    "hydration"
+  ],
   "license": "MIT",
   "author": "Adam Pluciński <adaskothebeast@gmail.com> (https://github.com/adaskothebeast)",
   "repository": {
@@ -11,19 +19,18 @@
   "bugs": {
     "url": "https://github.com/AdaskoTheBeAsT/date-interceptors/issues"
   },
-  "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors#readme",
-  "keywords": [
-    "typewriter",
-    "fetch",
-    "typescript",
-    "json",
-    "hydration"
-  ],
-  "main": "./index.esm.js",
-  "module": "./index.esm.js",
-  "dependencies": {
-    "@adaskothebeast/typewriter-runtime": "^10.0.0",
-    "@adaskothebeast/typewriter-schema": "^10.0.0"
+  "homepage": "https://github.com/AdaskoTheBeAsT/date-interceptors/tree/main/libs/typewriter-http-fetch#readme",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22.12"
   },
-  "sideEffects": false
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@adaskothebeast/hierarchical-convert-core": "^11.0.0"
+  },
+  "peerDependencies": {
+    "@adaskothebeast/typewriter-runtime": "^11.0.0"
+  }
 }

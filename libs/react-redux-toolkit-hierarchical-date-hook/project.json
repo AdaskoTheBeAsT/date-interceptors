@@ -5,43 +5,35 @@
   "projectType": "library",
   "tags": [],
   "targets": {
-    "lint": {
+    "test": {
       "inputs": [
         "default",
-        "^default",
-        "{workspaceRoot}/.eslintrc.json",
-        "{workspaceRoot}/.eslintignore",
-        "{workspaceRoot}/eslint.config.cjs",
-        "{workspaceRoot}/tools/eslint-rules/**/*",
+        "^production",
+        "{workspaceRoot}/jest.preset.js",
+        "{workspaceRoot}/tools/testing/jest-reporters.cjs",
+        "{workspaceRoot}/tools/testing/swc-transform.cjs",
+        "{workspaceRoot}/tools/testing/jsdom-environment.cjs",
+        "{workspaceRoot}/tools/testing/coverage-thresholds.json",
         {
-          "externalDependencies": ["eslint"]
+          "externalDependencies": [
+            "jest",
+            "@nx/jest",
+            "ts-jest",
+            "@nx/react",
+            "babel-jest",
+            "jest-stare",
+            "jest-html-reporters",
+            "jest-xunit",
+            "jest-sonar",
+            "jest-trx-results-processor",
+            "jest-junit"
+          ]
         }
       ],
-      "options": {
-        "args": ["**/*.{ts,tsx,js,jsx}", "package.json"]
-      }
-    },
-    "build": {
-      "cache": true,
-      "dependsOn": ["^build"],
-      "inputs": [
-        "production",
-        "^production",
-        {
-          "json": "{workspaceRoot}/tsconfig.json",
-          "fields": ["extends", "files", "include"]
-        },
-        {
-          "externalDependencies": ["rollup"]
-        }
+      "outputs": [
+        "{workspaceRoot}/.reports/{projectRoot}",
+        "{workspaceRoot}\\.reports\\libs\\react-redux-toolkit-hierarchical-date-hook\\coverage"
       ]
-    },
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
-      "options": {
-        "jestConfig": "libs/react-redux-toolkit-hierarchical-date-hook/jest.config.ts"
-      }
     }
   }
 }

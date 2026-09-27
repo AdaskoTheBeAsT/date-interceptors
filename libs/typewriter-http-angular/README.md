@@ -17,8 +17,8 @@ Register the feature alongside any backend features selected by the
 application:
 
 ```ts
-import { provideHttpClient } from '@angular/common/http';
 import { withTypewriterHttpInterceptor } from '@adaskothebeast/typewriter-http-angular';
+import { provideHttpClient } from '@angular/common/http';
 
 bootstrapApplication(AppComponent, {
   providers: [provideHttpClient(withTypewriterHttpInterceptor())],
@@ -30,12 +30,9 @@ The package does not select or replace an HTTP backend.
 ## Use
 
 ```ts
-import { HttpClient } from '@angular/common/http';
+import { withTypewriterRequestSchema, withTypewriterResponseSchema } from '@adaskothebeast/typewriter-http-angular';
 import { schema } from '@adaskothebeast/typewriter-schema';
-import {
-  withTypewriterRequestSchema,
-  withTypewriterResponseSchema,
-} from '@adaskothebeast/typewriter-http-angular';
+import { HttpClient } from '@angular/common/http';
 
 const invoiceSchema = schema.object({
   amount: schema.property(schema.decimal('string')),
@@ -64,3 +61,5 @@ const context = withTypewriterResponseSchema(invoiceSchema, {
 
 The functional `typewriterHttpInterceptor` and all context tokens are
 also exported for direct composition.
+
+JSON Problem Details (`application/problem+json`) bypass success conversion, including HTTP 200 responses. Use the exported `isProblemDetailsError(error)` guard to read `httpStatus`, typed `problem` members, and the original decoded `body`. Extension members such as `errors` and `traceId` are preserved. See the repository [conversion contract](https://github.com/AdaskoTheBeAsT/date-interceptors/blob/main/docs/conversion-contract.md#json-problem-details) for transport-specific behavior.

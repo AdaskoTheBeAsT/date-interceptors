@@ -4,44 +4,36 @@
   "sourceRoot": "libs/hierarchical-convert-to-date-fns/src",
   "projectType": "library",
   "tags": [],
+  "implicitDependencies": ["typewriter-schema"],
   "targets": {
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
-      "options": {
-        "outputPath": "dist/libs/hierarchical-convert-to-date-fns",
-        "tsConfig": "libs/hierarchical-convert-to-date-fns/tsconfig.lib.json",
-        "packageJson": "libs/hierarchical-convert-to-date-fns/package.json",
-        "main": "libs/hierarchical-convert-to-date-fns/src/index.ts",
-        "assets": ["libs/hierarchical-convert-to-date-fns/*.md"]
-      }
-    },
-    "publish": {
-      "command": "node tools/scripts/publish.mjs hierarchical-convert-to-date-fns {args.ver} {args.tag}",
-      "dependsOn": ["build"]
-    },
-    "lint": {
+    "test": {
       "inputs": [
         "default",
-        "^default",
-        "{workspaceRoot}/.eslintrc.json",
-        "{workspaceRoot}/.eslintignore",
-        "{workspaceRoot}/eslint.config.cjs",
-        "{workspaceRoot}/tools/eslint-rules/**/*",
+        "^production",
+        "{workspaceRoot}/jest.preset.js",
+        "{workspaceRoot}/tools/testing/jest-reporters.cjs",
+        "{workspaceRoot}/tools/testing/swc-transform.cjs",
+        "{workspaceRoot}/tools/testing/jsdom-environment.cjs",
+        "{workspaceRoot}/tools/testing/coverage-thresholds.json",
         {
-          "externalDependencies": ["eslint"]
+          "externalDependencies": [
+            "jest",
+            "@nx/jest",
+            "ts-jest",
+            "@swc/jest",
+            "jest-stare",
+            "jest-html-reporters",
+            "jest-xunit",
+            "jest-sonar",
+            "jest-trx-results-processor",
+            "jest-junit"
+          ]
         }
       ],
-      "options": {
-        "args": ["**/*.{ts,tsx,js,jsx}", "package.json"]
-      }
-    },
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
-      "options": {
-        "jestConfig": "libs/hierarchical-convert-to-date-fns/jest.config.ts"
-      }
+      "outputs": [
+        "{workspaceRoot}/.reports/{projectRoot}",
+        "{workspaceRoot}\\.reports\\libs\\hierarchical-convert-to-date-fns\\coverage"
+      ]
     }
   }
 }

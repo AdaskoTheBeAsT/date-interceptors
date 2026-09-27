@@ -1,7 +1,4 @@
-import {
-  defineTypeRegistry,
-  schema,
-} from '@adaskothebeast/typewriter-schema';
+import { defineTypeRegistry, schema } from '@adaskothebeast/typewriter-schema';
 import type { Temporal } from '@js-temporal/polyfill';
 import type Decimal from 'decimal.js';
 

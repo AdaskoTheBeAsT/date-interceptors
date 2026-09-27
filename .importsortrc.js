@@ -1,5 +1,5 @@
 module.exports = {
-  '.cjs, .js, .jsx, .ts, .tsx': {
+  '.cjs, .mjs, .js, .jsx, .cts, .mts, .ts, .tsx': {
     style: 'module',
     parser: 'typescript',
   },

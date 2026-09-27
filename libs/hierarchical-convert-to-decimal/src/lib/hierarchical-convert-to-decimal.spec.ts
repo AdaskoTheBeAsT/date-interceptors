@@ -1,20 +1,20 @@
 import Decimal from 'decimal.js';
 
-import { hierarchicalConvertToDecimal } from './hierarchical-convert-to-decimal';
+import { hierarchicalConvertToDecimal } from '../index';
 
 describe('hierarchicalConvertToDecimal', () => {
   it.each`
-    input                                                   | expected
-    ${{}}                                                   | ${{}}
-    ${{ text: 'adam' }}                                     | ${{ text: 'adam' }}
-    ${{ amount: '123.45' }}                                 | ${{ amount: new Decimal('123.45') }}
-    ${{ amount: '-0.001' }}                                 | ${{ amount: new Decimal('-0.001') }}
-    ${{ amount: '+42' }}                                    | ${{ amount: new Decimal('+42') }}
-    ${{ amount: '.5' }}                                     | ${{ amount: new Decimal('.5') }}
-    ${{ amount: '1.25e+8' }}                                | ${{ amount: new Decimal('1.25e+8') }}
-    ${{ nested: { amount: '123.45' } }}                     | ${{ nested: { amount: new Decimal('123.45') } }}
-    ${[{ amount: '123.45' }, { amount: '-0.001' }]}         | ${[{ amount: new Decimal('123.45') }, { amount: new Decimal('-0.001') }]}
-    ${['123.45', '-0.001', '1.25e+8']}                      | ${[new Decimal('123.45'), new Decimal('-0.001'), new Decimal('1.25e+8')]}
+    input                                           | expected
+    ${{}}                                           | ${{}}
+    ${{ text: 'adam' }}                             | ${{ text: 'adam' }}
+    ${{ amount: '123.45' }}                         | ${{ amount: new Decimal('123.45') }}
+    ${{ amount: '-0.001' }}                         | ${{ amount: new Decimal('-0.001') }}
+    ${{ amount: '+42' }}                            | ${{ amount: new Decimal('+42') }}
+    ${{ amount: '.5' }}                             | ${{ amount: new Decimal('.5') }}
+    ${{ amount: '1.25e+8' }}                        | ${{ amount: new Decimal('1.25e+8') }}
+    ${{ nested: { amount: '123.45' } }}             | ${{ nested: { amount: new Decimal('123.45') } }}
+    ${[{ amount: '123.45' }, { amount: '-0.001' }]} | ${[{ amount: new Decimal('123.45') }, { amount: new Decimal('-0.001') }]}
+    ${['123.45', '-0.001', '1.25e+8']}              | ${[new Decimal('123.45'), new Decimal('-0.001'), new Decimal('1.25e+8')]}
   `('converts $input expecting $expected', ({ input, expected }) => {
     hierarchicalConvertToDecimal(input);
 
@@ -105,5 +105,22 @@ describe('hierarchicalConvertToDecimal', () => {
     hierarchicalConvertToDecimal(input);
 
     expect(current['amount']).toBe('123.45');
+  });
+
+  it('is a no-op when run twice and leaves non-plain objects untouched', () => {
+    const map = new Map([['amount', '123.45']]);
+    const buffer = Buffer.from('123.45');
+    const input = { amount: '123.45', list: ['1'], map, buffer };
+
+    hierarchicalConvertToDecimal(input);
+    const amount = input.amount as unknown as Decimal;
+    const [listItem] = input.list;
+    hierarchicalConvertToDecimal(input);
+
+    expect(input.amount).toBe(amount);
+    expect(amount.toString()).toBe('123.45');
+    expect(input.list[0]).toBe(listItem);
+    expect(map.get('amount')).toBe('123.45');
+    expect(buffer.toString()).toBe('123.45');
   });
 });

@@ -1,64 +1,101 @@
-import axios, { AxiosInstance } from 'axios';
+import { isJsonContainer } from '@adaskothebeast/hierarchical-convert-core';
+import axios from 'axios';
+import type { AxiosInstance, AxiosResponse, CreateAxiosDefaults } from 'axios';
+
+import {
+  checkProblemDetailsResponse,
+  rejectProblemDetails,
+} from './problem-details';
+
+/** Mutates parsed response data in place, e.g. `hierarchicalConvertToDate`. */
+export type HierarchicalConverter = (data: unknown) => void;
 
 /**
- * Class for managing axios instances with date conversion interceptors.
- * 
- * Note: Each call to createInstance() or createInstanceWithMultipleInterceptors()
- * creates a NEW axios instance. If you need to reuse the same instance across your
- * application, store the returned instance and pass it around rather than calling
- * createInstance() multiple times.
+ * Only JSON that axios parsed into plain objects or arrays is converted.
+ * Binary, stream, blob and text responses (including JSON-labelled ones) are
+ * left untouched, as are class instances produced by custom transforms.
+ */
+function shouldConvertAxiosResponse(response: AxiosResponse): boolean {
+  const responseType = response.config?.responseType;
+  return (
+    (responseType === undefined || responseType === 'json') &&
+    isJsonContainer(response.data)
+  );
+}
+
+/**
+ * Adds Problem Details detection and hierarchical conversion to an existing
+ * axios instance. Converters run in array order.
+ *
+ * @returns A function that removes the interceptor again.
+ *
+ * @example
+ * ```typescript
+ * const api = axios.create({ baseURL: '/api' });
+ * const eject = attachHierarchicalConverter(api, hierarchicalConvertToDate);
+ * // later, e.g. in tests
+ * eject();
+ * ```
+ */
+export function attachHierarchicalConverter(
+  instance: AxiosInstance,
+  converters: HierarchicalConverter | readonly HierarchicalConverter[],
+): () => void {
+  const list =
+    typeof converters === 'function' ? [converters] : [...converters];
+  const id = instance.interceptors.response.use((response) => {
+    checkProblemDetailsResponse(response);
+    if (shouldConvertAxiosResponse(response)) {
+      for (const convert of list) {
+        convert(response.data);
+      }
+    }
+    return response;
+  }, rejectProblemDetails);
+  return () => instance.interceptors.response.eject(id);
+}
+
+/**
+ * Creates axios instances with date conversion interceptors.
+ *
+ * Each call creates a NEW axios instance. Store the returned instance and
+ * reuse it. To add conversion to an instance you already own, use
+ * {@link attachHierarchicalConverter}.
  */
 export class AxiosInstanceManager {
   /**
    * Creates a new axios instance with a response interceptor.
-   * 
-   * @param interceptFunc Function to be called when a response is received.
-   *                      This function will be called with response.data and
-   *                      should mutate the data in-place to convert date strings.
-   * @returns A new AxiosInstance configured with the provided interceptor
-   * 
+   *
+   * @param interceptFunc Called with parsed JSON response data; it should
+   *                      mutate the data in place to convert date strings.
+   * @param config Optional defaults passed to `axios.create`.
+   *
    * @example
    * ```typescript
    * import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
-   * 
-   * const axiosInstance = AxiosInstanceManager.createInstance(hierarchicalConvertToDate);
-   * 
-   * // Reuse this instance throughout your app
-   * const response = await axiosInstance.get('/api/users');
+   *
+   * const axiosInstance = AxiosInstanceManager.createInstance(
+   *   hierarchicalConvertToDate,
+   *   { baseURL: '/api' },
+   * );
+   * const response = await axiosInstance.get('/users');
    * ```
    */
   public static createInstance(
-    interceptFunc: (data: unknown) => void,
+    interceptFunc: HierarchicalConverter,
+    config?: CreateAxiosDefaults,
   ): AxiosInstance {
-    const instance = axios.create();
-
-    instance.interceptors.response.use(
-      (response) => {
-        if (response.data != null) {
-          interceptFunc(response.data);
-        }
-        return response;
-      },
-      (error: Error) => {
-        return Promise.reject(error);
-      },
+    return AxiosInstanceManager.createInstanceWithMultipleInterceptors(
+      [interceptFunc],
+      config,
     );
-
-    return instance;
   }
 
   /**
-   * Creates a new axios instance with multiple response interceptors.
-   * Interceptors are applied in the order they appear in the array.
-   * 
-   * @param interceptFunctions Array of functions to be called when a response is received.
-   *                          Each function will be called with response.data in sequence.
-   * @returns A new AxiosInstance configured with the provided interceptors
-   * 
+   * Creates a new axios instance whose converters run in array order.
+   *
    * @example
    * ```typescript
-   * import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
-   * 
    * const axiosInstance = AxiosInstanceManager.createInstanceWithMultipleInterceptors([
    *   hierarchicalConvertToDate,
    *   (data) => console.log('Response data:', data),
@@ -66,24 +103,11 @@ export class AxiosInstanceManager {
    * ```
    */
   public static createInstanceWithMultipleInterceptors(
-    interceptFunctions: ((data: unknown) => void)[],
+    interceptFunctions: readonly HierarchicalConverter[],
+    config?: CreateAxiosDefaults,
   ): AxiosInstance {
-    const instance = axios.create();
-
-    instance.interceptors.response.use(
-      (response) => {
-        if (response.data != null) {
-          for (const interceptFunc of interceptFunctions) {
-            interceptFunc(response.data);
-          }
-        }
-        return response;
-      },
-      (error: Error) => {
-        return Promise.reject(error);
-      },
-    );
-
+    const instance = axios.create(config);
+    attachHierarchicalConverter(instance, interceptFunctions);
     return instance;
   }
 }

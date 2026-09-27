@@ -1,55 +1,21 @@
+import { visitStrings } from '@adaskothebeast/hierarchical-convert-core';
 import Decimal from 'decimal.js';
 
-type DecimalValue = Decimal | string | number | boolean | null;
-type DecimalObject = {
-  [key: string]: DecimalValue | DecimalObject | DecimalArray;
-};
-type DecimalArray = Array<DecimalValue | DecimalObject | DecimalArray>;
+/**
+ * Replaces decimal-number strings with `Decimal` objects in place, walking
+ * arrays and plain objects only; cycles and levels deeper than 100 are skipped.
+ */
+export function hierarchicalConvertToDecimal(obj: unknown): void {
+  visitStrings(obj, convert);
+}
 
-const decimalRegex =
-  /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/;
-
-const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
-
-export function hierarchicalConvertToDecimal(
-  obj: unknown,
-  depth = 0,
-  visited = new WeakSet(),
-): void {
-  if (typeof obj !== 'object' || obj === null || depth > 100) {
-    return;
-  }
-
-  if (visited.has(obj)) {
-    return;
-  }
-  visited.add(obj);
-
-  const record = obj as DecimalObject;
-
-  for (const key in record) {
-    if (DANGEROUS_KEYS.has(key) || !Object.hasOwn(record, key)) {
-      continue;
+function convert(value: string): unknown {
+  try {
+    if (/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(value)) {
+      return new Decimal(value);
     }
-
-    const value = record[key];
-    const firstCharacter = typeof value === 'string' ? value[0] : undefined;
-    if (
-      typeof value === 'string' &&
-      firstCharacter !== undefined &&
-      (firstCharacter === '+' ||
-        firstCharacter === '-' ||
-        firstCharacter === '.' ||
-        (firstCharacter >= '0' && firstCharacter <= '9')) &&
-      decimalRegex.test(value)
-    ) {
-      try {
-        record[key] = new Decimal(value);
-      } catch (error) {
-        console.warn(`Failed to parse decimal string: ${value}`, error);
-      }
-    } else if (typeof value === 'object' && value !== null) {
-      hierarchicalConvertToDecimal(value, depth + 1, visited);
-    }
+  } catch {
+    // Unsupported or invalid backend values remain strings.
   }
+  return value;
 }

@@ -5,7 +5,7 @@
 [![npm](https://img.shields.io/npm/v/%40adaskothebeast%2Fhierarchical-convert-to-date-fns?color=cb3837&logo=npm)](https://www.npmjs.com/package/@adaskothebeast/hierarchical-convert-to-date-fns)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-Peer dependencies: `date-fns` (`^4.4.0`), `@adaskothebeast/typewriter-runtime` (`10.0.0`) and `tslib` (`^2.8.1`). Built with `tsc` to CommonJS plus `.d.ts` declarations.
+Peer dependencies: `date-fns` and, for the backend export only, `@adaskothebeast/typewriter-runtime`. Runtime dependency: the dependency-free `@adaskothebeast/hierarchical-convert-core`.
 
 ---
 
@@ -27,7 +27,7 @@ npm i @adaskothebeast/typewriter-runtime
 
 Two independent tools ship in this package.
 
-**1. A blind traversal.** `hierarchicalConvertToDateFns` walks a parsed JSON graph and, without any schema, rewrites recognized strings in place: ISO date-times become `Date` (through date-fns `parseJSON`), ISO durations become date-fns `Duration` objects. Prototype keys are skipped, cycles are tracked in a `WeakSet` and recursion is depth limited, so it is safe on untrusted bodies.
+**1. A blind traversal.** `hierarchicalConvertToDateFns` walks the arrays and plain objects of a parsed JSON graph and, without any schema, rewrites recognized strings in place: ISO date-times become `Date` (through date-fns `parseISO`), non-negative ISO durations become date-fns `Duration` objects. Prototype keys are skipped, cycles are visited once, and recursion is depth limited, so it is safe on untrusted bodies.
 
 **2. A schema-driven backend.** `dateFnsDateBackend` is a `DateBackend` (the interface from `@adaskothebeast/typewriter-runtime`): a `name` plus a map of `DateCodec` objects keyed by `DateSchemaKind`. Pass it as the `dateBackend` option to the typewriter runtime and every date-shaped schema node is hydrated and serialized with date-fns, with real errors on malformed wire values instead of silent guessing.
 
@@ -35,23 +35,23 @@ Two independent tools ship in this package.
 
 ## 🧰 API
 
-### `hierarchicalConvertToDateFns(obj, depth?, visited?)`
+### `hierarchicalConvertToDateFns(obj)`
 
-`(obj: unknown, depth?: number, visited?: WeakSet<object>) => void`
+`(obj: unknown) => void`
 
-Mutates `obj` and returns nothing. `depth` defaults to `0`, `visited` to a fresh `WeakSet`. Both optional parameters exist for the recursive calls but are usable: a higher `depth` shrinks the remaining budget, a shared `visited` set prevents re-walking the same graph.
+Mutates `obj` and returns nothing. (Before 11.0.0 the signature also exposed internal `depth` and `visited` parameters.)
 
 ### `dateFnsDateBackend`
 
 Declared `satisfies DateBackend`, so `name` is `'date-fns'` and the `codecs` record is exactly:
 
-| Schema kind        | Value type          | `parse` accepts                                     | `serialize` emits                  |
-| ------------------ | ------------------- | --------------------------------------------------- | ---------------------------------- |
-| `instant`          | `Date`              | `YYYY-MM-DDTHH:mm[:ss[.sss]]` plus `Z` or `±HH:MM`  | `toISOString()` (always UTC)       |
-| `plain-date`       | `Date`              | `YYYY-MM-DD`                                        | `yyyy-MM-dd` (local fields)        |
-| `plain-date-time`  | `Date`              | `YYYY-MM-DDTHH:mm[:ss[.sss]]`, no zone allowed      | `yyyy-MM-dd'T'HH:mm:ss.SSS`        |
-| `duration`         | `Duration`          | ISO 8601 duration, fractions allowed (`.` or `,`)   | `P…T…`, `PT0S` when empty          |
-| `period`           | `Duration`          | same codec object as `duration`                     | same as `duration`                 |
+| Schema kind       | Value type | `parse` accepts                                    | `serialize` emits            |
+| ----------------- | ---------- | -------------------------------------------------- | ---------------------------- |
+| `instant`         | `Date`     | `YYYY-MM-DDTHH:mm[:ss[.sss]]` plus `Z` or `±HH:MM` | `toISOString()` (always UTC) |
+| `plain-date`      | `Date`     | `YYYY-MM-DD`                                       | `yyyy-MM-dd` (local fields)  |
+| `plain-date-time` | `Date`     | `YYYY-MM-DDTHH:mm[:ss[.sss]]`, no zone allowed     | `yyyy-MM-dd'T'HH:mm:ss.SSS`  |
+| `duration`        | `Duration` | ISO 8601 duration, fractions allowed (`.` or `,`)  | `P…T…`, `PT0S` when empty    |
+| `period`          | `Duration` | same codec object as `duration`                    | same as `duration`           |
 
 Every codec also exposes `is(value)`: the three date codecs use date-fns `isDate` plus `isValid`, the duration codec accepts a plain object whose keys are a subset of `years`, `months`, `weeks`, `days`, `hours`, `minutes`, `seconds` and whose values are finite non-negative numbers.
 
@@ -108,14 +108,11 @@ instant.serialize(new Date('2024-02-29T11:34:56.789Z')); // '2024-02-29T11:34:56
 
 ## 🎛️ Options and configuration
 
-`hierarchicalConvertToDateFns` has no configuration. What it recognizes is fixed:
+`hierarchicalConvertToDateFns` has no configuration. Recognition and traversal are shared with the other converters through `hierarchical-convert-core`; the full rules and a per-backend duration precision table are in the repository [conversion contract](https://github.com/AdaskoTheBeAsT/date-interceptors/blob/main/docs/conversion-contract.md#heuristic-date-conversion). In short:
 
-```text
-date      ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|([+-]\d{2}:\d{2}))?$
-duration  ^P(nY)?(nM)?(nW)?(nD)?(T(nH)?(nM)?(nS)?)$   with integer n only
-```
-
-Date candidates are pre-filtered by four cheap checks (length at least 20, `-` at index 4, `-` at index 7, `T` at index 10); duration candidates by length at least 2 and a leading `P`. The depth guard is `depth > 100`, so the root plus 100 nested levels are walked.
+- Date-times: `YYYY-MM-DDTHH:mm:ss`, an optional one-to-nine-digit fraction (truncated to milliseconds), and an optional `Z` or `±HH:MM`, with calendar and clock validation.
+- Durations: integer `Y`, `M`, `W`, `D`, `H`, `M` components and seconds with up to nine fraction digits (`.` or `,`). Negative durations stay strings because date-fns `Duration` has no sign.
+- Only arrays and plain objects are entered, and the root plus 100 nested levels are walked.
 
 The backend is configured entirely through the runtime option object (`dateBackend`), and `mode: 'strict'` is what turns codec `RangeError`s into reported failures rather than preserved raw values.
 
@@ -125,15 +122,15 @@ The backend is configured entirely through the runtime option object (`dateBacke
 
 `hierarchicalConvertToDateFns`:
 
-| Input                                       | After conversion                                                                        |
-| ------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `{ date: '2023-07-17T23:06:00.000Z' }`      | `{ date: Date('2023-07-17T23:06:00.000Z') }`                                            |
-| `{ date: '2023-07-17T23:06:00.000+01:00' }` | `{ date: Date('2023-07-17T23:06:00.000+01:00') }`                                       |
+| Input                                       | After conversion                                                                             |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `{ date: '2023-07-17T23:06:00.000Z' }`      | `{ date: Date('2023-07-17T23:06:00.000Z') }`                                                 |
+| `{ date: '2023-07-17T23:06:00.000+01:00' }` | `{ date: Date('2023-07-17T23:06:00.000+01:00') }`                                            |
 | `{ duration: 'P0D' }`                       | `{ duration: { years: 0, months: 0, weeks: 0, days: 0, hours: 0, minutes: 0, seconds: 0 } }` |
-| `{ duration: 'P4W' }`                       | `{ duration: { ..., weeks: 4, ... } }` (other fields `0`)                                |
+| `{ duration: 'P4W' }`                       | `{ duration: { ..., weeks: 4, ... } }` (other fields `0`)                                    |
 | `{ duration: 'P1Y2M4DT2H3M2S' }`            | `{ duration: { years: 1, months: 2, weeks: 0, days: 4, hours: 2, minutes: 3, seconds: 2 } }` |
-| `['P1Y2M4DT2H3M2S', 'P1Y2M4DT2H3M2S']`      | both elements become `Duration` objects                                                 |
-| `{ text: 'adam' }`                          | untouched                                                                               |
+| `['P1Y2M4DT2H3M2S', 'P1Y2M4DT2H3M2S']`      | both elements become `Duration` objects                                                      |
+| `{ text: 'adam' }`                          | untouched                                                                                    |
 
 `dateFnsDateBackend` codecs:
 
@@ -151,14 +148,15 @@ duration         {}                              ->                             
 ## ⚠️ Edge cases
 
 - **Mutation in place.** The traversal returns `void` and rewrites your object; clone first (`structuredClone`) if you need the original strings.
-- **Prototype pollution is blocked.** `__proto__`, `constructor` and `prototype` keys are skipped, and non-own enumerable properties are ignored via `Object.hasOwn`.
-- **Cycles are safe**, tracked in a `WeakSet`, so a self-referencing payload terminates. Past 101 object levels (`depth > 100`) nothing is converted, silently.
-- **The traversal and the backend disagree about fractions.** `PT7.25S` is converted by `dateFnsDateBackend.codecs.duration` but not by `hierarchicalConvertToDateFns`, whose duration pattern accepts integers only, so it stays a string there.
+- **Only arrays and plain objects are entered (11.0.0).** Class instances, `Map`, `Set`, `Date`, and typed arrays are left untouched, so running the converter twice is a no-op. Frozen objects and read-only properties keep their strings instead of throwing.
+- **Prototype pollution is blocked.** Own `__proto__`, `constructor` and `prototype` keys are skipped and never entered.
+- **Cycles are safe**; shared references and cycles are visited once. Past the root plus 100 nested levels nothing is converted, silently.
+- **The traversal and the backend disagree about fractions on larger units.** Both accept fractional seconds (`PT7.25S`, `PT7,25S`), but only `dateFnsDateBackend.codecs.duration` accepts fractions on other components such as `P1.5D`; the traversal leaves those as strings.
 - **The traversal fills all seven duration fields with `0`**, while the codec sets only the components present on the wire (`P0D` becomes `{ days: 0 }`, not a full record). Do not compare the two shapes with strict deep equality.
-- **Any `P`-prefixed string of length 2 or more that matches the pattern is converted**, including the degenerate `'PT'`, which becomes an all-zero `Duration`. Human text starting with `P` is safe because it fails the pattern.
-- **Offset-less date-times are treated as UTC** by date-fns `parseJSON`, not as local time. This is a real behavioural difference from the plain [`-date`](https://www.npmjs.com/package/@adaskothebeast/hierarchical-convert-to-date) package, which uses `new Date` and therefore reads `2023-07-17T23:06:00.000` as local.
-- **Invalid but well-shaped dates stay strings.** `2023-99-99T99:99:99.000Z` matches the date pattern, fails validation, and is left alone; the duration branch is not attempted for it.
-- **Date-only strings are not touched by the traversal.** `2023-07-17` fails the 20 character floor. Use the schema stack with `plain-date` if your payload carries calendar dates.
+- **Degenerate durations stay strings.** Bare `P`, `PT`, and a trailing `T` such as `P1DT` are rejected. Human text starting with `P` is safe because it fails the pattern.
+- **Offset-less date-times use the local timezone**, matching the plain [`-date`](https://www.npmjs.com/package/@adaskothebeast/hierarchical-convert-to-date) package.
+- **Invalid dates stay strings.** Impossible calendar or clock values such as `2023-02-30T00:00:00Z` are rejected before date-fns sees them.
+- **Date-only strings are not touched by the traversal.** Use the schema stack with `plain-date` if your payload carries calendar dates.
 - **Negative durations are rejected by the backend.** `duration.parse('-P1D')` throws `RangeError: date-fns Duration does not support negative values`, `is({ days: -1 })` is `false` and `serialize({ days: -1 })` throws. date-fns has no sign on `Duration`.
 - **`duration.is({})` is `true`** (an empty key set satisfies the check) and `serialize({})` yields `PT0S`, so a stray empty object in a duration slot round-trips as a zero duration rather than failing.
 - **`instant` requires a zone, `plain-date-time` forbids one.** `instant.parse('2024-02-29T12:34:56')` and `plainDateTime.parse('2024-02-29T12:34:56Z')` both throw `RangeError`. `plain-date` rejects impossible calendar days such as `2024-02-30`. Bare `'P'` is rejected as a duration.

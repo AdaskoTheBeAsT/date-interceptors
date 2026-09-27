@@ -1,0 +1,23 @@
+const { withNx } = require('@nx/rollup/with-nx');
+const dualPackage = require('../../tools/rollup/dual-package.cjs');
+const nodeDeclarations = require('../../tools/rollup/node-declarations.cjs');
+
+module.exports = dualPackage(
+  withNx(
+    {
+      main: './src/index.ts',
+      outputPath: '../../dist/libs/axios-interceptor',
+      tsConfig: './tsconfig.lib.json',
+      compiler: 'swc',
+      project: './package.json',
+      format: ['esm', 'cjs'],
+      assets: [
+        { input: 'libs/axios-interceptor', glob: 'README.md', output: '.' },
+        { input: 'libs/axios-interceptor', glob: 'LICENSE', output: '.' },
+      ],
+    },
+    {
+      plugins: [nodeDeclarations()],
+    },
+  ),
+);

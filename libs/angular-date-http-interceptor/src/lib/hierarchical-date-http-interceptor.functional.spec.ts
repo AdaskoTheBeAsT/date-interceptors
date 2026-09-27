@@ -1,8 +1,5 @@
 import { hierarchicalConvertToDate } from '@adaskothebeast/hierarchical-convert-to-date';
-import {
-  HttpClient,
-  provideHttpClient,
-} from '@angular/common/http';
+import { HttpClient, provideHttpClient } from '@angular/common/http';
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -43,13 +40,13 @@ describe('hierarchicalDateHttpInterceptorFn', () => {
       result = value;
     });
 
-    httpTesting.expectOne('/users/1').flush(
-      { createdAt: '2026-07-21T12:34:56.000Z' },
-      { headers: { 'Content-Type': 'application/json' } },
-    );
+    httpTesting
+      .expectOne('/users/1')
+      .flush(
+        { createdAt: '2026-07-21T12:34:56.000Z' },
+        { headers: { 'Content-Type': 'application/json' } },
+      );
 
-    expect(result?.createdAt).toEqual(
-      new Date('2026-07-21T12:34:56.000Z'),
-    );
+    expect(result?.createdAt).toEqual(new Date('2026-07-21T12:34:56.000Z'));
   });
 });

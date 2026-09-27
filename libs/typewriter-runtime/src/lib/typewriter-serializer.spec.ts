@@ -1,7 +1,4 @@
-import {
-  defineTypeRegistry,
-  schema,
-} from '@adaskothebeast/typewriter-schema';
+import { defineTypeRegistry, schema } from '@adaskothebeast/typewriter-schema';
 import { Temporal } from '@js-temporal/polyfill';
 import Decimal from 'decimal.js';
 import { parse as parseUuid, v4 as uuidV4 } from 'uuid';
@@ -28,9 +25,7 @@ const invoiceSchema = schema.object<Invoice>({
   amount: schema.property(schema.decimal<Decimal>('string')),
   createdAt: schema.property(schema.instant<Temporal.Instant>()),
   displayName: schema.property(schema.string(), 'display_name'),
-  periods: schema.property(
-    schema.array(schema.duration<Temporal.Duration>()),
-  ),
+  periods: schema.property(schema.array(schema.duration<Temporal.Duration>())),
 });
 
 describe('typewriter serializer', () => {
@@ -104,7 +99,7 @@ describe('typewriter serializer', () => {
 
   it('throws path-aware strict errors', () => {
     expect(() =>
-      serializeJson(
+      serializeJson<unknown>(
         { amount: 'not-a-decimal' },
         schema.object({
           amount: schema.property(schema.decimal<Decimal>('string')),
@@ -123,9 +118,7 @@ describe('typewriter serializer', () => {
 
     const nodeSchema = schema.object<Node>({
       amount: schema.property(schema.decimal<Decimal>('string')),
-      next: schema.property(
-        schema.nullable(schema.reference<Node>('Node')),
-      ),
+      next: schema.property(schema.nullable(schema.reference<Node>('Node'))),
     });
     const registry = defineTypeRegistry({ Node: nodeSchema });
     const value = { amount: new Decimal('1.5') } as Node;
