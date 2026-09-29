@@ -2,6 +2,7 @@ import type {
   DateBackend,
   DateCodec,
 } from '@adaskothebeast/hierarchical-convert-core';
+import { parseFractionalIsoDuration } from '@adaskothebeast/hierarchical-convert-core';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat.js';
 import duration from 'dayjs/plugin/duration.js';
@@ -16,8 +17,6 @@ const INSTANT_PATTERN =
 const PLAIN_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/u;
 const PLAIN_DATE_TIME_PATTERN =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{3})?)?$/u;
-const DURATION_PATTERN =
-  /^[+-]?P(?=\d|T\d)(?:\d+(?:[.,]\d+)?Y)?(?:\d+(?:[.,]\d+)?M)?(?:\d+(?:[.,]\d+)?W)?(?:\d+(?:[.,]\d+)?D)?(?:T(?:\d+(?:[.,]\d+)?H)?(?:\d+(?:[.,]\d+)?M)?(?:\d+(?:[.,]\d+)?S)?)?$/u;
 
 const PLAIN_DATE_FORMAT = 'YYYY-MM-DD';
 const PLAIN_DATE_TIME_FORMATS = [
@@ -83,7 +82,7 @@ const plainDateTimeCodec: DateCodec<dayjs.Dayjs> = {
 const durationCodec: DateCodec<DayjsDuration> = {
   is: dayjs.isDuration,
   parse(value) {
-    if (!DURATION_PATTERN.test(value)) {
+    if (parseFractionalIsoDuration(value, true) === undefined) {
       throw new RangeError('Invalid duration value');
     }
     return dayjs.duration(value);

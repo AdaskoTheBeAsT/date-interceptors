@@ -125,7 +125,7 @@ describe('AxiosInstanceManager', () => {
     expect(order[1]).toBeLessThan(order[2]);
   });
 
-  it('should handle errors and reject the promise', () => {
+  it('should handle errors and reject the promise', async () => {
     const convertFunc = jest.fn();
     AxiosInstanceManager.createInstance(convertFunc);
 
@@ -135,7 +135,7 @@ describe('AxiosInstanceManager', () => {
     const error = new Error('Network error');
     const result = errorInterceptor(error);
 
-    expect(result).rejects.toBe(error);
+    await expect(result).rejects.toBe(error);
     expect(convertFunc).not.toHaveBeenCalled();
   });
 });

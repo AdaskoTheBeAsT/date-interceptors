@@ -11,9 +11,7 @@ const DATE_TIME_PATTERN =
 const INSTANT_PATTERN =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})$/u;
 const YEAR_MONTH_PATTERN = /^\d{4}-\d{2}$/u;
-const MONTH_DAY_PATTERN = /^--\d{2}-\d{2}$/u;
-const ZONED_DATE_TIME_PATTERN =
-  /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?)(Z|[+-]\d{2}:\d{2})\[([^\]]+)\]$/u;
+const ZONED_DATE_TIME_SUFFIX = /(Z|[+-]\d{2}:\d{2})\[([^\]]+)\]$/u;
 
 function isDateTime(value: unknown): value is DateTime {
   return DateTime.isDateTime(value) && value.isValid;
@@ -90,12 +88,16 @@ const plainDateTimeCodec: DateCodec<DateTime> = {
 const zonedDateTimeCodec: DateCodec<DateTime> = {
   is: isDateTime,
   parse(value) {
-    const match = ZONED_DATE_TIME_PATTERN.exec(value);
-    if (match === null) {
+    const match = ZONED_DATE_TIME_SUFFIX.exec(value);
+    if (
+      match === null ||
+      !DATE_TIME_PATTERN.test(value.slice(0, match.index))
+    ) {
       throw new RangeError(`Invalid zoned date-time value: ${value}`);
     }
 
-    const [, localDateTime, offset, zone] = match;
+    const localDateTime = value.slice(0, match.index);
+    const [, offset, zone] = match;
     if (!IANAZone.isValidZone(zone)) {
       throw new RangeError(`Invalid IANA time zone: ${zone}`);
     }
@@ -147,7 +149,10 @@ const plainYearMonthCodec: DateCodec<DateTime> = {
 const plainMonthDayCodec: DateCodec<DateTime> = {
   is: isDateTime,
   parse(value) {
-    if (!MONTH_DAY_PATTERN.test(value)) {
+    if (
+      !value.startsWith('--') ||
+      !DATE_PATTERN.test(`2000-${value.slice(2)}`)
+    ) {
       throw new RangeError(`Invalid ISO month-day value: ${value}`);
     }
     return parseDateTime(`2000-${value.slice(2)}`, DATE_PATTERN, {

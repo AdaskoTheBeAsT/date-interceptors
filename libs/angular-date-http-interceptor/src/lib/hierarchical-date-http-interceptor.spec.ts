@@ -262,7 +262,7 @@ describe('HierarchicalDateHttpInterceptor', () => {
 
     httpClient.get('/no-content-type').subscribe((data) => {
       expect(data).toEqual(original);
-      expect((data as { date: unknown }).date instanceof Date).toBe(false);
+      expect((data as { date: unknown }).date).not.toBeInstanceOf(Date);
       done();
     });
 
@@ -356,7 +356,7 @@ describe('HierarchicalDateHttpInterceptor', () => {
       // Data should NOT be converted (date remains string)
       expect(data).toEqual(testData);
       expect((data as { date: unknown }).date).toBe('2023-07-22T16:08:00.000Z');
-      expect((data as { date: unknown }).date instanceof Date).toBe(false);
+      expect((data as { date: unknown }).date).not.toBeInstanceOf(Date);
       done();
     });
 
