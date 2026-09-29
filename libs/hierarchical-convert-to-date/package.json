@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-to-date",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Deep, in-place conversion of ISO 8601 date strings in JSON payloads into native JavaScript Date objects.",
   "keywords": [
     "date",

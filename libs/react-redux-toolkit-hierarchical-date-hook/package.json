@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/react-redux-toolkit-hierarchical-date-hook",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Redux Toolkit Query helpers and a React hook that deeply convert ISO 8601 date strings in query results with a pluggable hierarchical converter.",
   "keywords": [
     "react",

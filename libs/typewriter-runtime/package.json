@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/typewriter-runtime",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Schema-guided JSON hydration and serialization for Typewriter-generated TypeScript contracts.",
   "keywords": [
     "typewriter",

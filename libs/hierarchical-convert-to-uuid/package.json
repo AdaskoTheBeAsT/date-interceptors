@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-to-uuid",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Deep, in-place conversion of canonical UUID strings in JSON payloads into 16-byte Uint8Array values.",
   "keywords": [
     "uuid",

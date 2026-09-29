@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/typewriter-http-axios",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Axios interceptor that hydrates and serializes JSON with Typewriter runtime schemas.",
   "keywords": [
     "typewriter",

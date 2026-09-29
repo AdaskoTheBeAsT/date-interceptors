@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-to-decimal",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Deep, in-place conversion of numeric strings in JSON payloads into arbitrary-precision decimal.js Decimal instances.",
   "keywords": [
     "decimal",

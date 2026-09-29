@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/typewriter-http-fetch",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "fetch helpers that hydrate and serialize JSON with Typewriter runtime schemas.",
   "keywords": [
     "typewriter",

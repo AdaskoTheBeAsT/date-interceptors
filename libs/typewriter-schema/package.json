@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/typewriter-schema",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Runtime schema descriptors for Typewriter-generated TypeScript contracts.",
   "keywords": [
     "typewriter",

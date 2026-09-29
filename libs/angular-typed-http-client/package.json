@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/angular-typed-http-client",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Angular HttpClient wrapper that serializes requests and hydrates JSON responses into class instances with class-transformer.",
   "keywords": [
     "angular",

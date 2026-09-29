@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-to-date-fns",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Deep, in-place conversion of ISO 8601 dates and durations in JSON payloads for date-fns, plus a date-fns backend for the Typewriter runtime.",
   "keywords": [
     "date-fns",

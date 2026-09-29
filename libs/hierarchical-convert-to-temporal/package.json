@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-to-temporal",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Deep, in-place conversion of ISO 8601 strings in JSON payloads into Temporal values, plus a Temporal backend for the Typewriter runtime.",
   "keywords": [
     "temporal",

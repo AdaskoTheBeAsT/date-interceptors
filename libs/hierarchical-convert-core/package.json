@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-core",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Shared traversal, ISO 8601 validation and JSON Problem Details helpers for the @adaskothebeast hierarchical converters.",
   "keywords": [
     "iso8601",

@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/hierarchical-convert-to-dayjs",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Deep, in-place conversion of ISO 8601 dates and durations in JSON payloads into Day.js values, plus a Day.js backend for the Typewriter runtime.",
   "keywords": [
     "dayjs",

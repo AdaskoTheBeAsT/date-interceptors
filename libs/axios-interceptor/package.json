@@ -1,6 +1,6 @@
 {
   "name": "@adaskothebeast/axios-interceptor",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Axios interceptor that deeply converts ISO 8601 date strings in JSON responses with a pluggable hierarchical converter.",
   "keywords": [
     "axios",
