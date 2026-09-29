@@ -1,4 +1,4 @@
-const COMPONENT_PATTERN = /(\d+(?:[.,]\d+)?)([YMWDHS])/gy;
+const COMPONENT_PATTERN = /(\d+(?:[.,]\d+)?)([YMWDHS])/y;
 const DATE_SUFFIXES = 'YMWD';
 const TIME_SUFFIXES = 'HMS';
 const DATE_KEYS = ['years', 'months', 'weeks', 'days'] as const;
