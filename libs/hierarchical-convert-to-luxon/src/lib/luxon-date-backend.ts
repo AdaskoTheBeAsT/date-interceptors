@@ -169,7 +169,7 @@ function parseOffset(value: string): number {
     return 0;
   }
 
-  const sign = value[0] === '-' ? -1 : 1;
+  const sign = value.startsWith('-') ? -1 : 1;
   return sign * (Number(value.slice(1, 3)) * 60 + Number(value.slice(4, 6)));
 }
 
