@@ -29,11 +29,11 @@
     "access": "public"
   },
   "dependencies": {
-    "@adaskothebeast/hierarchical-convert-core": "^11.0.0",
+    "@adaskothebeast/hierarchical-convert-core": "^11.0.1",
     "tslib": "^2.3.0"
   },
   "peerDependencies": {
-    "@adaskothebeast/typewriter-runtime": "^11.0.0",
+    "@adaskothebeast/typewriter-runtime": "^11.0.1",
     "@angular/common": "^22.0.0",
     "rxjs": "^7.8.0"
   }

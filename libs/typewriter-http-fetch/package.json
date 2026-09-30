@@ -28,9 +28,9 @@
     "access": "public"
   },
   "dependencies": {
-    "@adaskothebeast/hierarchical-convert-core": "^11.0.0"
+    "@adaskothebeast/hierarchical-convert-core": "^11.0.1"
   },
   "peerDependencies": {
-    "@adaskothebeast/typewriter-runtime": "^11.0.0"
+    "@adaskothebeast/typewriter-runtime": "^11.0.1"
   }
 }

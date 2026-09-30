@@ -30,7 +30,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@adaskothebeast/hierarchical-convert-core": "^11.0.0"
+    "@adaskothebeast/hierarchical-convert-core": "^11.0.1"
   },
   "peerDependencies": {
     "date-fns": "^4.4.0"

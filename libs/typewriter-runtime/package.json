@@ -28,8 +28,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@adaskothebeast/hierarchical-convert-core": "^11.0.0",
-    "@adaskothebeast/typewriter-schema": "^11.0.0"
+    "@adaskothebeast/hierarchical-convert-core": "^11.0.1",
+    "@adaskothebeast/typewriter-schema": "^11.0.1"
   },
   "peerDependencies": {
     "@js-temporal/polyfill": "^0.5.1",
