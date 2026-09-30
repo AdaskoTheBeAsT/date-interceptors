@@ -3,7 +3,14 @@ import { schema } from '@adaskothebeast/typewriter-schema';
 import axios, { AxiosError } from 'axios';
 import type { AxiosAdapter } from 'axios';
 
+import { rejectProblemDetails } from './problem-details';
 import { installTypewriterAxiosInterceptor } from './typewriter-http-axios';
+
+it('rejects with the original non-Axios error without throwing synchronously', async () => {
+  const original = new Error('Unexpected failure');
+  const rejection = rejectProblemDetails(original);
+  await expect(rejection).rejects.toBe(original);
+});
 
 describe('schema Axios Problem Details', () => {
   const problem = {

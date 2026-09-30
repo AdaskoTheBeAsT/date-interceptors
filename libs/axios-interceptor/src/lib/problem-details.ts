@@ -25,8 +25,8 @@ export function checkProblemDetailsResponse(response: AxiosResponse): void {
   );
 }
 
-export async function rejectProblemDetails(error: unknown): Promise<never> {
+export function rejectProblemDetails(error: unknown): Promise<never> {
   if (isAxiosError(error) && error.response)
     attachProblemDetails(error, view(error.response));
-  throw error;
+  return Promise.reject(error);
 }

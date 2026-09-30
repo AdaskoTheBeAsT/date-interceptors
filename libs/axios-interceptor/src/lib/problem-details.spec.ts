@@ -2,6 +2,13 @@ import { isProblemDetailsError } from '@adaskothebeast/hierarchical-convert-core
 import axios, { AxiosError } from 'axios';
 
 import { AxiosInstanceManager } from '../index';
+import { rejectProblemDetails } from './problem-details';
+
+it('rejects with the original non-Axios error without throwing synchronously', async () => {
+  const original = new Error('Unexpected failure');
+  const rejection = rejectProblemDetails(original);
+  await expect(rejection).rejects.toBe(original);
+});
 
 describe.each([false, true])(
   'legacy Axios Problem Details (multiple: %s)',
